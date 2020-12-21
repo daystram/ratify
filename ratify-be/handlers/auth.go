@@ -31,7 +31,7 @@ func generateToken(user models.User) (string, error) {
 	now := time.Now()
 	expiry := time.Now().Add(constants.AuthenticationTimeout)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, datatransfers.JWTClaims{
-		ID:        user.ID,
+		Subject:   user.Subject,
 		ExpiresAt: expiry.Unix(),
 		IssuedAt:  now.Unix(),
 	})

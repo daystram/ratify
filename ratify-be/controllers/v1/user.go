@@ -24,6 +24,7 @@ func GETUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.UserInfo{
+		Subject:   user.Subject,
 		Username:  user.Username,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,

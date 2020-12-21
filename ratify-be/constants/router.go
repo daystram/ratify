@@ -2,5 +2,5 @@ package constants
 
 const (
 	IsAuthenticatedKey = "is_authenticated"
-	UserIDKey          = "user_id"
+	UserSubjectKey     = "user_subject"
 )

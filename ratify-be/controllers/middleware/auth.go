@@ -27,7 +27,7 @@ func AuthMiddleware(c *gin.Context) {
 		return
 	}
 	c.Set(constants.IsAuthenticatedKey, true)
-	c.Set(constants.UserIDKey, claims.ID)
+	c.Set(constants.UserSubjectKey, claims.Subject)
 	c.Next()
 }
 
