@@ -9,10 +9,10 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/config"
-	"github.com/daystram/go-gin-gorm-boilerplate/constants"
-	"github.com/daystram/go-gin-gorm-boilerplate/datatransfers"
-	"github.com/daystram/go-gin-gorm-boilerplate/models"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/config"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/constants"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/models"
 )
 
 func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (token string, err error) {
@@ -47,7 +47,6 @@ func (m *module) RegisterUser(credentials datatransfers.UserSignup) (err error) 
 		Username:  credentials.Username,
 		Email:     credentials.Email,
 		Password:  string(hashedPassword),
-		Bio:       credentials.Bio,
 	}); err != nil {
 		log.Print(err)
 		return errors.New(fmt.Sprintf("error inserting user. %v", err))

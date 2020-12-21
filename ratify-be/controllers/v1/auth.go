@@ -6,8 +6,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/datatransfers"
-	"github.com/daystram/go-gin-gorm-boilerplate/handlers"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/handlers"
 )
 
 func POSTLogin(c *gin.Context) {

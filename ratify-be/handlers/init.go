@@ -7,9 +7,9 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/config"
-	"github.com/daystram/go-gin-gorm-boilerplate/datatransfers"
-	"github.com/daystram/go-gin-gorm-boilerplate/models"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/config"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/models"
 )
 
 var Handler HandlerFunc

@@ -7,9 +7,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/config"
-	"github.com/daystram/go-gin-gorm-boilerplate/handlers"
-	"github.com/daystram/go-gin-gorm-boilerplate/router"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/config"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/handlers"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/router"
 )
 
 func init() {

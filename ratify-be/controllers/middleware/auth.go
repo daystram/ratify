@@ -9,9 +9,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/config"
-	"github.com/daystram/go-gin-gorm-boilerplate/constants"
-	"github.com/daystram/go-gin-gorm-boilerplate/datatransfers"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/config"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/constants"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
 )
 
 func AuthMiddleware(c *gin.Context) {

@@ -3,9 +3,9 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/controllers/middleware"
-	"github.com/daystram/go-gin-gorm-boilerplate/controllers/v1"
-	"github.com/daystram/go-gin-gorm-boilerplate/utils"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/controllers/middleware"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/controllers/v1"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/utils"
 )
 
 func InitializeRouter() (router *gin.Engine) {
