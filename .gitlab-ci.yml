@@ -38,3 +38,30 @@ deploy ratify-be:
     - docker build --tag $CI_REGISTRY_IMAGE:ratify-be .
     - docker push $CI_REGISTRY_IMAGE:ratify-be
   when: manual
+
+build ratify-fe:
+  stage: build
+  image: node:lts-alpine
+  script:
+    - cd ratify-fe
+    - yarn install
+    - yarn build
+  artifacts:
+    paths:
+      - dist/
+
+deploy ratify-fe:
+  stage: deploy
+  image: docker:19.03.12
+  needs: ["build ratify-fe"]
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - cd ratify-fe
+    - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe .
+    - docker push $CI_REGISTRY_IMAGE:ratify-fe
+  when: manual
