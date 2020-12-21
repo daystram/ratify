@@ -35,8 +35,8 @@ deploy ratify-be:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd ratify-be
-    - docker build --tag $CI_REGISTRY_IMAGE:ratify-be .
-    - docker push $CI_REGISTRY_IMAGE:ratify-be
+    - docker build --tag $CI_REGISTRY_IMAGE:ratify-be$ENV_TAG .
+    - docker push $CI_REGISTRY_IMAGE:ratify-be$ENV_TAG
   when: manual
 
 build ratify-fe:
@@ -62,6 +62,6 @@ deploy ratify-fe:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd ratify-fe
-    - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe .
-    - docker push $CI_REGISTRY_IMAGE:ratify-fe
+    - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe$ENV_TAG .
+    - docker push $CI_REGISTRY_IMAGE:ratify-fe$ENV_TAG
   when: manual
