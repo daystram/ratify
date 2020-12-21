@@ -1,3 +1,11 @@
-# go-gin-boilerplate
-A simple boilerplate for Go REST applications, 
-based on [gin](https://github.com/gin-gonic/gin) and [gorm](https://github.com/go-gorm/gorm).
+# Ratify
+
+Ratify is a Central Authentication Service (CAS). It implements SAML 2.0 protocol.
+
+## Building
+
+## Deploying
+
+## License
+
+ 
