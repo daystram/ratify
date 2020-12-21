@@ -11,12 +11,12 @@ type userOrm struct {
 // CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 type User struct {
 	Subject       string `gorm:"column:sub;primaryKey;type:uuid;default:uuid_generate_v4()" json:"-"`
-	Superuser     bool   `gorm:"column:superuser" json:"-"`
-	Name          string `gorm:"column:name;type:varchar(50)" json:"-"`
-	Username      string `gorm:"column:preferred_username;uniqueIndex;type:varchar(12)" json:"-"`
-	Email         string `gorm:"column:email;uniqueIndex;type:varchar(50)" json:"-"`
-	EmailVerified bool   `gorm:"column:email_verified" json:"-"`
-	Password      string `gorm:"column:password;type:varchar(100)" json:"-"`
+	Superuser     bool   `gorm:"column:superuser;default:false" json:"-"`
+	Name          string `gorm:"column:name;type:varchar(50);not null" json:"-"`
+	Username      string `gorm:"column:preferred_username;uniqueIndex;type:varchar(12);not null" json:"-"`
+	Email         string `gorm:"column:email;uniqueIndex;type:varchar(50);not null" json:"-"`
+	EmailVerified bool   `gorm:"column:email_verified;default:false" json:"-"`
+	Password      string `gorm:"column:password;type:varchar(100);not null" json:"-"`
 	Metadata      string `gorm:"column:metadata;type:text" json:"-"`
 	CreatedAt     int64  `gorm:"column:created_at;autoCreateTime" json:"-"`
 	UpdatedAt     int64  `gorm:"column:updated_at;autoUpdateTime" json:"-"`
