@@ -19,7 +19,7 @@ type HandlerFunc interface {
 	RegisterUser(credentials datatransfers.UserSignup) (err error)
 
 	RetrieveUser(username string) (user models.User, err error)
-	UpdateUser(id uint, user datatransfers.UserUpdate) (err error)
+	UpdateUser(id string, user datatransfers.UserUpdate) (err error)
 }
 
 type module struct {
