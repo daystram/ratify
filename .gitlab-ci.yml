@@ -3,6 +3,7 @@ stages:
   - test
   - deploy
 
+# ------------------------ ratify-be
 build ratify-be:
   stage: build
   image: daystram/go-builder:1.15
@@ -12,7 +13,7 @@ build ratify-be:
     - go build -a -o app .
   artifacts:
     paths:
-      - app
+      - ratify-be/app
 
 test ratify-be:
   stage: test
@@ -23,10 +24,12 @@ test ratify-be:
     - cd ratify-be
     - go test ./tests/...
 
-deploy ratify-be:
+deploy dev ratify-be:
   stage: deploy
   image: docker:19.03.12
   needs: ["test ratify-be"]
+  environment:
+    name: development
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   services:
@@ -35,10 +38,37 @@ deploy ratify-be:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd ratify-be
-    - docker build --tag $CI_REGISTRY_IMAGE:ratify-be$ENV_TAG .
-    - docker push $CI_REGISTRY_IMAGE:ratify-be$ENV_TAG
+    - docker build --tag $CI_REGISTRY_IMAGE:ratify-be-dev .
+    - docker push $CI_REGISTRY_IMAGE:ratify-be-dev
   when: manual
+  only:
+    - branches
+  except:
+    - master
 
+deploy prod ratify-be:
+  stage: deploy
+  image: docker:19.03.12
+  needs: ["test ratify-be"]
+  environment:
+    name: production
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - cd ratify-be
+    - docker build --tag $CI_REGISTRY_IMAGE:ratify-be .
+    - docker push $CI_REGISTRY_IMAGE:ratify-be
+  when: manual
+  only:
+    - branches
+  only:
+    - master
+
+# ------------------------ ratify-fe
 build ratify-fe:
   stage: build
   image: node:lts-alpine
@@ -48,12 +78,14 @@ build ratify-fe:
     - yarn build
   artifacts:
     paths:
-      - dist/
+      - ratify-fe/dist/
 
-deploy ratify-fe:
+deploy dev ratify-fe:
   stage: deploy
   image: docker:19.03.12
   needs: ["build ratify-fe"]
+  environment:
+    name: development
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   services:
@@ -62,6 +94,32 @@ deploy ratify-fe:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd ratify-fe
-    - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe$ENV_TAG .
-    - docker push $CI_REGISTRY_IMAGE:ratify-fe$ENV_TAG
+    - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe-dev .
+    - docker push $CI_REGISTRY_IMAGE:ratify-fe-dev
   when: manual
+  only:
+    - branches
+  except:
+    - master
+
+deploy prod ratify-fe:
+  stage: deploy
+  image: docker:19.03.12
+  needs: ["build ratify-fe"]
+  environment:
+    name: production
+  variables:
+    DOCKER_TLS_CERTDIR: "/certs"
+  services:
+    - docker:19.03.12-dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  script:
+    - cd ratify-fe
+    - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe .
+    - docker push $CI_REGISTRY_IMAGE:ratify-fe
+  when: manual
+  only:
+    - branches
+  only:
+    - master
