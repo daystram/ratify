@@ -1,4 +1,4 @@
-# ratify-fe
+# ratify-fe2
 
 ## Project setup
 ```
