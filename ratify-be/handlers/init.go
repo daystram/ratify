@@ -27,8 +27,9 @@ type module struct {
 }
 
 type dbEntity struct {
-	conn      *gorm.DB
-	userOrmer models.UserOrmer
+	conn             *gorm.DB
+	applicationOrmer models.ApplicationOrmer
+	userOrmer        models.UserOrmer
 }
 
 func InitializeHandler() {
@@ -50,8 +51,9 @@ func InitializeHandler() {
 	// Compose handler modules
 	Handler = &module{
 		db: &dbEntity{
-			conn:      db,
-			userOrmer: models.NewUserOrmer(db),
+			conn:             db,
+			applicationOrmer: models.NewApplicationOrmer(db),
+			userOrmer:        models.NewUserOrmer(db),
 		},
 	}
 }
