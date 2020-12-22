@@ -14,3 +14,9 @@ func AuthOnly(c *gin.Context) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.Response{Error: "user not authenticated"})
 	}
 }
+
+func SuperuserOnly(c *gin.Context) {
+	if !c.GetBool(constants.IsSuperuserKey) {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.Response{Error: "access unauthorized"})
+	}
+}
