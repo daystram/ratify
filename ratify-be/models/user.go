@@ -35,14 +35,12 @@ func NewUserOrmer(db *gorm.DB) UserOrmer {
 }
 
 func (o *userOrm) GetOneBySubject(subject string) (user User, err error) {
-	user.Subject = subject
-	result := o.db.Model(&User{}).First(&user)
+	result := o.db.Model(&User{}).Where("subject = ?", subject).First(&user)
 	return user, result.Error
 }
 
 func (o *userOrm) GetOneByUsername(username string) (user User, err error) {
-	user.Username = username
-	result := o.db.Model(&User{}).First(&user)
+	result := o.db.Model(&User{}).Where("username = ?", username).First(&user)
 	return user, result.Error
 }
 
