@@ -20,6 +20,10 @@ type HandlerFunc interface {
 
 	RetrieveUser(username string) (user models.User, err error)
 	UpdateUser(id string, user datatransfers.UserUpdate) (err error)
+
+	RetrieveApplication(clientID string) (application models.Application, err error)
+	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error)
+	UpdateApplication(application datatransfers.ApplicationInfo) (err error)
 }
 
 type module struct {
