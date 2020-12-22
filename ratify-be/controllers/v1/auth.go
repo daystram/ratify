@@ -13,7 +13,7 @@ import (
 func POSTLogin(c *gin.Context) {
 	var err error
 	var user datatransfers.UserLogin
-	if err = c.ShouldBind(&user); err != nil {
+	if err = c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
 		return
 	}
@@ -29,14 +29,14 @@ func POSTLogin(c *gin.Context) {
 func POSTRegister(c *gin.Context) {
 	var err error
 	var user datatransfers.UserSignup
-	if err = c.ShouldBind(&user); err != nil {
+	if err = c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
 		return
 	}
 	if err = handlers.Handler.RegisterUser(user); err != nil {
-		c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed registering user"})
+		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed registering user"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: "user created"})
+	c.JSON(http.StatusOK, datatransfers.Response{})
 	return
 }
