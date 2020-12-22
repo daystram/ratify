@@ -4,15 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/config"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/constants"
 	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
 	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/models"
+	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/utils"
 )
 
 func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (token string, err error) {
@@ -23,19 +20,7 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (token st
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
 		return "", errors.New("incorrect credentials")
 	}
-
-	return generateToken(user)
-}
-
-func generateToken(user models.User) (string, error) {
-	now := time.Now()
-	expiry := time.Now().Add(constants.AuthenticationTimeout)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, datatransfers.JWTClaims{
-		Subject:   user.Subject,
-		ExpiresAt: expiry.Unix(),
-		IssuedAt:  now.Unix(),
-	})
-	return token.SignedString([]byte(config.AppConfig.JWTSecret))
+	return utils.GenerateJWT(user)
 }
 
 func (m *module) RegisterUser(credentials datatransfers.UserSignup) (err error) {
