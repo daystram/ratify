@@ -10,7 +10,7 @@ import (
 
 func InitializeRouter() (router *gin.Engine) {
 	router = gin.Default()
-	v1route := router.Group("/api/v1")
+	v1route := router.Group("/api/v1")	// internal/dashboard APIs
 	v1route.Use(
 		middleware.CORSMiddleware,
 		middleware.AuthMiddleware,
@@ -24,7 +24,13 @@ func InitializeRouter() (router *gin.Engine) {
 		user := v1route.Group("/user")
 		{
 			user.GET("/:username", utils.AuthOnly, v1.GETUser)
-			user.PUT("", utils.AuthOnly, v1.PUTUser)
+			user.PUT("/", utils.AuthOnly, v1.PUTUser)
+		}
+		application := v1route.Group("/application")
+		{
+			application.GET("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.GETApplication)
+			application.POST("/", utils.AuthOnly, utils.SuperuserOnly, v1.POSTApplication)
+			application.PUT("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplication)
 		}
 	}
 	return
