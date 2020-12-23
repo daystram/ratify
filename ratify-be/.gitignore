@@ -3,6 +3,8 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,visualstudiocode,intellij+all,linux,macos,windows,vim,git
 
 ratify-be
+.air.toml
+docs/
 
 ### Git ###
 # Created by git for backups. To disable backups in Git:

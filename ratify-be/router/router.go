@@ -3,14 +3,20 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/controllers/middleware"
 	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/controllers/v1"
+	_ "github.com/daystram/go-gin-gorm-boilerplate/ratify-be/docs"
 	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/utils"
 )
 
 func InitializeRouter() (router *gin.Engine) {
 	router = gin.Default()
-	v1route := router.Group("/api/v1")	// internal/dashboard APIs
+	router.GET("/docs/*any", ginSwagger.WrapHandler(
+		swaggerFiles.Handler, ginSwagger.URL("/docs/doc.json")))
+	v1route := router.Group("/api/v1") // internal/dashboard APIs
 	v1route.Use(
 		middleware.CORSMiddleware,
 		middleware.AuthMiddleware,
