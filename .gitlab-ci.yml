@@ -9,8 +9,8 @@ build ratify-be:
   image: daystram/go-builder:1.15
   script:
     - cd ratify-be
-    - go mod tidy
     - swag init
+    - go mod tidy
     - go build -a -o app .
   artifacts:
     paths:
