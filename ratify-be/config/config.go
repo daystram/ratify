@@ -9,6 +9,7 @@ import (
 var AppConfig Config
 
 type Config struct {
+	Hostname    string
 	Port        int
 	Environment string
 	Debug       bool
@@ -34,6 +35,15 @@ func InitializeAppConfig() {
 		log.Fatalf("[INIT] Unable to load configuration. %+v\n", err)
 	}
 
+	// Hostname
+	if AppConfig.Hostname = viper.GetString("hostname"); AppConfig.Hostname == "" {
+		log.Fatalln("[INIT] hostname is missing in config.yaml")
+	}
+
+	// Environment
+	if AppConfig.Environment = viper.GetString("environment"); AppConfig.Environment == "" {
+		log.Fatalln("[INIT] environment is missing in config.yaml")
+	}
 	// Port
 	AppConfig.Port = viper.GetInt("port")
 
