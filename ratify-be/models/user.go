@@ -40,7 +40,7 @@ func (o *userOrm) GetOneBySubject(subject string) (user User, err error) {
 }
 
 func (o *userOrm) GetOneByUsername(username string) (user User, err error) {
-	result := o.db.Model(&User{}).Where("username = ?", username).First(&user)
+	result := o.db.Model(&User{}).Where("preferred_username = ?", username).First(&user)
 	return user, result.Error
 }
 
