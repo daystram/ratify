@@ -2,6 +2,7 @@ FROM daystram/go-builder:1.15 as builder
 WORKDIR /build
 COPY . ./
 RUN go mod tidy
+RUN swag init
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o app .
 
 FROM alpine:latest

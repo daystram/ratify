@@ -10,10 +10,12 @@ build ratify-be:
   script:
     - cd ratify-be
     - go mod tidy
+    - swag init
     - go build -a -o app .
   artifacts:
     paths:
       - ratify-be/app
+      - ratify-be/docs/swagger.json
 
 test ratify-be:
   stage: test
