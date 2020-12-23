@@ -34,7 +34,8 @@ func InitializeRouter() (router *gin.Engine) {
 		}
 		application := v1route.Group("/application")
 		{
-			application.GET("/*client_id", utils.AuthOnly, utils.SuperuserOnly, v1.GETApplication)
+			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETOwnedApplications)
+			application.GET("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.GETOneApplication)
 			application.POST("/", utils.AuthOnly, utils.SuperuserOnly, v1.POSTApplication)
 			application.PUT("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplication)
 		}

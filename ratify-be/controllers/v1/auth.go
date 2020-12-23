@@ -10,6 +10,11 @@ import (
 	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/handlers"
 )
 
+// @Summary Login user
+// @Tags auth
+// @Param user body datatransfers.UserLogin true "User login info"
+// @Success 200 "OK"
+// @Router /api/v1/auth/login [POST]
 func POSTLogin(c *gin.Context) {
 	var err error
 	var user datatransfers.UserLogin
@@ -26,6 +31,11 @@ func POSTLogin(c *gin.Context) {
 	return
 }
 
+// @Summary Register user
+// @Tags auth
+// @Param user body datatransfers.UserSignup true "User signup info"
+// @Success 200 "OK"
+// @Router /api/v1/auth/register [POST]
 func POSTRegister(c *gin.Context) {
 	var err error
 	var user datatransfers.UserSignup
