@@ -9,6 +9,7 @@ type applicationOrm struct {
 }
 
 // CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+// Owner field is populated only when .Preload("Owner") is appended to the query pipeline
 type Application struct {
 	ID           string `gorm:"column:id;primaryKey;type:uuid;default:uuid_generate_v4()" json:"-"`
 	Owner        User   `gorm:"foreignKey:OwnerSubject;references:Subject;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
@@ -27,6 +28,7 @@ type Application struct {
 
 type ApplicationOrmer interface {
 	GetOneByClientID(clientID string) (application Application, err error)
+	GetAllByOwnerSubject(ownerSubject string) (applications []Application, err error)
 	InsertApplication(application Application) (clientID string, err error)
 	UpdateApplication(application Application) (err error)
 }
@@ -37,8 +39,13 @@ func NewApplicationOrmer(db *gorm.DB) ApplicationOrmer {
 }
 
 func (o *applicationOrm) GetOneByClientID(clientID string) (application Application, err error) {
-	result := o.db.Model(&Application{}).Where("client_id = ?", clientID).First(&application)
+	result := o.db.Model(&Application{}).Preload("Owner").Where("client_id = ?", clientID).First(&application)
 	return application, result.Error
+}
+
+func (o *applicationOrm) GetAllByOwnerSubject(ownerSubject string) (applications []Application, err error) {
+	result := o.db.Model(&Application{}).Where("owner_subject = ?", ownerSubject).Find(&applications)
+	return applications, result.Error
 }
 
 func (o *applicationOrm) InsertApplication(application Application) (clientID string, err error) {
