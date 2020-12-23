@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/constants"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/models"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/utils"
+	"github.com/daystram/ratify/ratify-be/constants"
+	"github.com/daystram/ratify/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/models"
+	"github.com/daystram/ratify/ratify-be/utils"
 )
 
 func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error) {

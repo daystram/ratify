@@ -6,10 +6,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/constants"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/handlers"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/models"
+	"github.com/daystram/ratify/ratify-be/constants"
+	"github.com/daystram/ratify/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/handlers"
+	"github.com/daystram/ratify/ratify-be/models"
 )
 
 // @Summary Get application details

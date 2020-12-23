@@ -1,4 +1,4 @@
-module github.com/daystram/go-gin-gorm-boilerplate/ratify-be
+module github.com/daystram/ratify/ratify-be
 
 go 1.15
 

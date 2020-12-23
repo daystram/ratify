@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/constants"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/constants"
+	"github.com/daystram/ratify/ratify-be/datatransfers"
 )
 
 func AuthOnly(c *gin.Context) {

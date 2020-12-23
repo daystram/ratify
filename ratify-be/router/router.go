@@ -6,10 +6,10 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/controllers/middleware"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/controllers/v1"
-	_ "github.com/daystram/go-gin-gorm-boilerplate/ratify-be/docs"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/utils"
+	"github.com/daystram/ratify/ratify-be/controllers/middleware"
+	"github.com/daystram/ratify/ratify-be/controllers/v1"
+	_ "github.com/daystram/ratify/ratify-be/docs"
+	"github.com/daystram/ratify/ratify-be/utils"
 )
 
 func InitializeRouter() (router *gin.Engine) {

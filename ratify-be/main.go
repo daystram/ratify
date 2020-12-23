@@ -7,14 +7,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/config"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/docs"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/handlers"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/router"
+	"github.com/daystram/ratify/ratify-be/config"
+	"github.com/daystram/ratify/ratify-be/docs"
+	"github.com/daystram/ratify/ratify-be/handlers"
+	"github.com/daystram/ratify/ratify-be/router"
 )
 
-// @title Ratify API Documentation
-
+// @title Ratify
 // @securityDefinitions.apikey BearerAuth
 // @in header
 // @name Authorization
