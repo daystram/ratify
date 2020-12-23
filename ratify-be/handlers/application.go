@@ -36,6 +36,14 @@ func (m *module) RetrieveApplication(clientID string) (application models.Applic
 	return
 }
 
+// TODO: paginate
+func (m *module) RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error) {
+	if applications, err = m.db.applicationOrmer.GetAllByOwnerSubject(ownerSubject); err != nil {
+		return []models.Application{}, errors.New("cannot retrieve applications")
+	}
+	return
+}
+
 func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (err error) {
 	if err = m.db.applicationOrmer.UpdateApplication(models.Application{
 		Name:         application.Name,
