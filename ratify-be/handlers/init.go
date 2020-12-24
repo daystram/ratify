@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"log"
 
+	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -29,6 +31,7 @@ type HandlerFunc interface {
 
 type module struct {
 	db *dbEntity
+	rd *redis.Client
 }
 
 type dbEntity struct {
@@ -48,10 +51,23 @@ func InitializeHandler() {
 			config.AppConfig.DBUsername, config.AppConfig.DBPassword),
 	), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("[INIT] Failed connecting to PostgreSQL Database at %s:%d. %+v\n",
+		log.Fatalf("[INIT] Failed connecting to PostgreSQL Database at %s:%d. %v\n",
 			config.AppConfig.DBHostname, config.AppConfig.DBPort, err)
 	}
 	log.Printf("[INIT] Successfully connected to PostgreSQL Database\n")
+
+	//Initialize Redis
+	var rd *redis.Client
+	rd = redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", config.AppConfig.RedisHostname, config.AppConfig.RedisPort),
+		Password: config.AppConfig.RedisPassword,
+		DB:       config.AppConfig.RedisDatabase,
+	})
+	if err = rd.Info(context.Background()).Err(); err != nil {
+		log.Fatalf("[INIT] Failed connecting to Redis at %s:%d. %v\n",
+			config.AppConfig.RedisHostname, config.AppConfig.RedisPort, err)
+	}
+	log.Printf("[INIT] Successfully connected to Redis\n")
 
 	// Compose handler modules
 	Handler = &module{
@@ -60,5 +76,6 @@ func InitializeHandler() {
 			applicationOrmer: models.NewApplicationOrmer(db),
 			userOrmer:        models.NewUserOrmer(db),
 		},
+		rd: rd,
 	}
 }
