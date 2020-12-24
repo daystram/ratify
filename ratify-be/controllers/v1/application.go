@@ -13,12 +13,13 @@ import (
 )
 
 // @Summary Get application details
+// @Description If unauthorized, only application name is returned
 // @Tags application
 // @Security BearerAuth
 // @Param client_id path string true "Client ID"
 // @Success 200 "OK"
 // @Router /api/v1/application/{client_id} [GET]
-func GETOneApplication(c *gin.Context) {
+func GETOneApplicationDetail(c *gin.Context) {
 	var err error
 	// fetch clientID
 	clientID := strings.TrimPrefix(c.Param("client_id"), "/") // trim due to router catch-all
@@ -30,7 +31,9 @@ func GETOneApplication(c *gin.Context) {
 	}
 	// check ownership
 	if application.Owner.Subject != c.GetString(constants.UserSubjectKey) {
-		c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "access to resource unauthorized"})
+		c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.ApplicationInfo{
+			Name: application.Name,
+		}})
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.ApplicationInfo{

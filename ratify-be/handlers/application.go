@@ -14,8 +14,8 @@ import (
 func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error) {
 	if clientID, err = m.db.applicationOrmer.InsertApplication(models.Application{
 		OwnerSubject: ownerSubject,
-		ClientID:     utils.GenerateHexString(constants.ClientIDLength),
-		ClientSecret: utils.GenerateHexString(constants.ClientSecretLength),
+		ClientID:     utils.GenerateRandomString(constants.ClientIDLength),
+		ClientSecret: utils.GenerateRandomString(constants.ClientSecretLength),
 		Name:         application.Name,
 		Description:  application.Description,
 		LoginURL:     application.LoginURL,
