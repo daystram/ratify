@@ -20,7 +20,7 @@ const (
 )
 
 // https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
-func GenerateHexString(length int) string {
+func GenerateRandomString(length int) string {
 	rand.Seed(time.Now().UnixNano())
 	b := make([]byte, length)
 	for i, cache, remain := length-1, rand.Int63(), letterIdxMax; i >= 0; {

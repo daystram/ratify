@@ -27,6 +27,8 @@ type HandlerFunc interface {
 	RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error)
 	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error)
 	UpdateApplication(application datatransfers.ApplicationInfo) (err error)
+
+	GenerateAuthorizationCode(application models.Application) (authorizationCode string, err error)
 }
 
 type module struct {
