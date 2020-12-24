@@ -16,29 +16,36 @@ func InitializeRouter() (router *gin.Engine) {
 	router = gin.Default()
 	router.GET("/docs/*any", ginSwagger.WrapHandler(
 		swaggerFiles.Handler, ginSwagger.URL("/docs/doc.json")))
-	v1route := router.Group("/api/v1") // internal/dashboard APIs
-	v1route.Use(
+	apiv1 := router.Group("/api/v1") // internal/dashboard APIs
+	apiv1.Use(
 		middleware.CORSMiddleware,
 		middleware.AuthMiddleware,
 	)
 	{
-		auth := v1route.Group("/auth")
+		auth := apiv1.Group("/auth")
 		{
 			auth.POST("/login", v1.POSTLogin)
 			auth.POST("/signup", v1.POSTRegister)
 		}
-		user := v1route.Group("/user")
+		user := apiv1.Group("/user")
 		{
 			user.GET("/:username", utils.AuthOnly, v1.GETUser)
 			user.PUT("/", utils.AuthOnly, v1.PUTUser)
 		}
-		application := v1route.Group("/application")
+		application := apiv1.Group("/application")
 		{
 			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETOwnedApplications)
-			application.GET("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.GETOneApplication)
+			application.GET("/:client_id", v1.GETOneApplicationDetail)
 			application.POST("/", utils.AuthOnly, utils.SuperuserOnly, v1.POSTApplication)
 			application.PUT("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplication)
 		}
+	}
+	oauth := router.Group("/oauth") // oauth
+	oauth.Use(
+		middleware.CORSMiddleware,
+	)
+	{
+		oauth.POST("/authorize", v1.POSTAuthorize)
 	}
 	return
 }
