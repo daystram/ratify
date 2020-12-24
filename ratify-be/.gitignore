@@ -3,6 +3,7 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,visualstudiocode,intellij+all,linux,macos,windows,vim,git
 
 ratify-be
+config/config.yaml
 .air.toml
 docs/
 
