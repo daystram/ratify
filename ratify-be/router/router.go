@@ -45,7 +45,9 @@ func InitializeRouter() (router *gin.Engine) {
 		middleware.CORSMiddleware,
 	)
 	{
+		// TODO: opaque token verification endpoint; or, change token into locally verifiable JWT
 		oauth.POST("/authorize", v1.POSTAuthorize)
+		oauth.POST("/token", v1.POSTToken)
 	}
 	return
 }

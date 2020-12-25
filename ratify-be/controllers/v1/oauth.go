@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/models"
 )
 
-// @Summary Authorization request
+// @Summary Request authorization
 // @Tags oauth
 // @Param user body datatransfers.AuthorizationRequest true "Authorization request info"
 // @Success 200 "OK"
@@ -55,6 +56,55 @@ func POSTAuthorize(c *gin.Context) {
 		}})
 	default:
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "unsupported response_type"})
+		return
+	}
+}
+
+// @Summary Request access (and refresh) tokens
+// @Tags oauth
+// @Param user body datatransfers.TokenRequest true "Token request info"
+// @Success 200 "OK"
+// @Router /oauth/token [POST]
+func POSTToken(c *gin.Context) {
+	var err error
+	// fetch request info
+	var tokenRequest datatransfers.TokenRequest
+	if err = c.ShouldBindJSON(&tokenRequest); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		return
+	}
+	// retrieve application
+	var application models.Application
+	if application, err = handlers.Handler.RetrieveApplication(tokenRequest.ClientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
+		return
+	}
+	switch tokenRequest.GrantType {
+	case constants.GrantTypeAuthorizationCode:
+		// verify request credentials
+		if tokenRequest.ClientSecret != application.ClientSecret {
+			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "invalid client secret"})
+			return
+		}
+		if err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "invalid authorization code"})
+			return
+		}
+		// generate codes
+		var accessToken, refreshToken string
+		if accessToken, refreshToken, err = handlers.Handler.GenerateAccessRefreshToken(application); err != nil {
+			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed generating tokens"})
+			return
+		}
+		c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.TokenResponse{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			TokenType:    "Bearer",
+			ExpiresIn:    int(constants.AccessTokenExpiry.Seconds()),
+		}})
+	default:
+		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "unsupported grant_type"})
 		return
 	}
 }
