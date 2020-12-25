@@ -29,6 +29,8 @@ type HandlerFunc interface {
 	UpdateApplication(application datatransfers.ApplicationInfo) (err error)
 
 	GenerateAuthorizationCode(application models.Application) (authorizationCode string, err error)
+	ValidateAuthorizationCode(application models.Application, authorizationCode string) (err error)
+	GenerateAccessRefreshToken(application models.Application) (accessToken, refreshToken string, err error)
 }
 
 type module struct {

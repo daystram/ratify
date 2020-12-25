@@ -32,3 +32,20 @@ func (m *module) ValidateAuthorizationCode(application models.Application, autho
 	}
 	return
 }
+
+func (m *module) GenerateAccessRefreshToken(application models.Application) (accessToken, refreshToken string, err error) {
+	accessToken = utils.GenerateRandomString(constants.AccessTokenLength)
+	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.AccessTokenKey, accessToken),
+		application.ClientID, constants.AccessTokenExpiry).Err(); err != nil {
+		return "", "", errors.New(fmt.Sprintf("failed storing access token. %v", err))
+	}
+	refreshToken = utils.GenerateRandomString(constants.RefreshTokenLength)
+	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RefreshTokenKey, refreshToken),
+		application.ClientID, constants.RefreshTokenExpiry).Err(); err != nil {
+		return "", "", errors.New(fmt.Sprintf("failed storing refresh token. %v", err))
+	}
+	return
+}
+/*
+Since an opaque token is used, applications must call an endpoint in ratify-be to validate the token on every request.
+ */
