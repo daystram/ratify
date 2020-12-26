@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/models"
+	"github.com/daystram/ratify/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/models"
 )
 
 func (m *module) RetrieveUser(username string) (user models.User, err error) {
@@ -17,8 +17,8 @@ func (m *module) RetrieveUser(username string) (user models.User, err error) {
 
 func (m *module) UpdateUser(id string, user datatransfers.UserUpdate) (err error) {
 	if err = m.db.userOrmer.UpdateUser(models.User{
-		ID:    id,
-		Email: user.Email,
+		Subject: id,
+		Email:   user.Email,
 	}); err != nil {
 		return errors.New("cannot update user")
 	}

@@ -9,6 +9,7 @@ import (
 var AppConfig Config
 
 type Config struct {
+	Hostname    string
 	Port        int
 	Environment string
 	Debug       bool
@@ -18,6 +19,11 @@ type Config struct {
 	DBDatabase string
 	DBUsername string
 	DBPassword string
+
+	RedisHostname string
+	RedisPort     int
+	RedisPassword string
+	RedisDatabase int
 
 	Domain    string
 	JWTSecret string
@@ -34,6 +40,11 @@ func InitializeAppConfig() {
 		log.Fatalf("[INIT] Unable to load configuration. %+v\n", err)
 	}
 
+	// Hostname
+	if AppConfig.Hostname = viper.GetString("hostname"); AppConfig.Hostname == "" {
+		log.Fatalln("[INIT] hostname is missing in config.yaml")
+	}
+
 	// Port
 	AppConfig.Port = viper.GetInt("port")
 
@@ -46,27 +57,31 @@ func InitializeAppConfig() {
 	AppConfig.Debug = viper.GetBool("debug")
 
 	// DBHostname
-	if AppConfig.DBHostname = viper.GetString("db_hostname"); AppConfig.DBHostname == "" {
-		log.Fatalln("[INIT] db_hostname is missing in config.yaml")
-	}
+	AppConfig.DBHostname = viper.GetString("db_hostname")
 
 	// DBPort
 	AppConfig.DBPort = viper.GetInt("db_port")
 
 	// DBDatabase
-	if AppConfig.DBDatabase = viper.GetString("db_database"); AppConfig.DBDatabase == "" {
-		log.Fatalln("[INIT] db_database is missing in config.yaml")
-	}
+	AppConfig.DBDatabase = viper.GetString("db_database")
 
 	// DBUsername
-	if AppConfig.DBUsername = viper.GetString("db_username"); AppConfig.DBUsername == "" {
-		log.Fatalln("[INIT] db_username is missing in config.yaml")
-	}
+	AppConfig.DBUsername = viper.GetString("db_username")
 
 	// DBPassword
-	if AppConfig.DBPassword = viper.GetString("db_password"); AppConfig.DBPassword == "" {
-		log.Fatalln("[INIT] db_password is missing in config.yaml")
-	}
+	AppConfig.DBPassword = viper.GetString("db_password")
+
+	// RedisHostname
+	AppConfig.RedisHostname = viper.GetString("redis_hostname")
+
+	// RedisPort
+	AppConfig.RedisPort = viper.GetInt("redis_port")
+
+	// RedisPassword
+	AppConfig.RedisPassword = viper.GetString("redis_password")
+
+	// RedisDatabase
+	AppConfig.RedisDatabase = viper.GetInt("redis_database")
 
 	// Domain
 	if AppConfig.Domain = viper.GetString("domain"); AppConfig.Domain == "" {

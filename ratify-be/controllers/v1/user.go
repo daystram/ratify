@@ -5,10 +5,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/constants"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/handlers"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/models"
+	"github.com/daystram/ratify/ratify-be/constants"
+	"github.com/daystram/ratify/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/handlers"
+	"github.com/daystram/ratify/ratify-be/models"
 )
 
 func GETUser(c *gin.Context) {
@@ -20,10 +20,11 @@ func GETUser(c *gin.Context) {
 	}
 	var user models.User
 	if user, err = handlers.Handler.RetrieveUser(userInfo.Username); err != nil {
-		c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "cannot find user"})
+		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "user not found"})
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.UserInfo{
+		Subject:   user.Subject,
 		Username:  user.Username,
 		Email:     user.Email,
 		CreatedAt: user.CreatedAt,
@@ -34,14 +35,14 @@ func GETUser(c *gin.Context) {
 func PUTUser(c *gin.Context) {
 	var err error
 	var user datatransfers.UserUpdate
-	if err = c.ShouldBind(&user); err != nil {
+	if err = c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
 		return
 	}
 	if err = handlers.Handler.UpdateUser(c.GetString(constants.IsAuthenticatedKey), user); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "failed updating user"})
+		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed updating user"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: "OK"})
+	c.JSON(http.StatusOK, datatransfers.Response{})
 	return
 }

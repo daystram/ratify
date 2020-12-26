@@ -9,11 +9,13 @@ build ratify-be:
   image: daystram/go-builder:1.15
   script:
     - cd ratify-be
+    - swag init
     - go mod tidy
     - go build -a -o app .
   artifacts:
     paths:
       - ratify-be/app
+      - ratify-be/docs/swagger.json
 
 test ratify-be:
   stage: test

@@ -1,6 +1,7 @@
 FROM daystram/go-builder:1.15 as builder
 WORKDIR /build
 COPY . ./
+RUN swag init
 RUN go mod tidy
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix nocgo -o app .
 

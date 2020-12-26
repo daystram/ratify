@@ -1,8 +1,8 @@
 package datatransfers
 
 type UserLogin struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" binding:"-"`
+	Password string `json:"password" binding:"-"`
 }
 
 type UserSignup struct {
@@ -16,6 +16,7 @@ type UserUpdate struct {
 }
 
 type UserInfo struct {
+	Subject   string `json:"sub"`
 	Username  string `uri:"username" json:"username"`
 	Email     string `json:"email"`
 	CreatedAt int64  `json:"created_at"`

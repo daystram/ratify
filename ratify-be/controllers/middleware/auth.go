@@ -9,9 +9,9 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/config"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/constants"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/config"
+	"github.com/daystram/ratify/ratify-be/constants"
+	"github.com/daystram/ratify/ratify-be/datatransfers"
 )
 
 func AuthMiddleware(c *gin.Context) {
@@ -27,7 +27,8 @@ func AuthMiddleware(c *gin.Context) {
 		return
 	}
 	c.Set(constants.IsAuthenticatedKey, true)
-	c.Set(constants.UserIDKey, claims.ID)
+	c.Set(constants.UserSubjectKey, claims.Subject)
+	c.Set(constants.IsSuperuserKey, claims.IsSuperuser)
 	c.Next()
 }
 

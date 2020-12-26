@@ -6,14 +6,19 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/datatransfers"
-	"github.com/daystram/go-gin-gorm-boilerplate/ratify-be/handlers"
+	"github.com/daystram/ratify/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/handlers"
 )
 
+// @Summary Login user
+// @Tags auth
+// @Param user body datatransfers.UserLogin true "User login info"
+// @Success 200 "OK"
+// @Router /api/v1/auth/login [POST]
 func POSTLogin(c *gin.Context) {
 	var err error
 	var user datatransfers.UserLogin
-	if err = c.ShouldBind(&user); err != nil {
+	if err = c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
 		return
 	}
@@ -26,17 +31,22 @@ func POSTLogin(c *gin.Context) {
 	return
 }
 
+// @Summary Register user
+// @Tags auth
+// @Param user body datatransfers.UserSignup true "User signup info"
+// @Success 200 "OK"
+// @Router /api/v1/auth/register [POST]
 func POSTRegister(c *gin.Context) {
 	var err error
 	var user datatransfers.UserSignup
-	if err = c.ShouldBind(&user); err != nil {
+	if err = c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
 		return
 	}
 	if err = handlers.Handler.RegisterUser(user); err != nil {
-		c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed registering user"})
+		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed registering user"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: "user created"})
+	c.JSON(http.StatusOK, datatransfers.Response{})
 	return
 }
