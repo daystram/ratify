@@ -1,9 +1,11 @@
 package constants
 
 const (
-	defaultSeparator = "::%s"
+	RDDelimiter      = "::"
+	defaultDelimiter = RDDelimiter + "%s"
 
-	AuthorizationCodeKey = GrantTypeAuthorizationCode + defaultSeparator
-	AccessTokenKey       = "access_token" + defaultSeparator
-	RefreshTokenKey      = "refresh_token" + defaultSeparator
+	RDKeyAuthorizationCode = GrantTypeAuthorizationCode + defaultDelimiter
+	RDKeyCodeChallenge     = "code_challenge" + defaultDelimiter
+	RDKeyAccessToken       = "access_token" + defaultDelimiter
+	RDKeyRefreshToken      = "refresh_token" + defaultDelimiter
 )

@@ -14,7 +14,7 @@ import (
 
 func (m *module) GenerateAuthorizationCode(application models.Application) (authorizationCode string, err error) {
 	authorizationCode = utils.GenerateRandomString(constants.AuthorizationCodeLength)
-	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.AuthorizationCodeKey, authorizationCode),
+	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode),
 		application.ClientID, constants.AuthorizationCodeExpiry).Err(); err != nil {
 		return "", errors.New(fmt.Sprintf("failed storing authorization code. %v", err))
 	}
@@ -23,10 +23,10 @@ func (m *module) GenerateAuthorizationCode(application models.Application) (auth
 
 func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (err error) {
 	var result *redis.StringCmd
-	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.AuthorizationCodeKey, authorizationCode)); result.Err() != nil {
+	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode)); result.Err() != nil {
 		return errors.New(fmt.Sprintf("failed retrieving authorization code. %v", result.Err()))
 	}
-	m.rd.Del(context.Background(), fmt.Sprintf(constants.AuthorizationCodeKey, authorizationCode)) // immediate invalidation
+	m.rd.Del(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode)) // immediate invalidation
 	if result.Val() != application.ClientID {
 		return errors.New("unregistered authorization code")
 	}
@@ -35,12 +35,12 @@ func (m *module) ValidateAuthorizationCode(application models.Application, autho
 
 func (m *module) GenerateAccessRefreshToken(application models.Application) (accessToken, refreshToken string, err error) {
 	accessToken = utils.GenerateRandomString(constants.AccessTokenLength)
-	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.AccessTokenKey, accessToken),
+	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyAccessToken, accessToken),
 		application.ClientID, constants.AccessTokenExpiry).Err(); err != nil {
 		return "", "", errors.New(fmt.Sprintf("failed storing access token. %v", err))
 	}
 	refreshToken = utils.GenerateRandomString(constants.RefreshTokenLength)
-	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RefreshTokenKey, refreshToken),
+	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyRefreshToken, refreshToken),
 		application.ClientID, constants.RefreshTokenExpiry).Err(); err != nil {
 		return "", "", errors.New(fmt.Sprintf("failed storing refresh token. %v", err))
 	}
