@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"math/rand"
+	"crypto/rand"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -12,29 +12,15 @@ import (
 	"github.com/daystram/ratify/ratify-be/models"
 )
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-const (
-	letterIdxBits = 6
-	letterIdxMask = 1<<letterIdxBits - 1
-	letterIdxMax  = 63 / letterIdxBits
-)
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
-// https://stackoverflow.com/questions/22892120/how-to-generate-a-random-string-of-a-fixed-length-in-go
 func GenerateRandomString(length int) string {
-	rand.Seed(time.Now().UnixNano())
-	b := make([]byte, length)
-	for i, cache, remain := length-1, rand.Int63(), letterIdxMax; i >= 0; {
-		if remain == 0 {
-			cache, remain = rand.Int63(), letterIdxMax
-		}
-		if idx := int(cache & letterIdxMask); idx < len(letterBytes) {
-			b[i] = letterBytes[idx]
-			i--
-		}
-		cache >>= letterIdxBits
-		remain--
+	byteString := make([]byte, length)
+	_, _ = rand.Read(byteString)
+	for i, b := range byteString {
+		byteString[i] = letterBytes[b%byte(len(letterBytes))]
 	}
-	return string(b)
+	return string(byteString)
 }
 
 func GenerateJWT(user models.User) (string, error) {
