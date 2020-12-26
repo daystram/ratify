@@ -31,6 +31,8 @@ type HandlerFunc interface {
 	GenerateAuthorizationCode(application models.Application) (authorizationCode string, err error)
 	ValidateAuthorizationCode(application models.Application, authorizationCode string) (err error)
 	GenerateAccessRefreshToken(application models.Application) (accessToken, refreshToken string, err error)
+	StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
+	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
 }
 
 type module struct {

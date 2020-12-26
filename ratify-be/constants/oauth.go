@@ -5,7 +5,15 @@ import (
 )
 
 const (
-	ResponseTypeCode = "code"
+	FlowAuthorizationCode         = "flow:authorization_code"
+	FlowAuthorizationCodeWithPKCE = "flow:authorization_code_pkce"
+	FlowUnsupported               = "flow:unsupported"
+
+	ResponseTypeCode  = "code"
+	ResponseTypeToken = "token"
+
+	PKCEChallengeMethodS256  = "S256"
+	PKCEChallengeMethodPlain = "plain"
 
 	GrantTypeAuthorizationCode = "authorization_code"
 
