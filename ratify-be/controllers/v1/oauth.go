@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,8 +30,9 @@ func POSTAuthorize(c *gin.Context) {
 		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
 		return
 	}
-	switch authRequest.ResponseType {
-	case constants.ResponseTypeCode:
+	flow := authRequest.Flow()
+	switch flow {
+	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		// verify user login
 		if _, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "incorrect username or password"})
@@ -40,7 +40,7 @@ func POSTAuthorize(c *gin.Context) {
 		}
 		// verify request credentials
 		// TODO: support comma-separated callback URLs
-		if authRequest.RedirectURI != application.CallbackURL {
+		if authRequest.RedirectURI != "" && authRequest.RedirectURI != application.CallbackURL {
 			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "not allowed callback URL"})
 			return
 		}
@@ -50,12 +50,19 @@ func POSTAuthorize(c *gin.Context) {
 			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed generating authorization code"})
 			return
 		}
+		// note code challenge
+		if flow == constants.FlowAuthorizationCodeWithPKCE {
+			if err = handlers.Handler.StoreCodeChallenge(authorizationCode, authRequest.PKCEAuthFields); err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed storing code challenge"})
+				return
+			}
+		}
 		c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.AuthorizationResponse{
 			AuthorizationCode: authorizationCode,
 			State:             authRequest.State,
 		}})
 	default:
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "unsupported response_type"})
+		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "unsupported authorization flow"})
 		return
 	}
 }
@@ -79,17 +86,25 @@ func POSTToken(c *gin.Context) {
 		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
 		return
 	}
-	switch tokenRequest.GrantType {
-	case constants.GrantTypeAuthorizationCode:
+	flow := tokenRequest.Flow()
+	switch flow {
+	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		// verify request credentials
-		if tokenRequest.ClientSecret != application.ClientSecret {
-			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "invalid client secret"})
-			return
-		}
 		if err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
-			log.Println(err)
 			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "invalid authorization code"})
 			return
+		}
+		if flow == constants.FlowAuthorizationCode {
+			if tokenRequest.ClientSecret != application.ClientSecret {
+				c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "invalid client secret"})
+				return
+			}
+		}
+		if flow == constants.FlowAuthorizationCodeWithPKCE {
+			if err = handlers.Handler.ValidateCodeVerifier(tokenRequest.Code, tokenRequest.PKCETokenFields); err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed verifying code challenge"})
+				return
+			}
 		}
 		// generate codes
 		var accessToken, refreshToken string
