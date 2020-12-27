@@ -37,8 +37,8 @@ type PKCETokenFields struct {
 }
 
 type AuthorizationResponse struct {
-	AuthorizationCode string `json:"code"`
-	State             string `json:"state"`
+	AuthorizationCode string `json:"code" url:"code"`
+	State             string `json:"state" url:"state"`
 }
 
 type TokenRequest struct {

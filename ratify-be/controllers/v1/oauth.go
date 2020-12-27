@@ -1,9 +1,12 @@
 package v1
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/go-querystring/query"
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
@@ -57,10 +60,13 @@ func POSTAuthorize(c *gin.Context) {
 				return
 			}
 		}
-		c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.AuthorizationResponse{
+		param, _ := query.Values(datatransfers.AuthorizationResponse{
 			AuthorizationCode: authorizationCode,
 			State:             authRequest.State,
-		}})
+		})
+		c.JSON(http.StatusOK, gin.H{
+			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
+		})
 	default:
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "unsupported authorization flow"})
 		return
