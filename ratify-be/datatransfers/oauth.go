@@ -33,7 +33,7 @@ type PKCEAuthFields struct {
 }
 
 type PKCETokenFields struct {
-	CodeVerifier string `json:"code_verifier" binding:"-"`
+	CodeVerifier string `form:"code_verifier" binding:"-"`
 }
 
 type AuthorizationResponse struct {
@@ -42,10 +42,10 @@ type AuthorizationResponse struct {
 }
 
 type TokenRequest struct {
-	GrantType    string `json:"grant_type" binding:"required"`
-	ClientID     string `json:"client_id" binding:"required"`
-	ClientSecret string `json:"client_secret" binding:"-"`
-	Code         string `json:"code" binding:"required"`
+	GrantType    string `form:"grant_type" binding:"required"`
+	ClientID     string `form:"client_id" binding:"required"`
+	ClientSecret string `form:"client_secret" binding:"-"`
+	Code         string `form:"code" binding:"required"`
 	PKCETokenFields
 }
 

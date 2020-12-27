@@ -75,6 +75,7 @@ func POSTAuthorize(c *gin.Context) {
 
 // @Summary Request access (and refresh) tokens
 // @Tags oauth
+// @Accept application/x-www-form-urlencoded
 // @Param user body datatransfers.TokenRequest true "Token request info"
 // @Success 200 "OK"
 // @Router /oauth/token [POST]
@@ -82,7 +83,7 @@ func POSTToken(c *gin.Context) {
 	var err error
 	// fetch request info
 	var tokenRequest datatransfers.TokenRequest
-	if err = c.ShouldBindJSON(&tokenRequest); err != nil {
+	if err = c.ShouldBind(&tokenRequest); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
 		return
 	}
