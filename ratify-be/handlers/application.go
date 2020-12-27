@@ -46,12 +46,13 @@ func (m *module) RetrieveOwnedApplications(ownerSubject string) (applications []
 
 func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (err error) {
 	if err = m.db.applicationOrmer.UpdateApplication(models.Application{
-		Name:         application.Name,
-		Description:  application.Description,
-		LoginURL:     application.LoginURL,
-		CallbackURL:  application.CallbackURL,
-		LogoutURL:    application.LogoutURL,
-		Metadata:     application.Metadata,
+		ClientID:    application.ClientID,
+		Name:        application.Name,
+		Description: application.Description,
+		LoginURL:    application.LoginURL,
+		CallbackURL: application.CallbackURL,
+		LogoutURL:   application.LogoutURL,
+		Metadata:    application.Metadata,
 	}); err != nil {
 		log.Print(err)
 		return errors.New(fmt.Sprintf("error updating application. %v", err))

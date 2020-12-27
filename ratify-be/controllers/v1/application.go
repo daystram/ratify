@@ -109,15 +109,15 @@ func POSTApplication(c *gin.Context) {
 func PUTApplication(c *gin.Context) {
 	var err error
 	// fetch application info
-	clientID := c.Param("client_id")
 	var applicationInfo datatransfers.ApplicationInfo
 	if err = c.ShouldBindJSON(&applicationInfo); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
 		return
 	}
+	applicationInfo.ClientID = c.Param("client_id")
 	// check ownership
 	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
+	if application, err = handlers.Handler.RetrieveApplication(applicationInfo.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
 		return
 	}
