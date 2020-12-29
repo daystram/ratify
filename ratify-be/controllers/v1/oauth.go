@@ -24,39 +24,40 @@ func POSTAuthorize(c *gin.Context) {
 	// fetch request info
 	var authRequest datatransfers.AuthorizationRequest
 	if err = c.ShouldBindJSON(&authRequest); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
 	// retrieve application
 	var application models.Application
 	if application, err = handlers.Handler.RetrieveApplication(authRequest.ClientID); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
 	flow := authRequest.Flow()
 	switch flow {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		// verify user login
-		if _, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
-			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "incorrect username or password"})
+		var user models.User
+		if user, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
+			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "incorrect username or password"})
 			return
 		}
 		// verify request credentials
 		// TODO: support comma-separated callback URLs
 		if authRequest.RedirectURI != "" && authRequest.RedirectURI != application.CallbackURL {
-			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "not allowed callback URL"})
+			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "not allowed callback_uri"})
 			return
 		}
 		// generate authorization code
 		var authorizationCode string
-		if authorizationCode, err = handlers.Handler.GenerateAuthorizationCode(application); err != nil {
-			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed generating authorization code"})
+		if authorizationCode, err = handlers.Handler.GenerateAuthorizationCode(application, user.Subject); err != nil {
+			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating authorization_code"})
 			return
 		}
 		// note code challenge
 		if flow == constants.FlowAuthorizationCodeWithPKCE {
 			if err = handlers.Handler.StoreCodeChallenge(authorizationCode, authRequest.PKCEAuthFields); err != nil {
-				c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed storing code challenge"})
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed storing code_challenge"})
 				return
 			}
 		}
@@ -68,7 +69,7 @@ func POSTAuthorize(c *gin.Context) {
 			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
 		})
 	default:
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "unsupported authorization flow"})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "unsupported authorization flow"})
 		return
 	}
 }
@@ -84,47 +85,48 @@ func POSTToken(c *gin.Context) {
 	// fetch request info
 	var tokenRequest datatransfers.TokenRequest
 	if err = c.ShouldBind(&tokenRequest); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
 	// retrieve application
 	var application models.Application
 	if application, err = handlers.Handler.RetrieveApplication(tokenRequest.ClientID); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
 	flow := tokenRequest.Flow()
 	switch flow {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		// verify request credentials
-		if err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
-			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "invalid authorization code"})
+		var subject string
+		if subject, err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
+			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid authorization_code"})
 			return
 		}
 		if flow == constants.FlowAuthorizationCode {
 			if tokenRequest.ClientSecret != application.ClientSecret {
-				c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "invalid client secret"})
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid client_secret"})
 				return
 			}
 		}
 		if flow == constants.FlowAuthorizationCodeWithPKCE {
 			if err = handlers.Handler.ValidateCodeVerifier(tokenRequest.Code, tokenRequest.PKCETokenFields); err != nil {
-				c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed verifying code challenge"})
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed verifying code_challenge"})
 				return
 			}
 		}
 		// generate codes
 		var accessToken, refreshToken string
-		if accessToken, refreshToken, err = handlers.Handler.GenerateAccessRefreshToken(application); err != nil {
-			c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "failed generating tokens"})
+		if accessToken, refreshToken, err = handlers.Handler.GenerateAccessRefreshToken(application, subject, flow == constants.FlowAuthorizationCode); err != nil {
+			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating tokens"})
 			return
 		}
-		c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.TokenResponse{
+		c.JSON(http.StatusOK, datatransfers.TokenResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 			TokenType:    "Bearer",
 			ExpiresIn:    int(constants.AccessTokenExpiry.Seconds()),
-		}})
+		})
 	default:
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "unsupported grant_type"})
 		return
