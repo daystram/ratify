@@ -24,7 +24,6 @@ func InitializeRouter() (router *gin.Engine) {
 	{
 		auth := apiv1.Group("/auth")
 		{
-			auth.POST("/login", v1.POSTLogin)
 			auth.POST("/signup", v1.POSTRegister)
 		}
 		form := apiv1.Group("/form")
@@ -49,7 +48,6 @@ func InitializeRouter() (router *gin.Engine) {
 		middleware.CORSMiddleware,
 	)
 	{
-		// TODO: opaque token verification endpoint; or, change token into locally verifiable JWT
 		oauth.POST("/authorize", v1.POSTAuthorize)
 		oauth.POST("/token", v1.POSTToken)
 		oauth.POST("/introspect", v1.POSTIntrospect)
