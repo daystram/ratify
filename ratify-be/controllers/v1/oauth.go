@@ -126,7 +126,42 @@ func POSTToken(c *gin.Context) {
 			ExpiresIn:    int(constants.AccessTokenExpiry.Seconds()),
 		}})
 	default:
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: "unsupported grant_type"})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "unsupported grant_type"})
 		return
 	}
+}
+
+// @Summary Introspect token
+// @Tags oauth
+// @Accept application/x-www-form-urlencoded
+// @Param user body datatransfers.IntrospectRequest true "Token request info"
+// @Success 200 "OK"
+// @Router /oauth/introspect [POST]
+func POSTIntrospect(c *gin.Context) {
+	var err error
+	// fetch request info
+	var introspectRequest datatransfers.IntrospectRequest
+	if err = c.ShouldBind(&introspectRequest); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
+		return
+	}
+	// retrieve details
+	// TODO: allow introspecting other token types
+	var tokenInfo datatransfers.TokenIntrospection
+	if tokenInfo, err = handlers.Handler.IntrospectAccessToken(introspectRequest.Token); err != nil || !tokenInfo.Active {
+		c.JSON(http.StatusOK, tokenInfo)
+		return
+	}
+	// verify request
+	var application models.Application
+	if application, err = handlers.Handler.RetrieveApplication(tokenInfo.ClientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	if introspectRequest.ClientID != application.ClientID || introspectRequest.ClientSecret != application.ClientSecret {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "invalid client_id or client_secret"})
+		return
+	}
+	c.JSON(http.StatusOK, tokenInfo)
+	return
 }
