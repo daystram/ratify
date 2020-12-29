@@ -11,19 +11,22 @@ import (
 	"github.com/daystram/ratify/ratify-be/models"
 )
 
+// @Summary Get user detail
+// @Tags user
+// @Security BearerAuth
+// @Param user body datatransfers.UserSignup true "User signup info"
+// @Success 200 "OK"
+// @Router /api/v1/user [GET]
 func GETUser(c *gin.Context) {
 	var err error
-	var userInfo datatransfers.UserInfo
-	if err = c.ShouldBindUri(&userInfo); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
-		return
-	}
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserByUsername(userInfo.Username); err != nil {
+	if user, err = handlers.Handler.RetrieveUserByUsername(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.UserInfo{
+		FamilyName:   user.FamilyName,
+		GivenName:   user.GivenName,
 		Subject:   user.Subject,
 		Username:  user.Username,
 		Email:     user.Email,
@@ -32,6 +35,32 @@ func GETUser(c *gin.Context) {
 	return
 }
 
+// @Summary Register user
+// @Tags user
+// @Param user body datatransfers.UserSignup true "User signup info"
+// @Success 200 "OK"
+// @Router /api/v1/user [POST]
+func POSTRegister(c *gin.Context) {
+	var err error
+	var user datatransfers.UserSignup
+	if err = c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
+		return
+	}
+	if err = handlers.Handler.RegisterUser(user); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering user"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
+
+// @Summary Update user
+// @Tags user
+// @Security BearerAuth
+// @Param user body datatransfers.UserSignup true "User update info"
+// @Success 200 "OK"
+// @Router /api/v1/user [PUT]
 func PUTUser(c *gin.Context) {
 	var err error
 	var user datatransfers.UserUpdate

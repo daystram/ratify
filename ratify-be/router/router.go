@@ -22,17 +22,14 @@ func InitializeRouter() (router *gin.Engine) {
 		middleware.AuthMiddleware,
 	)
 	{
-		auth := apiv1.Group("/auth")
-		{
-			auth.POST("/signup", v1.POSTRegister)
-		}
 		form := apiv1.Group("/form")
 		{
 			form.POST("/unique", v1.POSTUniqueCheck)
 		}
 		user := apiv1.Group("/user")
 		{
-			user.GET("/:username", utils.AuthOnly, v1.GETUser)
+			user.GET("/", utils.AuthOnly, v1.GETUser)
+			user.POST("/", v1.POSTRegister)
 			user.PUT("/", utils.AuthOnly, v1.PUTUser)
 		}
 		application := apiv1.Group("/application")
