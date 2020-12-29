@@ -22,6 +22,15 @@
                   >
                     Account successfully created!
                   </v-alert>
+                  <v-alert
+                    :value="formLoadStatus === STATUS.ERROR"
+                    type="error"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    Failed creating account!
+                  </v-alert>
                   <v-form
                     v-if="formLoadStatus !== STATUS.COMPLETE"
                     @submit="signup"
@@ -64,12 +73,18 @@
                       :error-messages="usernameErrors"
                       :counter="12"
                       label="Username"
+                      hint="Username is permanent"
                       required
                       :disabled="
                         formLoadStatus === STATUS.LOADING ||
                           formLoadStatus === STATUS.COMPLETE
                       "
-                      @input="$v.username.$touch()"
+                      @input="
+                        () => {
+                          $v.username.$touch();
+                          this.apiResponseCode = '';
+                        }
+                      "
                       @blur="$v.username.$touch()"
                       :prepend-icon="'mdi-identifier'"
                     ></v-text-field>
@@ -83,7 +98,12 @@
                         formLoadStatus === STATUS.LOADING ||
                           formLoadStatus === STATUS.COMPLETE
                       "
-                      @input="$v.email.$touch()"
+                      @input="
+                        () => {
+                          $v.email.$touch();
+                          this.apiResponseCode = '';
+                        }
+                      "
                       @blur="$v.email.$touch()"
                       :prepend-icon="'mdi-email'"
                     ></v-text-field>
@@ -178,7 +198,8 @@ export default Vue.extend({
       email: "",
       password: "",
       confirmPassword: "",
-      showPassword: false
+      showPassword: false,
+      apiResponseCode: ""
     };
   },
 
@@ -205,7 +226,8 @@ export default Vue.extend({
       !this.$v.username.required && errors.push("Username required");
       !this.$v.username.alphaNum && errors.push("Invalid username");
       !this.$v.username.maxLength && errors.push("Username too long");
-      !this.$v.username.isUnique &&
+      !errors.length && // prevent calling API when previous errors are not resolved
+        !this.$v.username.isUnique &&
         !this.$v.username.$pending &&
         errors.push("Username already used");
       return errors;
@@ -215,7 +237,8 @@ export default Vue.extend({
       if (!this.$v.email.$dirty) return errors;
       !this.$v.email.required && errors.push("Email required");
       !this.$v.email.email && errors.push("Invalid email");
-      !this.$v.email.isUnique &&
+      !errors.length &&
+        !this.$v.email.isUnique &&
         !this.$v.email.$pending &&
         errors.push("Email already used");
       return errors;
@@ -247,6 +270,7 @@ export default Vue.extend({
       maxLength: maxLength(12),
       isUnique(value) {
         if (value === "") return true;
+        if (this.apiResponseCode === "username_exists") return false;
         return api.form
           .checkUnique({
             field: "user:username",
@@ -254,7 +278,8 @@ export default Vue.extend({
           })
           .then(response => {
             return response.data.data;
-          });
+          })
+          .catch(() => true);
       }
     },
     email: {
@@ -263,6 +288,7 @@ export default Vue.extend({
       maxLength: maxLength(50),
       isUnique(value) {
         if (value === "") return true;
+        if (this.apiResponseCode === "email_exists") return false;
         return api.form
           .checkUnique({
             field: "user:email",
@@ -270,7 +296,8 @@ export default Vue.extend({
           })
           .then(response => {
             return response.data.data;
-          });
+          })
+          .catch(() => true);
       }
     },
     password: { required, minLength: minLength(8), maxLength: maxLength(100) },
@@ -298,13 +325,15 @@ export default Vue.extend({
                 password: this.password
                 /* eslint-enable @typescript-eslint/camelcase */
               })
-              .then(response => {
-                console.log(response);
+              .then(() => {
                 this.formLoadStatus = STATUS.COMPLETE;
               })
               .catch(error => {
-                console.error(error.response.data.error);
-                this.formLoadStatus = STATUS.IDLE;
+                this.apiResponseCode = error.response.data.code;
+                this.formLoadStatus =
+                  !this.apiResponseCode || this.apiResponseCode === "general"
+                    ? STATUS.ERROR
+                    : STATUS.IDLE;
               }),
           3000
         );

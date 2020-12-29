@@ -3,6 +3,7 @@ export enum STATUS {
   LOADING = "LOADING",
   IDLE = "IDLE",
   COMPLETE = "COMPLETE",
+  ERROR = "ERROR",
   BAD_REQUEST = "BAD_REQUEST"
 }
 
