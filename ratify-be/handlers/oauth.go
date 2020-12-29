@@ -37,16 +37,18 @@ func (m *module) ValidateAuthorizationCode(application models.Application, autho
 	return
 }
 
-func (m *module) GenerateAccessRefreshToken(application models.Application) (accessToken, refreshToken string, err error) {
+func (m *module) GenerateAccessRefreshToken(application models.Application, subject string, withRefresh bool) (accessToken, refreshToken string, err error) {
 	accessToken = utils.GenerateRandomString(constants.AccessTokenLength)
 	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyAccessToken, accessToken),
-		application.ClientID, constants.AccessTokenExpiry).Err(); err != nil {
+		application.ClientID+constants.RDDelimiter+subject, constants.AccessTokenExpiry).Err(); err != nil {
 		return "", "", errors.New(fmt.Sprintf("failed storing access token. %v", err))
 	}
-	refreshToken = utils.GenerateRandomString(constants.RefreshTokenLength)
-	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyRefreshToken, refreshToken),
-		application.ClientID, constants.RefreshTokenExpiry).Err(); err != nil {
-		return "", "", errors.New(fmt.Sprintf("failed storing refresh token. %v", err))
+	if withRefresh {
+		refreshToken = utils.GenerateRandomString(constants.RefreshTokenLength)
+		if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyRefreshToken, refreshToken),
+			application.ClientID+constants.RDDelimiter+subject, constants.RefreshTokenExpiry).Err(); err != nil {
+			return "", "", errors.New(fmt.Sprintf("failed storing refresh token. %v", err))
+		}
 	}
 	return
 }
