@@ -19,8 +19,9 @@ var Handler HandlerFunc
 type HandlerFunc interface {
 	AuthenticateUser(credentials datatransfers.UserLogin) (token string, err error)
 	RegisterUser(credentials datatransfers.UserSignup) (err error)
-
-	RetrieveUser(username string) (user models.User, err error)
+	RetrieveUserBySubject(subject string) (user models.User, err error)
+	RetrieveUserByUsername(username string) (user models.User, err error)
+	RetrieveUserByEmail(email string) (user models.User, err error)
 	UpdateUser(id string, user datatransfers.UserUpdate) (err error)
 
 	RetrieveApplication(clientID string) (application models.Application, err error)
