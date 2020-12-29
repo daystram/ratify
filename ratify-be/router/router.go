@@ -27,6 +27,10 @@ func InitializeRouter() (router *gin.Engine) {
 			auth.POST("/login", v1.POSTLogin)
 			auth.POST("/signup", v1.POSTRegister)
 		}
+		form := apiv1.Group("/form")
+		{
+			form.POST("/unique", v1.POSTUniqueCheck)
+		}
 		user := apiv1.Group("/user")
 		{
 			user.GET("/:username", utils.AuthOnly, v1.GETUser)
