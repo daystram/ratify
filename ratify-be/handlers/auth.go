@@ -9,18 +9,16 @@ import (
 
 	"github.com/daystram/ratify/ratify-be/datatransfers"
 	"github.com/daystram/ratify/ratify-be/models"
-	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (token string, err error) {
-	var user models.User
+func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, err error) {
 	if user, err = m.db.userOrmer.GetOneByUsername(credentials.Username); err != nil {
-		return "", errors.New("incorrect credentials")
+		return models.User{}, errors.New("incorrect credentials")
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
-		return "", errors.New("incorrect credentials")
+		return models.User{}, errors.New("incorrect credentials")
 	}
-	return utils.GenerateJWT(user)
+	return user, nil
 }
 
 func (m *module) RegisterUser(credentials datatransfers.UserSignup) (err error) {
