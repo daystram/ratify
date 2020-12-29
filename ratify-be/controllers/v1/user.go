@@ -25,12 +25,12 @@ func GETUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.UserInfo{
-		FamilyName:   user.FamilyName,
-		GivenName:   user.GivenName,
-		Subject:   user.Subject,
-		Username:  user.Username,
-		Email:     user.Email,
-		CreatedAt: user.CreatedAt,
+		FamilyName: user.FamilyName,
+		GivenName:  user.GivenName,
+		Subject:    user.Subject,
+		Username:   user.Username,
+		Email:      user.Email,
+		CreatedAt:  user.CreatedAt,
 	}})
 	return
 }
@@ -47,8 +47,16 @@ func POSTRegister(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
+	if user, _ := handlers.Handler.RetrieveUserByUsername(user.Username); user.Subject != "" {
+		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: "username_exists", Error: "username already used"})
+		return
+	}
+	if user, _ := handlers.Handler.RetrieveUserByEmail(user.Email); user.Subject != "" {
+		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: "email_exists", Error: "email already used"})
+		return
+	}
 	if err = handlers.Handler.RegisterUser(user); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering user"})
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Code: "general", Error: "failed registering user"})
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
@@ -66,6 +74,10 @@ func PUTUser(c *gin.Context) {
 	var user datatransfers.UserUpdate
 	if err = c.ShouldBindJSON(&user); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
+		return
+	}
+	if user, _ := handlers.Handler.RetrieveUserByEmail(user.Email); user.Subject != "" {
+		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: "email_exists", Error: "email already used"})
 		return
 	}
 	if err = handlers.Handler.UpdateUser(c.GetString(constants.IsAuthenticatedKey), user); err != nil {

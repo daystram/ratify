@@ -3,8 +3,6 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"log"
-
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/daystram/ratify/ratify-be/datatransfers"
@@ -31,7 +29,6 @@ func (m *module) RegisterUser(credentials datatransfers.UserSignup) (err error) 
 		Email:     credentials.Email,
 		Password:  string(hashedPassword),
 	}); err != nil {
-		log.Print(err)
 		return errors.New(fmt.Sprintf("error inserting user. %v", err))
 	}
 	return
