@@ -1,57 +1,96 @@
 <template>
-  <v-container fill-height="fill-height">
-    <v-layout align-center="align-center" justify-center="justify-center">
-      <v-flex class="login-form text-center">
-        <div v-if="pageLoadStatus === this.STATUS.PRE_LOADING">
-          <v-progress-circular
-            indeterminate
-            color="primary"
-          ></v-progress-circular>
+  <v-container fill-height fluid class="gradient-bg">
+    <v-col>
+      <v-row align="center" justify="center">
+        <div v-if="pageLoadStatus === STATUS.PRE_LOADING">
+          <v-progress-circular indeterminate></v-progress-circular>
         </div>
-        <div v-else-if="pageLoadStatus === this.STATUS.BAD_REQUEST">
-          <h1>400 Bad Request</h1>
+        <div v-else-if="pageLoadStatus === STATUS.BAD_REQUEST">
+          <h1 class="text-h2 mb-8">400 Bad Request</h1>
+          <p class="text-subtitle-1 text--secondary">
+            Redirecting in {{ badRequestCountdown }}...
+          </p>
         </div>
-        <div v-else>
-          <h1>{{ application.name }}</h1>
-          <v-form @submit="submit">
-            <v-text-field
-              v-model="username"
-              :error-messages="usernameErrors"
-              label="Username"
-              required
-              @input="$v.username.$touch()"
-              @blur="$v.username.$touch()"
-            ></v-text-field>
-            <v-text-field
-              v-model="password"
-              :error-messages="passwordErrors"
-              :type="'password'"
-              label="Password"
-              required
-              @input="$v.password.$touch()"
-              @blur="$v.password.$touch()"
-            ></v-text-field>
-            <v-btn
-              type="submit"
-              block="block"
-              :disabled="formLoadStatus === STATUS.LOADING"
-            >
-              <div v-if="formLoadStatus === STATUS.LOADING">
-                <v-progress-circular
-                  indeterminate
-                  color="primary"
-                  :width="3"
-                  :size="20"
-                ></v-progress-circular>
-              </div>
-              <div v-else>
-                sign in
-              </div>
-            </v-btn>
-          </v-form>
+        <div v-else class="login-form">
+          <v-scroll-y-transition appear>
+            <div>
+              <v-card
+                elevation="22"
+                :loading="formLoadStatus === STATUS.LOADING"
+              >
+                <div class="pa-4">
+                  <h1 class="text-h2 mt-12 mb-12 text-center">
+                    {{ application.name }}
+                  </h1>
+                  <v-alert
+                    :value="formLoadStatus === STATUS.COMPLETE"
+                    type="success"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    Successfully signed in!
+                  </v-alert>
+                  <v-form @submit="login">
+                    <v-text-field
+                      v-model="username"
+                      :error-messages="usernameErrors"
+                      label="Username"
+                      required
+                      :disabled="
+                        formLoadStatus === STATUS.LOADING ||
+                          formLoadStatus === STATUS.COMPLETE
+                      "
+                      @input="$v.username.$touch()"
+                      @blur="$v.username.$touch()"
+                      :prepend-icon="'mdi-identifier'"
+                    ></v-text-field>
+                    <v-text-field
+                      v-model="password"
+                      :error-messages="passwordErrors"
+                      :type="'password'"
+                      label="Password"
+                      required
+                      :disabled="
+                        formLoadStatus === STATUS.LOADING ||
+                          formLoadStatus === STATUS.COMPLETE
+                      "
+                      @input="$v.password.$touch()"
+                      @blur="$v.password.$touch()"
+                      :prepend-icon="'mdi-lock'"
+                    ></v-text-field>
+                    <v-btn
+                      type="submit"
+                      block
+                      rounded
+                      color="primaryDim"
+                      :disabled="
+                        formLoadStatus === STATUS.LOADING ||
+                          formLoadStatus === STATUS.COMPLETE
+                      "
+                    >
+                      <div v-if="formLoadStatus === STATUS.LOADING">
+                        signing in...
+                      </div>
+                      <div v-else-if="formLoadStatus === STATUS.COMPLETE">
+                        redirecting in {{ successCountdown }}...
+                      </div>
+                      <div v-else>
+                        sign in
+                      </div>
+                    </v-btn>
+                  </v-form>
+                </div>
+              </v-card>
+              <p class="text-center mt-4 text-subtitle-1 text--secondary">
+                Don't have an account?
+                <router-link to="/signup">Sign Up</router-link>
+              </p>
+            </div>
+          </v-scroll-y-transition>
         </div>
-      </v-flex>
-    </v-layout>
+      </v-row>
+    </v-col>
   </v-container>
 </template>
 
@@ -62,7 +101,7 @@ import api from "@/apis/api";
 import oauth from "@/apis/oauth";
 import { STATUS } from "@/constants/status";
 
-import "@/styles/Login.sass";
+import "@/styles/Authorize.sass";
 
 export default Vue.extend({
   data: function() {
