@@ -93,3 +93,19 @@ func (m *module) ValidateCodeVerifier(authorizationCode string, pkce datatransfe
 	}
 	return
 }
+
+func (m *module) IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error) {
+	var result *redis.StringCmd
+	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDKeyAccessToken, accessToken)); result.Err() != nil && err != redis.Nil {
+		return datatransfers.TokenIntrospection{}, errors.New(fmt.Sprintf("failed retrieving access token. %v", result.Err()))
+	}
+	if err == redis.Nil {
+		return datatransfers.TokenIntrospection{Active: false}, nil
+	}
+	splitVal := strings.Split(result.Val(), constants.RDDelimiter)
+	return datatransfers.TokenIntrospection{
+		Active:   true,
+		ClientID: splitVal[0],
+		Subject:  splitVal[1],
+	}, nil
+}
