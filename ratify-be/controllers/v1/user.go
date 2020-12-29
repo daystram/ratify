@@ -15,15 +15,15 @@ func GETUser(c *gin.Context) {
 	var err error
 	var userInfo datatransfers.UserInfo
 	if err = c.ShouldBindUri(&userInfo); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUser(userInfo.Username); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "user not found"})
+	if user, err = handlers.Handler.RetrieveUserByUsername(userInfo.Username); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.UserInfo{
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.UserInfo{
 		Subject:   user.Subject,
 		Username:  user.Username,
 		Email:     user.Email,
@@ -36,13 +36,13 @@ func PUTUser(c *gin.Context) {
 	var err error
 	var user datatransfers.UserUpdate
 	if err = c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
 	if err = handlers.Handler.UpdateUser(c.GetString(constants.IsAuthenticatedKey), user); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed updating user"})
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating user"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }

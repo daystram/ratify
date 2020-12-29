@@ -40,13 +40,13 @@ func POSTRegister(c *gin.Context) {
 	var err error
 	var user datatransfers.UserSignup
 	if err = c.ShouldBindJSON(&user); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
 	if err = handlers.Handler.RegisterUser(user); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed registering user"})
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering user"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }

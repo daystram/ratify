@@ -26,17 +26,17 @@ func GETOneApplicationDetail(c *gin.Context) {
 	// get application
 	var application models.Application
 	if application, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
 	// check ownership
 	if application.Owner.Subject != c.GetString(constants.UserSubjectKey) {
-		c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.ApplicationInfo{
+		c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
 			Name: application.Name,
 		}})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.ApplicationInfo{
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
 		ClientID:     application.ClientID,
 		ClientSecret: application.ClientSecret,
 		Name:         application.Name,
@@ -60,7 +60,7 @@ func GETOwnedApplications(c *gin.Context) {
 	// get all owned applications
 	var applications []models.Application
 	if applications, err = handlers.Handler.RetrieveOwnedApplications(c.GetString(constants.UserSubjectKey)); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "cannot retrieve applications"})
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "cannot retrieve applications"})
 		return
 	}
 	var applicationsResponse []datatransfers.ApplicationInfo
@@ -72,7 +72,7 @@ func GETOwnedApplications(c *gin.Context) {
 			CreatedAt:   application.CreatedAt,
 		})
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: applicationsResponse})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: applicationsResponse})
 	return
 }
 
@@ -87,15 +87,15 @@ func POSTApplication(c *gin.Context) {
 	// fetch application info
 	var applicationInfo datatransfers.ApplicationInfo
 	if err = c.ShouldBindJSON(&applicationInfo); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
 	// register application
 	if applicationInfo.ClientID, err = handlers.Handler.RegisterApplication(applicationInfo, c.GetString(constants.UserSubjectKey)); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed updating application"})
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: gin.H{"client_id": applicationInfo.ClientID}})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_id": applicationInfo.ClientID}})
 	return
 }
 
@@ -111,25 +111,25 @@ func PUTApplication(c *gin.Context) {
 	// fetch application info
 	var applicationInfo datatransfers.ApplicationInfo
 	if err = c.ShouldBindJSON(&applicationInfo); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
 	applicationInfo.ClientID = c.Param("client_id")
 	// check ownership
 	var application models.Application
 	if application, err = handlers.Handler.RetrieveApplication(applicationInfo.ClientID); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
 	if application.Owner.Subject != c.GetString(constants.UserSubjectKey) {
-		c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "access to resource unauthorized"})
+		c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "access to resource unauthorized"})
 		return
 	}
 	// update application
 	if err = handlers.Handler.UpdateApplication(applicationInfo); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed updating application"})
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
