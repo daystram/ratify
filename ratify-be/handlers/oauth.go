@@ -16,25 +16,26 @@ import (
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) GenerateAuthorizationCode(application models.Application) (authorizationCode string, err error) {
+func (m *module) GenerateAuthorizationCode(application models.Application, subject string) (authorizationCode string, err error) {
 	authorizationCode = utils.GenerateRandomString(constants.AuthorizationCodeLength)
 	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode),
-		application.ClientID, constants.AuthorizationCodeExpiry).Err(); err != nil {
+		application.ClientID+constants.RDDelimiter+subject, constants.AuthorizationCodeExpiry).Err(); err != nil {
 		return "", errors.New(fmt.Sprintf("failed storing authorization code. %v", err))
 	}
 	return
 }
 
-func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (err error) {
+func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject string, err error) {
 	var result *redis.StringCmd
 	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode)); result.Err() != nil {
-		return errors.New(fmt.Sprintf("failed retrieving authorization code. %v", result.Err()))
+		return "", errors.New(fmt.Sprintf("failed retrieving authorization code. %v", result.Err()))
 	}
 	m.rd.Del(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode)) // immediate invalidation
-	if result.Val() != application.ClientID {
-		return errors.New("unregistered authorization code")
+	splitVal := strings.Split(result.Val(), constants.RDDelimiter)
+	if splitVal[0] != application.ClientID {
+		return "", errors.New("unregistered authorization code")
 	}
-	return
+	return splitVal[1], nil
 }
 
 func (m *module) GenerateAccessRefreshToken(application models.Application, subject string, withRefresh bool) (accessToken, refreshToken string, err error) {
