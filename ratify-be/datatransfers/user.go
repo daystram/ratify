@@ -6,16 +6,22 @@ type UserLogin struct {
 }
 
 type UserSignup struct {
-	Username string `json:"username" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	GivenName  string `json:"given_name" binding:"required"`
+	FamilyName string `json:"family_name" binding:"required"`
+	Username   string `json:"username" binding:"required"`
+	Email      string `json:"email" binding:"required"`
+	Password   string `json:"password" binding:"required"`
 }
 
 type UserUpdate struct {
-	Email string `json:"email" binding:"-"`
+	GivenName  string `json:"given_name" binding:"required"`
+	FamilyName string `json:"family_name" binding:"required"`
+	Email     string `json:"email" binding:"required"`
 }
 
 type UserInfo struct {
+	GivenName  string `json:"given_name"`
+	FamilyName string `json:"family_name"`
 	Subject   string `json:"sub"`
 	Username  string `uri:"username" json:"username"`
 	Email     string `json:"email"`
