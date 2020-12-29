@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import { Authorize, Home, Manage, User } from "@/views";
+import { Authorize, Home, Manage, Signup, User } from "@/views";
 import {
   authenticatedOnly,
   callback,
@@ -46,6 +46,11 @@ const routes: Array<RouteConfig> = [
     path: "/logout",
     name: "logout",
     component: logout
+  },
+  {
+    path: "/signup",
+    name: "signup",
+    component: Signup
   },
   {
     path: "/callback",

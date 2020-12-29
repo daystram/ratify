@@ -9,5 +9,15 @@ export default {
     getOne: function(clientId: string): Promise<AxiosResponse> {
       return apiClient.get(`application/${clientId}`);
     }
+  },
+  form: {
+    checkUnique: function(uniqueRequest: unknown): Promise<AxiosResponse> {
+      return apiClient.post("form/unique", uniqueRequest);
+    }
+  },
+  user: {
+    signup: function(userSignup: unknown): Promise<AxiosResponse> {
+      return apiClient.post("user", userSignup);
+    }
   }
 };
