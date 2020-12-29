@@ -65,55 +65,33 @@ import { STATUS } from "@/constants/status";
 import "@/styles/Login.sass";
 
 export default Vue.extend({
-  created: function() {
-    this.authRequest = {
-      clientId: this.$route.query.client_id,
-      responseType: this.$route.query.response_type,
-      redirectUri: this.$route.query.redirect_uri,
-      state: this.$route.query.state,
-      codeChallenge: this.$route.query.code_challenge,
-      codeChallengeMethod: this.$route.query.code_challenge_method
+  data: function() {
+    return {
+      pageLoadStatus: STATUS.PRE_LOADING,
+      formLoadStatus: STATUS.IDLE,
+      application: {
+        name: "",
+        metadata: ""
+      },
+      username: "",
+      password: "",
+      badRequestCountdown: "",
+      successCountdown: "",
+      counter: 0
     };
-    if (!this.authRequest.clientId || !this.authRequest.responseType) {
-      this.pageLoadStatus = this.PAGE_STATUS.BAD_REQUEST;
-      return;
-    }
-    api.application
-      .getOne(this.authRequest.clientId)
-      .then(response => {
-        this.application = response.data.data;
-        this.pageLoadStatus = STATUS.COMPLETE;
-      })
-      .catch(() => {
-        this.pageLoadStatus = STATUS.BAD_REQUEST;
-      });
-  },
-
-  data: () => ({
-    pageLoadStatus: STATUS.PRE_LOADING,
-    formLoadStatus: STATUS.IDLE,
-    authRequest: {
-      clientId: "",
-      responseType: "",
-      redirectUri: "",
-      state: "",
-      codeChallenge: "",
-      codeChallengeMethod: ""
-    },
-    application: {
-      name: "",
-      metadata: ""
-    },
-    username: "",
-    password: ""
-  }),
-
-  validations: {
-    username: { required, alphaNum },
-    password: { required }
   },
 
   computed: {
+    authRequest() {
+      return {
+        clientId: this.$route.query.client_id.toString(),
+        responseType: this.$route.query.response_type.toString(),
+        redirectUri: this.$route.query.redirect_uri.toString(),
+        state: this.$route.query.state.toString(),
+        codeChallenge: this.$route.query.code_challenge.toString(),
+        codeChallengeMethod: this.$route.query.code_challenge_method.toString()
+      };
+    },
     usernameErrors() {
       const errors: string[] = [];
       if (!this.$v.username.$dirty) return errors;
@@ -129,36 +107,92 @@ export default Vue.extend({
     }
   },
 
+  validations: {
+    username: { required, alphaNum },
+    password: { required }
+  },
+
+  created: function() {
+    if (
+      !this.authRequest.clientId ||
+      !this.authRequest.responseType ||
+      !this.authRequest.redirectUri
+    ) {
+      this.pageLoadStatus = STATUS.BAD_REQUEST;
+      let count = 3;
+      this.badRequestCountdown = `${count} second${count === 1 ? "" : "s"}`;
+      this.counter = setInterval(() => {
+        if (count) {
+          this.badRequestCountdown = `${count} second${count === 1 ? "" : "s"}`;
+        } else {
+          this.$router.push({ name: "home" });
+          clearInterval(this.counter);
+        }
+        count--;
+      }, 1000);
+    }
+    api.application
+      .getOne(this.authRequest.clientId)
+      .then(response => {
+        this.application = response.data.data;
+        this.pageLoadStatus = STATUS.COMPLETE;
+      })
+      .catch(() => {
+        this.pageLoadStatus = STATUS.BAD_REQUEST;
+      });
+  },
+
   methods: {
-    submit(e) {
+    login(e: Event) {
       e.preventDefault();
       this.$v.$touch();
       if (!this.$v.$invalid) {
         this.formLoadStatus = STATUS.LOADING;
-        oauth
-          .authorize({
-            /* eslint-disable @typescript-eslint/camelcase */
-            client_id: this.authRequest.clientId,
-            response_type: this.authRequest.responseType,
-            redirect_uri: this.authRequest.redirectUri,
-            state: this.authRequest.state,
-            code_challenge: this.authRequest.codeChallenge,
-            code_challenge_method: this.authRequest.codeChallengeMethod,
-            username: this.username,
-            password: this.password
-            /* eslint-enable @typescript-eslint/camelcase */
-          })
-          .then(response => {
-            console.log(response.data.data);
-            window.location.href = response.data.data;
-            this.formLoadStatus = STATUS.IDLE;
-          })
-          .catch(error => {
-            console.error(error.response.data.error);
-            this.formLoadStatus = STATUS.IDLE;
-          });
+        setTimeout(
+          () =>
+            oauth
+              .authorize({
+                /* eslint-disable @typescript-eslint/camelcase */
+                client_id: this.authRequest.clientId,
+                response_type: this.authRequest.responseType,
+                redirect_uri: this.authRequest.redirectUri,
+                state: this.authRequest.state,
+                code_challenge: this.authRequest.codeChallenge,
+                code_challenge_method: this.authRequest.codeChallengeMethod,
+                username: this.username,
+                password: this.password
+                /* eslint-enable @typescript-eslint/camelcase */
+              })
+              .then(response => {
+                let count = 3;
+                this.successCountdown = `${count} second${
+                  count === 1 ? "" : "s"
+                }`;
+                this.counter = setInterval(() => {
+                  if (count) {
+                    this.successCountdown = `${count} second${
+                      count === 1 ? "" : "s"
+                    }`;
+                  } else {
+                    clearInterval(this.counter);
+                    window.location.href = response.data.data;
+                  }
+                  count--;
+                }, 1000);
+                this.formLoadStatus = STATUS.COMPLETE;
+              })
+              .catch(error => {
+                console.error(error.response.data.error);
+                this.formLoadStatus = STATUS.IDLE;
+              }),
+          3000
+        );
       }
     }
+  },
+
+  beforeDestroy() {
+    clearInterval(this.counter);
   }
 });
 </script>
