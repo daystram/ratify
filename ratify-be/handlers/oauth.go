@@ -58,6 +58,36 @@ func (m *module) GenerateAccessRefreshToken(application models.Application, subj
 Since an opaque token is used, applications must call an endpoint in ratify-be to validate the token on every request.
 */
 
+func (m *module) GenerateIDToken(clientID, subject string, scope []string) (idToken string, err error) {
+	var user models.User
+	if user, err = m.db.userOrmer.GetOneBySubject(subject); err != nil {
+		return "", errors.New("cannot find user")
+	}
+	now := time.Now()
+	expiry := time.Now().Add(constants.AuthenticationTimeout)
+	claims := datatransfers.OpenIDClaims{
+		Subject:   user.Subject,
+		Issuer:    config.AppConfig.Domain,
+		Audience:  clientID,
+		ExpiresAt: expiry.Unix(),
+		IssuedAt:  now.Unix(),
+	}
+	for _, s := range scope {
+		switch s {
+		case "profile":
+			claims.Username = &user.Username
+			claims.Superuser = &user.Superuser
+			claims.GivenName = &user.GivenName
+			claims.FamilyName = &user.FamilyName
+			claims.UpdatedAt = &user.UpdatedAt
+		case "email":
+			claims.Email = &user.Email
+			claims.EmailVerified = &user.EmailVerified
+		}
+	}
+	return utils.GenerateJWT(claims)
+}
+
 func (m *module) StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error) {
 	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyCodeChallenge, authorizationCode),
 		pkce.CodeChallengeMethod+constants.RDDelimiter+pkce.CodeChallenge,
