@@ -7,48 +7,78 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 
+	"github.com/daystram/ratify/ratify-be/config"
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
 	"github.com/daystram/ratify/ratify-be/models"
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) GenerateAuthorizationCode(application models.Application, subject string) (authorizationCode string, err error) {
+func (m *module) GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject string) (authorizationCode string, err error) {
 	authorizationCode = utils.GenerateRandomString(constants.AuthorizationCodeLength)
-	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode),
-		application.ClientID+constants.RDDelimiter+subject, constants.AuthorizationCodeExpiry).Err(); err != nil {
-		return "", errors.New(fmt.Sprintf("failed storing authorization code. %v", err))
+	key := fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode)
+	value := map[string]interface{}{
+		"subject":   subject,
+		"client_id": authRequest.ClientID,
+		"scope":     authRequest.Scope,
+	}
+	if err = m.rd.HSet(context.Background(), key, value).Err(); err != nil {
+		return "", errors.New(fmt.Sprintf("failed storing authorization_code. %v", err))
+	}
+	if err = m.rd.Expire(context.Background(), key, constants.AuthorizationCodeExpiry).Err(); err != nil {
+		m.rd.Del(context.Background(), key)
+		return "", errors.New(fmt.Sprintf("failed setting authorization_code expiry. %v", err))
 	}
 	return
 }
 
-func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject string, err error) {
-	var result *redis.StringCmd
-	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode)); result.Err() != nil {
-		return "", errors.New(fmt.Sprintf("failed retrieving authorization code. %v", result.Err()))
+func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error) {
+	var result *redis.StringStringMapCmd
+	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode)); result.Err() != nil {
+		return "", "", errors.New(fmt.Sprintf("failed retrieving authorization_code. %v", result.Err()))
 	}
 	m.rd.Del(context.Background(), fmt.Sprintf(constants.RDKeyAuthorizationCode, authorizationCode)) // immediate invalidation
-	splitVal := strings.Split(result.Val(), constants.RDDelimiter)
-	if splitVal[0] != application.ClientID {
-		return "", errors.New("unregistered authorization code")
+	var clientID string
+	clientID, subject, scope = result.Val()["client_id"], result.Val()["subject"], result.Val()["scope"]
+	if clientID != application.ClientID {
+		return "", "", errors.New("unregistered authorization_code")
 	}
-	return splitVal[1], nil
+	return
 }
 
-func (m *module) GenerateAccessRefreshToken(application models.Application, subject string, withRefresh bool) (accessToken, refreshToken string, err error) {
+func (m *module) GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, subject string, withRefresh bool) (accessToken, refreshToken string, err error) {
 	accessToken = utils.GenerateRandomString(constants.AccessTokenLength)
-	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyAccessToken, accessToken),
-		application.ClientID+constants.RDDelimiter+subject, constants.AccessTokenExpiry).Err(); err != nil {
-		return "", "", errors.New(fmt.Sprintf("failed storing access token. %v", err))
+	accessTokenKey := fmt.Sprintf(constants.RDKeyAccessToken, accessToken)
+	accessTokenValue := map[string]interface{}{
+		"subject":   subject,
+		"client_id": tokenRequest.ClientID,
+	}
+	if err = m.rd.HSet(context.Background(), accessTokenKey, accessTokenValue).Err(); err != nil {
+		return "", "", errors.New(fmt.Sprintf("failed storing access_token. %v", err))
+	}
+	if err = m.rd.Expire(context.Background(), accessTokenKey, constants.AccessTokenExpiry).Err(); err != nil {
+		m.rd.Del(context.Background(), accessTokenKey)
+		return "", "", errors.New(fmt.Sprintf("failed setting access_token expiry. %v", err))
 	}
 	if withRefresh {
+		refreshTokenKey := fmt.Sprintf(constants.RDKeyAccessToken, accessToken)
+		refreshTokenValue := map[string]interface{}{
+			"subject":      subject,
+			"client_id":    tokenRequest.ClientID,
+			"access_token": accessToken,
+		}
 		refreshToken = utils.GenerateRandomString(constants.RefreshTokenLength)
-		if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDKeyRefreshToken, refreshToken),
-			application.ClientID+constants.RDDelimiter+subject, constants.RefreshTokenExpiry).Err(); err != nil {
-			return "", "", errors.New(fmt.Sprintf("failed storing refresh token. %v", err))
+		if err = m.rd.HSet(context.Background(), refreshTokenKey, refreshTokenValue).Err(); err != nil {
+			return "", "", errors.New(fmt.Sprintf("failed storing refresh_token. %v", err))
+		}
+		if err = m.rd.Expire(context.Background(), refreshTokenKey, constants.RefreshTokenExpiry).Err(); err != nil {
+			m.rd.Del(context.Background(), accessTokenKey)
+			m.rd.Del(context.Background(), refreshTokenKey)
+			return "", "", errors.New(fmt.Sprintf("failed setting refresh_token expiry. %v", err))
 		}
 	}
 	return

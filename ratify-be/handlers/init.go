@@ -29,9 +29,10 @@ type HandlerFunc interface {
 	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error)
 	UpdateApplication(application datatransfers.ApplicationInfo) (err error)
 
-	GenerateAuthorizationCode(application models.Application, subject string) (authorizationCode string, err error)
-	ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject string, err error)
-	GenerateAccessRefreshToken(application models.Application, subject string, withRefresh bool) (accessToken, refreshToken string, err error)
+	GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject string) (authorizationCode string, err error)
+	ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error)
+	GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, subject string, withRefresh bool) (accessToken, refreshToken string, err error)
+	GenerateIDToken(clientID, subject string, scope []string) (idToken string, err error)
 	IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error)
 	StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
 	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
