@@ -3,10 +3,13 @@ import oauth from "@/apis/oauth";
 import pkceChallenge from "pkce-challenge";
 import { v4 as uuidv4 } from "uuid";
 import { AxiosResponse } from "axios";
+import jwtDecode from "jwt-decode";
 
 export const KEY_STATE = "state";
 export const KEY_CODE = "code";
-export const KEY_ACCESS_TOKEN = "access_token";
+export const KEY_TOKEN = "token";
+export const ACCESS_TOKEN = "access_token";
+export const ID_TOKEN = "id_token";
 
 interface AuthManagerOptions {
   clientId: string;
@@ -24,21 +27,29 @@ export class AuthManager {
   }
 
   getToken(tokenKey: string): string {
-    return this.storageManager.getItem(tokenKey) || "";
+    return (
+      JSON.parse(this.storageManager.getItem(KEY_TOKEN) || "{}")[tokenKey] || ""
+    );
+  }
+
+  getUser() {
+    return jwtDecode(this.getToken(ID_TOKEN));
   }
 
   reset() {
-    this.storageManager.removeItem(KEY_ACCESS_TOKEN);
+    this.storageManager.removeItem(KEY_TOKEN);
     this.storageManager.removeItem(KEY_CODE);
     this.storageManager.removeItem(KEY_STATE);
   }
 
-  authorize(): void {
+  authorize(scopes?: string[]): void {
     window.location.href = `${this.options.issuer}/authorize?${qs.stringify({
       /* eslint-disable @typescript-eslint/camelcase */
       client_id: this.options.clientId,
       response_type: "code",
       redirect_uri: this.options.redirectUri,
+      scope:
+        "openid profile" + (scopes || []).map(scope => " " + scope).join(""),
       state: this.getState(),
       code_challenge: this.getCodeChallenge(),
       code_challenge_method: "S256"
@@ -57,10 +68,7 @@ export class AuthManager {
         /* eslint-enable @typescript-eslint/camelcase */
       })
       .then(response => {
-        this.storageManager.setItem(
-          KEY_ACCESS_TOKEN,
-          response.data[KEY_ACCESS_TOKEN]
-        );
+        this.storageManager.setItem(KEY_TOKEN, JSON.stringify(response.data));
         return response;
       });
   }
@@ -69,7 +77,7 @@ export class AuthManager {
     return oauth.revoke({
       /* eslint-disable @typescript-eslint/camelcase */
       client_id: this.options.clientId,
-      token: this.getToken(KEY_ACCESS_TOKEN)
+      token: this.getToken(KEY_TOKEN)
       /* eslint-enable @typescript-eslint/camelcase */
     });
   }

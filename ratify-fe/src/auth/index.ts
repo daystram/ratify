@@ -1,5 +1,5 @@
 import router from "@/router";
-import { AuthManager, KEY_ACCESS_TOKEN } from "@/auth/AuthManager";
+import { AuthManager, ACCESS_TOKEN } from "@/auth/AuthManager";
 
 const CLIENT_ID = process.env.VUE_APP_CLIENT_ID;
 const ISSUER = process.env.VUE_APP_OAUTH_ISSUER;
@@ -42,11 +42,15 @@ const callback = function() {
 };
 
 const isAuthenticated = function(): boolean {
-  return authManager.getToken(KEY_ACCESS_TOKEN) !== "";
+  return authManager.getToken(ACCESS_TOKEN) !== "";
+};
+
+const user = function() {
+  return authManager.getUser();
 };
 
 const authenticatedOnly = function(to: any, from: any, next: () => void) {
-  if (authManager.getToken(KEY_ACCESS_TOKEN)) {
+  if (authManager.getToken(ACCESS_TOKEN)) {
     next();
   } else {
     authManager.reset();
@@ -56,7 +60,7 @@ const authenticatedOnly = function(to: any, from: any, next: () => void) {
 };
 
 const unAuthenticatedOnly = function(to: any, from: any, next: () => void) {
-  if (!authManager.getToken(KEY_ACCESS_TOKEN)) {
+  if (!authManager.getToken(ACCESS_TOKEN)) {
     next();
   } else {
     router.push({ name: "manage:dashboard" });
@@ -65,6 +69,7 @@ const unAuthenticatedOnly = function(to: any, from: any, next: () => void) {
 
 export {
   isAuthenticated,
+  user,
   login,
   logout,
   callback,
