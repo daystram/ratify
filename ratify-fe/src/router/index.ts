@@ -1,6 +1,6 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import { Authorize, Home, Manage, Signup, User } from "@/views";
+import { Authorize, Home, Manage, Profile, Signup, User } from "@/views";
 import {
   authenticatedOnly,
   callback,
@@ -24,14 +24,48 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: "/manage",
-    name: "manage",
     beforeEnter: authenticatedOnly,
     component: Manage,
-    redirect: "/manage/profile",
+    redirect: "/manage/dashboard",
     children: [
       {
+        path: "dashboard",
+        name: "manage:dashboard",
+        component: Home
+      },
+      {
         path: "profile",
+        name: "manage:profile",
+        component: Profile
+      },
+      {
+        path: "incident",
+        name: "manage:incident",
+        component: User
+      },
+      {
+        path: "session",
+        name: "manage:session",
+        component: User
+      },
+      {
+        path: "setting",
+        name: "manage:setting",
+        component: User
+      },
+      {
+        path: "user",
         name: "manage:user",
+        component: User
+      },
+      {
+        path: "application",
+        name: "manage:application",
+        component: User
+      },
+      {
+        path: "log",
+        name: "manage:log",
         component: User
       }
     ]

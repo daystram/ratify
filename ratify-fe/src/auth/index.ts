@@ -32,7 +32,7 @@ const callback = function() {
   authManager
     .redeemToken(code)
     .then(response => {
-      router.replace({ name: "manage" });
+      router.replace({ name: "manage:dashboard" });
       console.log(response.data);
     })
     .catch(error => {
@@ -50,6 +50,7 @@ const authenticatedOnly = function(to: any, from: any, next: () => void) {
     next();
   } else {
     authManager.reset();
+    // TODO: deauth link followup, store @ localStorage
     router.push({ name: "login" });
   }
 };
@@ -58,7 +59,7 @@ const unAuthenticatedOnly = function(to: any, from: any, next: () => void) {
   if (!authManager.getToken(KEY_ACCESS_TOKEN)) {
     next();
   } else {
-    router.push({ name: "manage" });
+    router.push({ name: "manage:dashboard" });
   }
 };
 
