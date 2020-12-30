@@ -6,31 +6,38 @@
           <v-scroll-y-transition appear>
             <div>
               <v-card
-                elevation="22"
+                elevation="12"
                 :loading="formLoadStatus === STATUS.LOADING"
               >
                 <div class="pa-4">
                   <h1 class="text-h2 mt-12 mb-12 text-center">
                     Sign Up
                   </h1>
-                  <v-alert
-                    :value="formLoadStatus === STATUS.COMPLETE"
-                    type="success"
-                    text
-                    dense
-                    transition="scroll-y-transition"
-                  >
-                    Account successfully created!
-                  </v-alert>
-                  <v-alert
-                    :value="formLoadStatus === STATUS.ERROR"
-                    type="error"
-                    text
-                    dense
-                    transition="scroll-y-transition"
-                  >
-                    Failed creating account!
-                  </v-alert>
+
+                  <v-expand-transition>
+                    <div v-show="formLoadStatus === STATUS.COMPLETE">
+                      <v-alert
+                        type="success"
+                        text
+                        dense
+                        transition="scroll-y-transition"
+                      >
+                        Account successfully created!
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
+                  <v-expand-transition>
+                    <div v-show="formLoadStatus === STATUS.ERROR">
+                      <v-alert
+                        type="error"
+                        text
+                        dense
+                        transition="scroll-y-transition"
+                      >
+                        Failed creating account!
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
                   <v-form
                     v-if="formLoadStatus !== STATUS.COMPLETE"
                     @submit="signup"
@@ -152,7 +159,7 @@
                       "
                     >
                       <div v-if="formLoadStatus === STATUS.LOADING">
-                        creating account...
+                        creating account
                       </div>
                       <div v-else>
                         create account
@@ -163,7 +170,7 @@
               </v-card>
               <p class="text-center mt-4 text-subtitle-1 text--secondary">
                 Already have an account?
-                <router-link to="/login">Sign In</router-link>
+                <router-link to="/login" class="text-link">Sign In</router-link>
               </p>
             </div>
           </v-scroll-y-transition>
@@ -330,12 +337,11 @@ export default Vue.extend({
               })
               .catch(error => {
                 this.apiResponseCode = error.response.data.code;
-                this.formLoadStatus =
-                  !this.apiResponseCode || this.apiResponseCode === "general"
-                    ? STATUS.ERROR
-                    : STATUS.IDLE;
+                this.formLoadStatus = !this.apiResponseCode
+                  ? STATUS.ERROR
+                  : STATUS.IDLE;
               }),
-          3000
+          2000
         );
       }
     }
