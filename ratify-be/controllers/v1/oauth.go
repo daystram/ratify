@@ -39,7 +39,7 @@ func POSTAuthorize(c *gin.Context) {
 		// verify user login
 		var user models.User
 		if user, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
-			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "incorrect username or password"})
+			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "incorrect username or password"})
 			return
 		}
 		// verify request credentials

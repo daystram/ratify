@@ -56,7 +56,7 @@ func POSTRegister(c *gin.Context) {
 		return
 	}
 	if err = handlers.Handler.RegisterUser(user); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Code: "general", Error: "failed registering user"})
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering user"})
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
