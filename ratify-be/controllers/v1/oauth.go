@@ -12,6 +12,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/datatransfers"
 	"github.com/daystram/ratify/ratify-be/handlers"
 	"github.com/daystram/ratify/ratify-be/models"
+	"github.com/daystram/ratify/ratify-be/utils"
 )
 
 // @Summary Request authorization
@@ -50,7 +51,8 @@ func POSTAuthorize(c *gin.Context) {
 		}
 		// generate authorization code
 		var authorizationCode string
-		if authorizationCode, err = handlers.Handler.GenerateAuthorizationCode(application, user.Subject); err != nil {
+		if authorizationCode, err = handlers.Handler.GenerateAuthorizationCode(authRequest, user.Subject); err != nil {
+			fmt.Println(err)
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating authorization_code"})
 			return
 		}
@@ -98,11 +100,13 @@ func POSTToken(c *gin.Context) {
 	switch flow {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		// verify request credentials
-		var subject string
-		if subject, err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
+		var subject, scope string
+		if subject, scope, err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid authorization_code"})
 			return
 		}
+		fmt.Println("scope")
+		fmt.Println(scope)
 		if flow == constants.FlowAuthorizationCode {
 			if tokenRequest.ClientSecret != application.ClientSecret {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid client_secret"})
@@ -116,14 +120,21 @@ func POSTToken(c *gin.Context) {
 			}
 		}
 		// generate codes
-		var accessToken, refreshToken string
-		if accessToken, refreshToken, err = handlers.Handler.GenerateAccessRefreshToken(application, subject, flow == constants.FlowAuthorizationCode); err != nil {
+		var accessToken, refreshToken, idToken string
+		if utils.HasOpenIDScope(scope) {
+			if idToken, err = handlers.Handler.GenerateIDToken(application.ClientID, subject, strings.Split(scope, " ")); err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating tokens"})
+				return
+			}
+		}
+		if accessToken, refreshToken, err = handlers.Handler.GenerateAccessRefreshToken(tokenRequest, subject, flow == constants.FlowAuthorizationCode); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating tokens"})
 			return
 		}
 		c.JSON(http.StatusOK, datatransfers.TokenResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
+			IDToken:      idToken,
 			TokenType:    "Bearer",
 			ExpiresIn:    int(constants.AccessTokenExpiry.Seconds()),
 		})
