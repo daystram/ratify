@@ -13,30 +13,42 @@
         <Logo />
       </h1>
       <v-spacer />
-      <v-menu right nudge-bottom="12px" offset-y>
+      <v-menu
+        right
+        nudge-bottom="12px"
+        offset-y
+        min-width="280px"
+        max-width="280px"
+      >
         <template v-slot:activator="{ on, attrs }">
           <v-avatar
-            color="grey darken-1 shrink"
+            color="primaryDim"
             size="32"
             v-on="on"
             v-bind="attrs"
             style="user-select: none"
           >
-            DA
+            {{ user.given_name[0] + user.family_name[0] }}
           </v-avatar>
         </template>
-        <v-list>
+        <v-list rounded>
           <v-list-item-group color="primary">
             <v-list-item two-line disabled>
-              <v-list-item-avatar>
-                <img src="https://randomuser.me/api/portraits/men/83.jpg" />
+              <v-list-item-avatar color="primaryDim" size="48">
+                <div class="text-center flex-fill text--primary">
+                  {{ user.given_name[0] + user.family_name[0] }}
+                </div>
               </v-list-item-avatar>
               <v-list-item-content>
-                <v-list-item-title>Danny August Ramaputra</v-list-item-title>
+                <v-list-item-title class="text--primary">
+                  {{ user.given_name + " " + user.family_name }}
+                </v-list-item-title>
+                <v-list-item-subtitle>
+                  {{ user.preferred_username }}
+                </v-list-item-subtitle>
               </v-list-item-content>
             </v-list-item>
-            <v-divider />
-            <v-list-item :to="{ name: 'manage:profile' }">
+            <v-list-item :to="{ name: 'manage:profile' }" dense>
               <v-list-item-icon>
                 <v-icon>mdi-account</v-icon>
               </v-list-item-icon>
@@ -44,7 +56,7 @@
                 <v-list-item-title>Account</v-list-item-title>
               </v-list-item-content>
             </v-list-item>
-            <v-list-item @click="$router.push({ name: 'logout' })">
+            <v-list-item :to="{ name: 'logout' }" dense>
               <v-list-item-icon>
                 <v-icon>mdi-key</v-icon>
               </v-list-item-icon>
@@ -130,12 +142,17 @@
 <script>
 import Vue from "vue";
 import Logo from "@/components/Logo.vue";
+import { user } from "@/auth";
 
 export default Vue.extend({
   components: { Logo },
 
   data: () => ({
     drawer: null
-  })
+  }),
+
+  computed: {
+    user
+  }
 });
 </script>

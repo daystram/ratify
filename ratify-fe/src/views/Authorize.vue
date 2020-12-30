@@ -19,14 +19,14 @@
                 :loading="formLoadStatus === STATUS.LOADING"
               >
                 <div class="pa-4">
-                  <h1 class="text-h2 mt-12 mb-12 text-center">
+                  <div class="text-h2 mt-12 mb-12 text-center">
                     <div
                       class="text-subtitle-1 text-center text--disabled font-weight-thin mb-2"
                     >
                       Sign in to
                     </div>
                     {{ application.name }}
-                  </h1>
+                  </div>
                   <v-expand-transition>
                     <div v-show="formLoadStatus === STATUS.COMPLETE">
                       <v-alert
@@ -162,14 +162,13 @@ export default Vue.extend({
   computed: {
     authRequest() {
       return {
-        clientId: (this.$route.query.client_id || "").toString(),
-        responseType: (this.$route.query.response_type || "").toString(),
-        redirectUri: (this.$route.query.redirect_uri || "").toString(),
-        state: (this.$route.query.state || "").toString(),
-        codeChallenge: (this.$route.query.code_challenge || "").toString(),
-        codeChallengeMethod: (
-          this.$route.query.code_challenge_method || ""
-        ).toString()
+        clientId: this.$route.query.client_id?.toString(),
+        responseType: this.$route.query.response_type?.toString(),
+        redirectUri: this.$route.query.redirect_uri?.toString(),
+        scope: this.$route.query.scope?.toString(),
+        state: this.$route.query.state?.toString(),
+        codeChallenge: this.$route.query.code_challenge?.toString(),
+        codeChallengeMethod: this.$route.query.code_challenge_method?.toString()
       };
     },
     usernameErrors() {
@@ -212,17 +211,7 @@ export default Vue.extend({
       !this.authRequest.redirectUri
     ) {
       this.pageLoadStatus = STATUS.BAD_REQUEST;
-      let count = 3;
-      this.badRequestCountdown = `${count} second${count === 1 ? "" : "s"}`;
-      this.redirectCounter = setInterval(() => {
-        if (count) {
-          this.badRequestCountdown = `${count} second${count === 1 ? "" : "s"}`;
-        } else {
-          clearInterval(this.redirectCounter);
-          this.$router.replace({ name: "home" });
-        }
-        count--;
-      }, 1000);
+      this.startRedirectCounter();
     }
     api.application
       .getOne(this.authRequest.clientId)
@@ -232,6 +221,7 @@ export default Vue.extend({
       })
       .catch(() => {
         this.pageLoadStatus = STATUS.BAD_REQUEST;
+        this.startRedirectCounter();
       });
   },
 
@@ -249,6 +239,7 @@ export default Vue.extend({
                 client_id: this.authRequest.clientId,
                 response_type: this.authRequest.responseType,
                 redirect_uri: this.authRequest.redirectUri,
+                scope: this.authRequest.scope,
                 state: this.authRequest.state,
                 code_challenge: this.authRequest.codeChallenge,
                 code_challenge_method: this.authRequest.codeChallengeMethod,
@@ -283,6 +274,19 @@ export default Vue.extend({
           2000
         );
       }
+    },
+    startRedirectCounter() {
+      let count = 3;
+      this.badRequestCountdown = `${count} second${count === 1 ? "" : "s"}`;
+      this.redirectCounter = setInterval(() => {
+        if (count) {
+          this.badRequestCountdown = `${count} second${count === 1 ? "" : "s"}`;
+        } else {
+          clearInterval(this.redirectCounter);
+          this.$router.replace({ name: "home" });
+        }
+        count--;
+      }, 1000);
     }
   },
 
