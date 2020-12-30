@@ -194,13 +194,13 @@ export default Vue.extend({
       required,
       alphaNum,
       correct() {
-        return this.apiResponseCode !== "incorrect_credentials";
+        return this.$data.apiResponseCode !== "incorrect_credentials";
       }
     },
     password: {
       required,
       correct() {
-        return this.apiResponseCode !== "incorrect_credentials";
+        return this.$data.apiResponseCode !== "incorrect_credentials";
       }
     }
   },
