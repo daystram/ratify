@@ -2,14 +2,10 @@ package utils
 
 import (
 	"crypto/rand"
-	"time"
 
 	"github.com/dgrijalva/jwt-go"
 
 	"github.com/daystram/ratify/ratify-be/config"
-	"github.com/daystram/ratify/ratify-be/constants"
-	"github.com/daystram/ratify/ratify-be/datatransfers"
-	"github.com/daystram/ratify/ratify-be/models"
 )
 
 const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
@@ -23,14 +19,7 @@ func GenerateRandomString(length int) string {
 	return string(byteString)
 }
 
-func GenerateJWT(user models.User) (string, error) {
-	now := time.Now()
-	expiry := time.Now().Add(constants.AuthenticationTimeout)
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, datatransfers.JWTClaims{
-		Subject:     user.Subject,
-		IsSuperuser: user.Superuser,
-		ExpiresAt:   expiry.Unix(),
-		IssuedAt:    now.Unix(),
-	})
+func GenerateJWT(claims jwt.Claims) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(config.AppConfig.JWTSecret))
 }
