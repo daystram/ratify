@@ -6,31 +6,57 @@
           <v-progress-circular indeterminate></v-progress-circular>
         </div>
         <div v-else-if="pageLoadStatus === STATUS.BAD_REQUEST">
-          <h1 class="text-h2 mb-8">400 Bad Request</h1>
-          <p class="text-subtitle-1 text--secondary">
-            Redirecting in {{ badRequestCountdown }}...
+          <h1 class="text-h2 mb-8 text-center">400 Bad Request</h1>
+          <p class="text-subtitle-1 text--secondary text-center">
+            Redirecting in {{ badRequestCountdown }}
           </p>
         </div>
         <div v-else class="login-form">
           <v-scroll-y-transition appear>
             <div>
               <v-card
-                elevation="22"
+                elevation="12"
                 :loading="formLoadStatus === STATUS.LOADING"
               >
                 <div class="pa-4">
                   <h1 class="text-h2 mt-12 mb-12 text-center">
+                    <div
+                      class="text-subtitle-1 text-center text--disabled font-weight-thin mb-2"
+                    >
+                      Sign in to
+                    </div>
                     {{ application.name }}
                   </h1>
-                  <v-alert
-                    :value="formLoadStatus === STATUS.COMPLETE"
-                    type="success"
-                    text
-                    dense
-                    transition="scroll-y-transition"
-                  >
-                    Successfully signed in!
-                  </v-alert>
+                  <v-expand-transition>
+                    <div v-show="formLoadStatus === STATUS.COMPLETE">
+                      <v-alert
+                        type="success"
+                        text
+                        dense
+                        transition="scroll-y-transition"
+                      >
+                        Successfully signed in!
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
+                  <v-expand-transition>
+                    <div v-show="!$v.username.correct">
+                      <v-alert type="error" text dense
+                        >Incorrect username or password!
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
+                  <v-expand-transition>
+                    <div v-show="formLoadStatus === STATUS.ERROR">
+                      <v-alert
+                        type="error"
+                        text
+                        dense
+                        transition="scroll-y-transition"
+                        >Failed signing in!
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
                   <v-form @submit="login">
                     <v-text-field
                       v-model="username"
@@ -41,7 +67,12 @@
                         formLoadStatus === STATUS.LOADING ||
                           formLoadStatus === STATUS.COMPLETE
                       "
-                      @input="$v.username.$touch()"
+                      @input="
+                        () => {
+                          $v.username.$touch();
+                          this.apiResponseCode = '';
+                        }
+                      "
                       @blur="$v.username.$touch()"
                       :prepend-icon="'mdi-identifier'"
                     ></v-text-field>
@@ -55,7 +86,12 @@
                         formLoadStatus === STATUS.LOADING ||
                           formLoadStatus === STATUS.COMPLETE
                       "
-                      @input="$v.password.$touch()"
+                      @input="
+                        () => {
+                          $v.password.$touch();
+                          this.apiResponseCode = '';
+                        }
+                      "
                       @blur="$v.password.$touch()"
                       :prepend-icon="'mdi-lock'"
                     ></v-text-field>
@@ -70,10 +106,10 @@
                       "
                     >
                       <div v-if="formLoadStatus === STATUS.LOADING">
-                        signing in...
+                        signing in
                       </div>
                       <div v-else-if="formLoadStatus === STATUS.COMPLETE">
-                        redirecting in {{ successCountdown }}...
+                        redirecting in {{ successCountdown }}
                       </div>
                       <div v-else>
                         sign in
@@ -84,7 +120,9 @@
               </v-card>
               <p class="text-center mt-4 text-subtitle-1 text--secondary">
                 Don't have an account?
-                <router-link to="/signup">Sign Up</router-link>
+                <router-link to="/signup" class="text-link">
+                  Sign Up
+                </router-link>
               </p>
             </div>
           </v-scroll-y-transition>
@@ -116,19 +154,22 @@ export default Vue.extend({
       password: "",
       badRequestCountdown: "",
       successCountdown: "",
-      counter: 0
+      redirectCounter: 0,
+      apiResponseCode: ""
     };
   },
 
   computed: {
     authRequest() {
       return {
-        clientId: this.$route.query.client_id.toString(),
-        responseType: this.$route.query.response_type.toString(),
-        redirectUri: this.$route.query.redirect_uri.toString(),
-        state: this.$route.query.state.toString(),
-        codeChallenge: this.$route.query.code_challenge.toString(),
-        codeChallengeMethod: this.$route.query.code_challenge_method.toString()
+        clientId: (this.$route.query.client_id || "").toString(),
+        responseType: (this.$route.query.response_type || "").toString(),
+        redirectUri: (this.$route.query.redirect_uri || "").toString(),
+        state: (this.$route.query.state || "").toString(),
+        codeChallenge: (this.$route.query.code_challenge || "").toString(),
+        codeChallengeMethod: (
+          this.$route.query.code_challenge_method || ""
+        ).toString()
       };
     },
     usernameErrors() {
@@ -136,19 +177,32 @@ export default Vue.extend({
       if (!this.$v.username.$dirty) return errors;
       !this.$v.username.alphaNum && errors.push("Invalid username");
       !this.$v.username.required && errors.push("Username required");
+      !this.$v.username.correct && errors.push("");
       return errors;
     },
     passwordErrors() {
       const errors: string[] = [];
       if (!this.$v.password.$dirty) return errors;
       !this.$v.password.required && errors.push("Password required");
+      !this.$v.password.correct && errors.push("");
       return errors;
     }
   },
 
   validations: {
-    username: { required, alphaNum },
-    password: { required }
+    username: {
+      required,
+      alphaNum,
+      correct() {
+        return this.apiResponseCode !== "incorrect_credentials";
+      }
+    },
+    password: {
+      required,
+      correct() {
+        return this.apiResponseCode !== "incorrect_credentials";
+      }
+    }
   },
 
   created: function() {
@@ -160,12 +214,12 @@ export default Vue.extend({
       this.pageLoadStatus = STATUS.BAD_REQUEST;
       let count = 3;
       this.badRequestCountdown = `${count} second${count === 1 ? "" : "s"}`;
-      this.counter = setInterval(() => {
+      this.redirectCounter = setInterval(() => {
         if (count) {
           this.badRequestCountdown = `${count} second${count === 1 ? "" : "s"}`;
         } else {
-          this.$router.push({ name: "home" });
-          clearInterval(this.counter);
+          clearInterval(this.redirectCounter);
+          this.$router.replace({ name: "home" });
         }
         count--;
       }, 1000);
@@ -207,31 +261,33 @@ export default Vue.extend({
                 this.successCountdown = `${count} second${
                   count === 1 ? "" : "s"
                 }`;
-                this.counter = setInterval(() => {
+                this.redirectCounter = setInterval(() => {
                   if (count) {
                     this.successCountdown = `${count} second${
                       count === 1 ? "" : "s"
                     }`;
                   } else {
-                    clearInterval(this.counter);
-                    window.location.href = response.data.data;
+                    clearInterval(this.redirectCounter);
+                    window.location.replace(response.data.data);
                   }
                   count--;
                 }, 1000);
                 this.formLoadStatus = STATUS.COMPLETE;
               })
               .catch(error => {
-                console.error(error.response.data.error);
-                this.formLoadStatus = STATUS.IDLE;
+                this.apiResponseCode = error.response.data.code;
+                this.formLoadStatus = !this.apiResponseCode
+                  ? STATUS.ERROR
+                  : STATUS.IDLE;
               }),
-          3000
+          2000
         );
       }
     }
   },
 
   beforeDestroy() {
-    clearInterval(this.counter);
+    clearInterval(this.redirectCounter);
   }
 });
 </script>
