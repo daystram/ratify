@@ -57,7 +57,7 @@
                           @input="$v.firstname.$touch()"
                           @blur="$v.firstname.$touch()"
                           :prepend-icon="'mdi-account'"
-                        ></v-text-field>
+                        />
                       </v-col>
                       <v-col cols="12" sm="6">
                         <v-text-field
@@ -72,7 +72,10 @@
                           "
                           @input="$v.lastname.$touch()"
                           @blur="$v.lastname.$touch()"
-                        ></v-text-field>
+                          :prepend-icon="
+                            $vuetify.breakpoint.smAndUp ? '' : 'mdi-blank'
+                          "
+                        />
                       </v-col>
                     </v-row>
                     <v-text-field
@@ -94,7 +97,7 @@
                       "
                       @blur="$v.username.$touch()"
                       :prepend-icon="'mdi-identifier'"
-                    ></v-text-field>
+                    />
                     <v-text-field
                       v-model="email"
                       :error-messages="emailErrors"
@@ -113,7 +116,7 @@
                       "
                       @blur="$v.email.$touch()"
                       :prepend-icon="'mdi-email'"
-                    ></v-text-field>
+                    />
                     <v-row dense>
                       <v-col cols="12" sm="6">
                         <v-text-field
@@ -130,7 +133,7 @@
                           :prepend-icon="'mdi-lock'"
                           @input="$v.password.$touch()"
                           @blur="$v.password.$touch()"
-                        ></v-text-field>
+                        />
                       </v-col>
                       <v-col cols="12" sm="6">
                         <v-text-field
@@ -145,7 +148,7 @@
                           "
                           @input="$v.confirmPassword.$touch()"
                           @blur="$v.confirmPassword.$touch()"
-                        ></v-text-field>
+                        />
                       </v-col>
                     </v-row>
                     <v-btn
@@ -215,7 +218,6 @@ export default Vue.extend({
       const errors: string[] = [];
       if (!this.$v.firstname.$dirty) return errors;
       !this.$v.firstname.required && errors.push("Name required");
-      !this.$v.firstname.alphaNum && errors.push("Invalid name");
       !this.$v.firstname.maxLength && errors.push("Name too long");
       return errors;
     },
@@ -223,7 +225,6 @@ export default Vue.extend({
       const errors: string[] = [];
       if (!this.$v.lastname.$dirty) return errors;
       !this.$v.lastname.required && errors.push("Name required");
-      !this.$v.lastname.alphaNum && errors.push("Invalid name");
       !this.$v.lastname.maxLength && errors.push("Name too long");
       return errors;
     },
@@ -269,8 +270,8 @@ export default Vue.extend({
   },
 
   validations: {
-    firstname: { required, alphaNum, maxLength: maxLength(20) },
-    lastname: { required, alphaNum, maxLength: maxLength(12) },
+    firstname: { required, maxLength: maxLength(20) },
+    lastname: { required, maxLength: maxLength(12) },
     username: {
       required,
       alphaNum,
@@ -327,7 +328,7 @@ export default Vue.extend({
                 /* eslint-disable @typescript-eslint/camelcase */
                 given_name: this.firstname,
                 family_name: this.lastname,
-                username: this.username,
+                preferred_username: this.username,
                 email: this.email,
                 password: this.password
                 /* eslint-enable @typescript-eslint/camelcase */

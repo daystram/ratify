@@ -53,23 +53,15 @@
 <script lang="ts">
 import Vue from "vue";
 import Logo from "@/components/Logo.vue";
-import { isAuthenticated } from "@/auth";
+import { authManager } from "@/auth";
 
 export default Vue.extend({
   components: { Logo },
 
   data: function() {
     return {
-      isAuthenticated: false
+      isAuthenticated: authManager.isAuthenticated()
     };
-  },
-
-  updated: function() {
-    this.isAuthenticated = isAuthenticated();
-  },
-
-  mounted: function() {
-    this.isAuthenticated = isAuthenticated();
   }
 });
 </script>

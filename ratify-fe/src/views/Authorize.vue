@@ -37,6 +37,11 @@
                       >
                         Successfully signed in!
                       </v-alert>
+                      <div
+                        class="text-subtitle-1 text--disabled text-center mt-4 mb-1"
+                      >
+                        Redirecting in {{ successCountdown }}
+                      </div>
                     </div>
                   </v-expand-transition>
                   <v-expand-transition>
@@ -57,65 +62,66 @@
                       </v-alert>
                     </div>
                   </v-expand-transition>
-                  <v-form @submit="login">
-                    <v-text-field
-                      v-model="username"
-                      :error-messages="usernameErrors"
-                      label="Username"
-                      required
-                      :disabled="
-                        formLoadStatus === STATUS.LOADING ||
-                          formLoadStatus === STATUS.COMPLETE
-                      "
-                      @input="
-                        () => {
-                          $v.username.$touch();
-                          this.apiResponseCode = '';
-                        }
-                      "
-                      @blur="$v.username.$touch()"
-                      :prepend-icon="'mdi-identifier'"
-                    ></v-text-field>
-                    <v-text-field
-                      v-model="password"
-                      :error-messages="passwordErrors"
-                      :type="'password'"
-                      label="Password"
-                      required
-                      :disabled="
-                        formLoadStatus === STATUS.LOADING ||
-                          formLoadStatus === STATUS.COMPLETE
-                      "
-                      @input="
-                        () => {
-                          $v.password.$touch();
-                          this.apiResponseCode = '';
-                        }
-                      "
-                      @blur="$v.password.$touch()"
-                      :prepend-icon="'mdi-lock'"
-                    ></v-text-field>
-                    <v-btn
-                      type="submit"
-                      block
-                      rounded
-                      color="primaryDim"
-                      :disabled="
-                        formLoadStatus === STATUS.LOADING ||
-                          formLoadStatus === STATUS.COMPLETE
-                      "
-                    >
-                      <div v-if="formLoadStatus === STATUS.LOADING">
-                        signing in
-                      </div>
-                      <div v-else-if="formLoadStatus === STATUS.COMPLETE">
-                        redirecting in {{ successCountdown }}
-                      </div>
-                      <div v-else>
-                        sign in
-                      </div>
-                    </v-btn>
-                  </v-form>
+                  <v-expand-transition>
+                    <div v-show="formLoadStatus !== STATUS.COMPLETE">
+                      <v-form @submit="login">
+                        <v-text-field
+                          v-model="username"
+                          :error-messages="usernameErrors"
+                          label="Username"
+                          required
+                          :disabled="
+                            formLoadStatus === STATUS.LOADING ||
+                              formLoadStatus === STATUS.COMPLETE
+                          "
+                          @input="
+                            () => {
+                              $v.username.$touch();
+                              this.apiResponseCode = '';
+                            }
+                          "
+                          @blur="$v.username.$touch()"
+                          :prepend-icon="'mdi-identifier'"
+                        ></v-text-field>
+                        <v-text-field
+                          v-model="password"
+                          :error-messages="passwordErrors"
+                          :type="'password'"
+                          label="Password"
+                          required
+                          :disabled="
+                            formLoadStatus === STATUS.LOADING ||
+                              formLoadStatus === STATUS.COMPLETE
+                          "
+                          @input="
+                            () => {
+                              $v.password.$touch();
+                              this.apiResponseCode = '';
+                            }
+                          "
+                          @blur="$v.password.$touch()"
+                          :prepend-icon="'mdi-lock'"
+                        ></v-text-field>
+                        <v-btn
+                          type="submit"
+                          block
+                          rounded
+                          color="primaryDim"
+                          :disabled="
+                            formLoadStatus === STATUS.LOADING ||
+                              formLoadStatus === STATUS.COMPLETE
+                          "
+                        >
+                          <div v-if="formLoadStatus === STATUS.LOADING">
+                            signing in
+                          </div>
+                          <div v-else>
+                            sign in
+                          </div>
+                        </v-btn>
+                      </v-form>
+                    </div>
+                  </v-expand-transition>
                 </div>
               </v-card>
               <p class="text-center mt-4 text-subtitle-1 text--secondary">
@@ -243,7 +249,7 @@ export default Vue.extend({
                 state: this.authRequest.state,
                 code_challenge: this.authRequest.codeChallenge,
                 code_challenge_method: this.authRequest.codeChallengeMethod,
-                username: this.username,
+                preferred_username: this.username,
                 password: this.password
                 /* eslint-enable @typescript-eslint/camelcase */
               })
