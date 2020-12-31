@@ -2,21 +2,21 @@ import axios, { AxiosInstance, AxiosResponse } from "axios";
 import qs from "qs";
 
 const oauthClient: AxiosInstance = axios.create({
-  baseURL: "oauth/"
+  baseURL: "/oauth/"
 });
 
 export default {
-  authorize: function(authRequest: unknown): Promise<AxiosResponse> {
+  authorize: function(authRequest: object): Promise<AxiosResponse> {
     return oauthClient.post(`authorize`, authRequest);
   },
-  token: function(tokenRequest: unknown): Promise<AxiosResponse> {
+  token: function(tokenRequest: object): Promise<AxiosResponse> {
     return oauthClient.post(`token`, qs.stringify(tokenRequest), {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded"
       }
     });
   },
-  revoke: function(revokeRequest: unknown): Promise<AxiosResponse> {
+  revoke: function(revokeRequest: object): Promise<AxiosResponse> {
     return oauthClient.post(`revoke`, revokeRequest);
   }
 };
