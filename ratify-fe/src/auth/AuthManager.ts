@@ -17,6 +17,14 @@ interface AuthManagerOptions {
   issuer: string;
 }
 
+interface User {
+  subject: string;
+  given_name: string;
+  family_name: string;
+  preferred_username: string;
+  is_superuser: boolean;
+}
+
 export class AuthManager {
   private options: AuthManagerOptions;
   private storageManager: Storage;
@@ -26,13 +34,17 @@ export class AuthManager {
     this.storageManager = localStorage;
   }
 
+  isAuthenticated(): boolean {
+    return this.getToken(ACCESS_TOKEN) !== "";
+  }
+
   getToken(tokenKey: string): string {
     return (
       JSON.parse(this.storageManager.getItem(KEY_TOKEN) || "{}")[tokenKey] || ""
     );
   }
 
-  getUser() {
+  getUser(): User {
     return jwtDecode(this.getToken(ID_TOKEN));
   }
 

@@ -31,22 +31,13 @@ const callback = function() {
   }
   authManager
     .redeemToken(code)
-    .then(response => {
+    .then(() => {
       router.replace({ name: "manage:dashboard" });
-      console.log(response.data);
     })
     .catch(error => {
       console.error(error.response.data);
       router.replace({ name: "home" });
     });
-};
-
-const isAuthenticated = function(): boolean {
-  return authManager.getToken(ACCESS_TOKEN) !== "";
-};
-
-const user = function() {
-  return authManager.getUser();
 };
 
 const authenticatedOnly = function(to: any, from: any, next: () => void) {
@@ -68,8 +59,7 @@ const unAuthenticatedOnly = function(to: any, from: any, next: () => void) {
 };
 
 export {
-  isAuthenticated,
-  user,
+  authManager,
   login,
   logout,
   callback,
