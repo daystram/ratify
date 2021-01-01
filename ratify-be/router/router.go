@@ -34,7 +34,7 @@ func InitializeRouter() (router *gin.Engine) {
 		}
 		application := apiv1.Group("/application")
 		{
-			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETOwnedApplications)
+			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETApplications)
 			application.GET("/:client_id", v1.GETOneApplicationDetail)
 			application.POST("/", utils.AuthOnly, utils.SuperuserOnly, v1.POSTApplication)
 			application.PUT("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplication)

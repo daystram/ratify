@@ -52,7 +52,6 @@ func POSTAuthorize(c *gin.Context) {
 		// generate authorization code
 		var authorizationCode string
 		if authorizationCode, err = handlers.Handler.GenerateAuthorizationCode(authRequest, user.Subject); err != nil {
-			fmt.Println(err)
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating authorization_code"})
 			return
 		}
@@ -105,8 +104,6 @@ func POSTToken(c *gin.Context) {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid authorization_code"})
 			return
 		}
-		fmt.Println("scope")
-		fmt.Println(scope)
 		if flow == constants.FlowAuthorizationCode {
 			if tokenRequest.ClientSecret != application.ClientSecret {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid client_secret"})

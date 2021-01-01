@@ -50,16 +50,16 @@ func GETOneApplicationDetail(c *gin.Context) {
 	return
 }
 
-// @Summary Get owned applications
+// @Summary Get all applications
 // @Tags application
 // @Security BearerAuth
 // @Success 200 "OK"
 // @Router /api/v1/application [GET]
-func GETOwnedApplications(c *gin.Context) {
+func GETApplications(c *gin.Context) {
 	var err error
 	// get all owned applications
 	var applications []models.Application
-	if applications, err = handlers.Handler.RetrieveOwnedApplications(c.GetString(constants.UserSubjectKey)); err != nil {
+	if applications, err = handlers.Handler.RetrieveAllApplications(); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "cannot retrieve applications"})
 		return
 	}
