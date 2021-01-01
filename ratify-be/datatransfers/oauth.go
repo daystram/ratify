@@ -82,4 +82,5 @@ type TokenIntrospection struct {
 	Active   bool   `json:"active"`
 	ClientID string `json:"client_id,omitempty"`
 	Subject  string `json:"sub,omitempty"`
+	Scope    string `json:"scope,omitempty"`
 }
