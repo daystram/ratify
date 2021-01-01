@@ -12,6 +12,9 @@ import (
 )
 
 func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error) {
+	if application.Description == "" {
+		application.Description = "New application"
+	}
 	if clientID, err = m.db.applicationOrmer.InsertApplication(models.Application{
 		OwnerSubject: ownerSubject,
 		ClientID:     utils.GenerateRandomString(constants.ClientIDLength),
