@@ -44,6 +44,13 @@ func (m *module) RetrieveOwnedApplications(ownerSubject string) (applications []
 	return
 }
 
+func (m *module) RetrieveAllApplications() (applications []models.Application, err error) {
+	if applications, err = m.db.applicationOrmer.GetAll(); err != nil {
+		return []models.Application{}, errors.New("cannot retrieve applications")
+	}
+	return
+}
+
 func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (err error) {
 	if err = m.db.applicationOrmer.UpdateApplication(models.Application{
 		ClientID:    application.ClientID,
