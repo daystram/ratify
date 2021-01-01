@@ -183,7 +183,7 @@
     </v-row>
     <v-fade-transition>
       <v-overlay
-        v-show="pageLoadStatus === STATUS.PRE_LOADING"
+        v-show="pageLoadStatus !== STATUS.COMPLETE"
         opacity="0"
         absolute
       >

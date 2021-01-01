@@ -29,7 +29,7 @@
             elevation="6"
             rounded
             x-large
-            color="primaryDim"
+            color="primary darken-2"
             class="ma-2"
             v-text="'Sign Up'"
           />
@@ -40,7 +40,7 @@
             elevation="6"
             rounded
             x-large
-            color="primaryDim"
+            color="primary darken-2"
             class="ma-2"
             v-text="'Manage'"
           />
