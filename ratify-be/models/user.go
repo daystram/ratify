@@ -58,6 +58,6 @@ func (o *userOrm) InsertUser(user User) (subject string, err error) {
 
 func (o *userOrm) UpdateUser(user User) (err error) {
 	// By default, only non-empty fields are updated. See https://gorm.io/docs/update.html#Updates-multiple-columns
-	result := o.db.Model(&User{}).Model(&user).Updates(&user)
+	result := o.db.Model(&User{}).Where("sub = ?", user.Subject).Updates(&user)
 	return result.Error
 }
