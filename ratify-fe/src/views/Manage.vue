@@ -1,5 +1,5 @@
 <template>
-  <div class="manage">
+  <div class="manage fill-height">
     <v-app-bar app clipped-left>
       <v-app-bar-nav-icon
         class="hidden-lg-and-up"
@@ -58,10 +58,12 @@
             </v-list-item>
             <v-list-item :to="{ name: 'logout' }" dense>
               <v-list-item-icon>
-                <v-icon>mdi-key</v-icon>
+                <v-icon color="error">mdi-key</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
-                <v-list-item-title>Logout</v-list-item-title>
+                <v-list-item-title class="error--text">
+                  Logout
+                </v-list-item-title>
               </v-list-item-content>
             </v-list-item>
           </v-list-item-group>
@@ -78,6 +80,7 @@
             <v-list-item-title v-text="'Dashboard'" />
           </v-list-item>
           <v-list-group
+            v-if="user.is_superuser"
             :value="true"
             no-action
             prepend-icon="mdi-account-supervisor-circle"
@@ -127,7 +130,7 @@
         </v-list-item-group>
       </v-list>
     </v-navigation-drawer>
-    <v-main>
+    <v-main class="fill-height">
       <v-container
         class="mx-auto pa-4 pa-sm-6 pa-md-8"
         style="max-width: 960px"
@@ -142,17 +145,14 @@
 <script>
 import Vue from "vue";
 import Logo from "@/components/Logo.vue";
-import { user } from "@/auth";
+import { authManager } from "@/auth";
 
 export default Vue.extend({
   components: { Logo },
 
   data: () => ({
-    drawer: null
-  }),
-
-  computed: {
-    user
-  }
+    drawer: null,
+    user: authManager.getUser()
+  })
 });
 </script>

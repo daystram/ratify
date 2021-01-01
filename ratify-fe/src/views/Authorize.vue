@@ -1,17 +1,18 @@
 <template>
-  <v-container fill-height fluid class="gradient-bg">
+  <v-container fluid class="fill-height gradient-bg">
     <v-col>
       <v-row align="center" justify="center">
-        <div v-if="pageLoadStatus === STATUS.PRE_LOADING">
-          <v-progress-circular indeterminate></v-progress-circular>
+        <div v-if="pageLoadStatus === STATUS.BAD_REQUEST">
+          <v-fade-transition>
+            <div>
+              <h1 class="text-h2 mb-8 text-center">400 Bad Request</h1>
+              <p class="text-subtitle-1 text--secondary text-center">
+                Redirecting in {{ badRequestCountdown }}
+              </p>
+            </div>
+          </v-fade-transition>
         </div>
-        <div v-else-if="pageLoadStatus === STATUS.BAD_REQUEST">
-          <h1 class="text-h2 mb-8 text-center">400 Bad Request</h1>
-          <p class="text-subtitle-1 text--secondary text-center">
-            Redirecting in {{ badRequestCountdown }}
-          </p>
-        </div>
-        <div v-else class="login-form">
+        <div v-else-if="pageLoadStatus === STATUS.COMPLETE" class="login-form">
           <v-scroll-y-transition appear>
             <div>
               <v-card
@@ -135,6 +136,15 @@
         </div>
       </v-row>
     </v-col>
+    <v-fade-transition>
+      <v-overlay
+        v-show="pageLoadStatus === STATUS.PRE_LOADING"
+        opacity="0"
+        absolute
+      >
+        <v-progress-circular indeterminate size="64"></v-progress-circular>
+      </v-overlay>
+    </v-fade-transition>
   </v-container>
 </template>
 

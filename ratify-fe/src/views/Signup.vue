@@ -1,5 +1,5 @@
 <template>
-  <v-container fill-height fluid class="gradient-bg">
+  <v-container fluid class="fill-height gradient-bg">
     <v-col>
       <v-row align="center" justify="center">
         <div class="login-form">
