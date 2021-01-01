@@ -30,8 +30,10 @@ func (m *module) RetrieveUserByEmail(email string) (user models.User, err error)
 
 func (m *module) UpdateUser(id string, user datatransfers.UserUpdate) (err error) {
 	if err = m.db.userOrmer.UpdateUser(models.User{
-		Subject: id,
-		Email:   user.Email,
+		Subject:    id,
+		GivenName:  user.GivenName,
+		FamilyName: user.FamilyName,
+		Email:      user.Email,
 	}); err != nil {
 		return errors.New("cannot update user")
 	}
