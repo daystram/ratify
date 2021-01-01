@@ -6,38 +6,35 @@ const apiClient: AxiosInstance = axios.create({
   baseURL: "/api/v1/"
 });
 
+const withAuth = {
+  headers: {
+    Authorization: `Bearer ${authManager.getToken(ACCESS_TOKEN)}`
+  }
+};
+
 export default {
   application: {
     getOne: function(clientId: string): Promise<AxiosResponse> {
       return apiClient.get(`application/${clientId}`);
     },
     getAll: function(): Promise<AxiosResponse> {
-      return apiClient.get(`application`, {
-        headers: {
-          Authorization: `Bearer ${authManager.getToken(ACCESS_TOKEN)}`
-        }
-      });
+      return apiClient.get(`application`, withAuth);
+    },
+    register: function(application: object): Promise<AxiosResponse> {
+      return apiClient.post(`application`, application, withAuth);
     }
   },
   form: {
     checkUnique: function(uniqueRequest: object): Promise<AxiosResponse> {
-      return apiClient.post("form/unique", uniqueRequest);
+      return apiClient.post(`form/unique`, uniqueRequest);
     }
   },
   user: {
     detail: function(subject?: string): Promise<AxiosResponse> {
-      return apiClient.get(`user/${subject || ""}`, {
-        headers: {
-          Authorization: `Bearer ${authManager.getToken(ACCESS_TOKEN)}`
-        }
-      });
+      return apiClient.get(`user/${subject || ""}`, withAuth);
     },
     update: function(user: object): Promise<AxiosResponse> {
-      return apiClient.put(`user`, user, {
-        headers: {
-          Authorization: `Bearer ${authManager.getToken(ACCESS_TOKEN)}`
-        }
-      });
+      return apiClient.put(`user`, user, withAuth);
     },
     signup: function(userSignup: object): Promise<AxiosResponse> {
       return apiClient.post("user", userSignup);
