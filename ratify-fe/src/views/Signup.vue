@@ -9,7 +9,7 @@
                 elevation="12"
                 :loading="formLoadStatus === STATUS.LOADING"
               >
-                <div class="pa-4">
+                <div class="pa-6">
                   <h1 class="text-h2 mt-12 mb-12 text-center">
                     Sign Up
                   </h1>
@@ -160,6 +160,7 @@
                         formLoadStatus === STATUS.LOADING ||
                           formLoadStatus === STATUS.COMPLETE
                       "
+                      class="mt-2"
                     >
                       <div v-if="formLoadStatus === STATUS.LOADING">
                         creating account

@@ -63,7 +63,7 @@
               </v-row>
             </v-card-title>
             <v-divider inset />
-            <div class="pa-4">
+            <div class="v-card__body">
               <v-expand-transition>
                 <div v-show="user.formLoadStatus === STATUS.ERROR">
                   <v-alert
@@ -343,7 +343,7 @@ export default Vue.extend({
               .then(response => {
                 console.log(response.data);
                 this.user.editing = false;
-                this.user.formLoadStatus = STATUS.IDLE;
+                this.user.formLoadStatus = STATUS.SUCCESS;
               })
               .catch(error => {
                 console.error(error.response.data);

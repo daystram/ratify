@@ -19,7 +19,7 @@
                 elevation="12"
                 :loading="formLoadStatus === STATUS.LOADING"
               >
-                <div class="pa-4">
+                <div class="pa-6">
                   <div class="text-h2 mt-12 mb-12 text-center">
                     <div
                       class="text-subtitle-1 text-center text--disabled font-weight-thin mb-2"
@@ -112,6 +112,7 @@
                             formLoadStatus === STATUS.LOADING ||
                               formLoadStatus === STATUS.COMPLETE
                           "
+                          class="mt-2"
                         >
                           <div v-if="formLoadStatus === STATUS.LOADING">
                             signing in
