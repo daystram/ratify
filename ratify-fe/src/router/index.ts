@@ -1,6 +1,15 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
-import { Authorize, Home, Manage, Profile, Signup, User } from "@/views";
+import {
+  Application,
+  Authorize,
+  Home,
+  Manage,
+  Placeholder,
+  Profile,
+  Signup,
+  User
+} from "@/views";
 import {
   authenticatedOnly,
   callback,
@@ -8,6 +17,7 @@ import {
   logout,
   unAuthenticatedOnly
 } from "@/auth";
+import Dashboard from "@/views/Dashboard.vue";
 
 Vue.use(VueRouter);
 
@@ -31,7 +41,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "dashboard",
         name: "manage:dashboard",
-        component: Home
+        component: Dashboard
       },
       {
         path: "profile",
@@ -41,17 +51,17 @@ const routes: Array<RouteConfig> = [
       {
         path: "incident",
         name: "manage:incident",
-        component: User
+        component: Placeholder
       },
       {
         path: "session",
         name: "manage:session",
-        component: User
+        component: Placeholder
       },
       {
         path: "setting",
         name: "manage:setting",
-        component: User
+        component: Placeholder
       },
       {
         path: "user",
@@ -61,12 +71,12 @@ const routes: Array<RouteConfig> = [
       {
         path: "application",
         name: "manage:application",
-        component: User
+        component: Application
       },
       {
         path: "log",
         name: "manage:log",
-        component: User
+        component: Placeholder
       }
     ]
   },
@@ -84,11 +94,13 @@ const routes: Array<RouteConfig> = [
   {
     path: "/signup",
     name: "signup",
+    beforeEnter: unAuthenticatedOnly,
     component: Signup
   },
   {
     path: "/callback",
     name: "callback",
+    beforeEnter: unAuthenticatedOnly,
     component: callback
   }
 ];
