@@ -20,7 +20,7 @@ import (
 func GETUser(c *gin.Context) {
 	var err error
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserByUsername(c.GetString(constants.UserSubjectKey)); err != nil {
+	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
 		return
 	}
@@ -76,11 +76,11 @@ func PUTUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
-	if user, _ := handlers.Handler.RetrieveUserByEmail(user.Email); user.Subject != "" {
+	if user, _ := handlers.Handler.RetrieveUserByEmail(user.Email); user.Subject != "" && user.Subject != c.GetString(constants.UserSubjectKey) {
 		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: "email_exists", Error: "email already used"})
 		return
 	}
-	if err = handlers.Handler.UpdateUser(c.GetString(constants.IsAuthenticatedKey), user); err != nil {
+	if err = handlers.Handler.UpdateUser(c.GetString(constants.UserSubjectKey), user); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating user"})
 		return
 	}
