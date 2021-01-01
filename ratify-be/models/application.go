@@ -29,6 +29,7 @@ type Application struct {
 type ApplicationOrmer interface {
 	GetOneByClientID(clientID string) (application Application, err error)
 	GetAllByOwnerSubject(ownerSubject string) (applications []Application, err error)
+	GetAll() (applications []Application, err error)
 	InsertApplication(application Application) (clientID string, err error)
 	UpdateApplication(application Application) (err error)
 }
@@ -45,6 +46,11 @@ func (o *applicationOrm) GetOneByClientID(clientID string) (application Applicat
 
 func (o *applicationOrm) GetAllByOwnerSubject(ownerSubject string) (applications []Application, err error) {
 	result := o.db.Model(&Application{}).Where("owner_subject = ?", ownerSubject).Find(&applications)
+	return applications, result.Error
+}
+
+func (o *applicationOrm) GetAll() (applications []Application, err error) {
+	result := o.db.Model(&Application{}).Find(&applications)
 	return applications, result.Error
 }
 
