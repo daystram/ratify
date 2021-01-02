@@ -76,7 +76,6 @@ func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (e
 		LoginURL:    application.LoginURL,
 		CallbackURL: application.CallbackURL,
 		LogoutURL:   application.LogoutURL,
-		Metadata:    application.Metadata,
 	}); err != nil {
 		return errors.New(fmt.Sprintf("error updating application. %v", err))
 	}
