@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-querystring/query"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
@@ -162,14 +163,14 @@ func POSTIntrospect(c *gin.Context) {
 		c.JSON(http.StatusOK, tokenInfo)
 		return
 	}
-	// verify request
+	// verify client_secret
 	var application models.Application
 	if application, err = handlers.Handler.RetrieveApplication(tokenInfo.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
-	if introspectRequest.ClientID != application.ClientID || introspectRequest.ClientSecret != application.ClientSecret {
-		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "invalid client_id or client_secret"})
+	if err = bcrypt.CompareHashAndPassword([]byte(introspectRequest.ClientSecret), []byte(application.ClientSecret)); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "invalid client_secret"})
 		return
 	}
 	c.JSON(http.StatusOK, tokenInfo)

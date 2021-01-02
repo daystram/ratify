@@ -15,7 +15,7 @@ type Application struct {
 	Owner        User   `gorm:"foreignKey:OwnerSubject;references:Subject;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 	OwnerSubject string
 	ClientID     string `gorm:"column:client_id;uniqueIndex;type:char(32);not null" json:"-"`
-	ClientSecret string `gorm:"column:client_secret;type:char(64);not null" json:"-"`
+	ClientSecret string `gorm:"column:client_secret;type:varchar(100);not null" json:"-"`
 	Name         string `gorm:"column:name;type:varchar(20);not null" json:"-"`
 	Description  string `gorm:"column:description;type:varchar(50)" json:"-"`
 	LoginURL     string `gorm:"column:login_url;type:text" json:"-"`

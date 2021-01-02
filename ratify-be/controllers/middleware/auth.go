@@ -27,7 +27,7 @@ func AuthMiddleware(c *gin.Context) {
 	}
 	var user models.User
 	if user, err = handlers.Handler.RetrieveUserBySubject(tokenInfo.Subject); err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code:"invalid_token", Error: err.Error()})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "invalid_token", Error: err.Error()})
 		return
 	}
 	c.Set(constants.IsAuthenticatedKey, true)

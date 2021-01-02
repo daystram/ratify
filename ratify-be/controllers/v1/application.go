@@ -21,11 +21,10 @@ import (
 // @Router /api/v1/application/{client_id} [GET]
 func GETOneApplicationDetail(c *gin.Context) {
 	var err error
-	// fetch clientID
-	clientID := strings.TrimPrefix(c.Param("client_id"), "/") // trim due to router catch-all
-	// get application
+	// fetch application info
 	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
+	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/") // trim due to router catch-all
+	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
@@ -91,17 +90,12 @@ func POSTApplication(c *gin.Context) {
 		return
 	}
 	// register application
-	if applicationInfo.ClientID, err = handlers.Handler.RegisterApplication(applicationInfo, c.GetString(constants.UserSubjectKey)); err != nil {
+	var clientSecret string
+	if applicationInfo.ClientID, clientSecret, err = handlers.Handler.RegisterApplication(applicationInfo, c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
 	}
-	// get application secret
-	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(applicationInfo.ClientID); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed retrieving application"})
-		return
-	}
-	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_id": application.ClientID, "client_secret": application.ClientSecret}})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_id": applicationInfo.ClientID, "client_secret": clientSecret}})
 	return
 }
 

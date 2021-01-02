@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
@@ -10,14 +11,19 @@ import (
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error) {
+func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID, clientSecret string, err error) {
 	if application.Description == "" {
 		application.Description = "New application"
+	}
+	clientSecret = utils.GenerateRandomString(constants.ClientSecretLength)
+	var hashedClientSecret []byte
+	if hashedClientSecret, err = bcrypt.GenerateFromPassword([]byte(clientSecret), bcrypt.DefaultCost); err != nil {
+		return "", "", errors.New("failed hashing client_secret")
 	}
 	if clientID, err = m.db.applicationOrmer.InsertApplication(models.Application{
 		OwnerSubject: ownerSubject,
 		ClientID:     utils.GenerateRandomString(constants.ClientIDLength),
-		ClientSecret: utils.GenerateRandomString(constants.ClientSecretLength),
+		ClientSecret: string(hashedClientSecret),
 		Name:         application.Name,
 		Description:  application.Description,
 		LoginURL:     application.LoginURL,
@@ -25,7 +31,7 @@ func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, 
 		LogoutURL:    application.LogoutURL,
 		Metadata:     application.Metadata,
 	}); err != nil {
-		return "", errors.New(fmt.Sprintf("error inserting application. %v", err))
+		return "", "", errors.New(fmt.Sprintf("error inserting application. %v", err))
 	}
 	return
 }
