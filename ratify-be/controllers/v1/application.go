@@ -129,6 +129,7 @@ func PUTApplication(c *gin.Context) {
 		return
 	}
 	// update application
+	applicationInfo.ClientID = application.ClientID
 	if err = handlers.Handler.UpdateApplication(applicationInfo); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
