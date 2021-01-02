@@ -1,7 +1,8 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import {
-  Application,
+  ApplicationList,
+  ApplicationDetail,
   Authorize,
   Home,
   Manage,
@@ -17,7 +18,7 @@ import {
   logout,
   unAuthenticatedOnly
 } from "@/auth";
-import Dashboard from "@/views/Dashboard.vue";
+import Dashboard from "@/views/manage/Dashboard.vue";
 
 Vue.use(VueRouter);
 
@@ -71,13 +72,19 @@ const routes: Array<RouteConfig> = [
       {
         path: "application",
         name: "manage:application",
-        component: Application
+        component: ApplicationList
+      },
+      {
+        path: "application/:clientId",
+        name: "manage:application-detail",
+        component: ApplicationDetail
       },
       {
         path: "log",
         name: "manage:log",
         component: Placeholder
-      }
+      },
+      { path: "*", redirect: "/" }
     ]
   },
   {

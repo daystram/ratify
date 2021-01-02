@@ -1,5 +1,5 @@
 <template>
-  <div class="application">
+  <div class="application-list">
     <v-row class="mb-8" align="center">
       <v-col cols="12" sm=""><h1 class="text-h2">Applications</h1></v-col>
       <v-col cols="auto">
@@ -81,7 +81,7 @@
                     :disabled="create.formLoadStatus === STATUS.LOADING"
                     @input="$v.create.name.$touch()"
                     @blur="$v.create.name.$touch()"
-                    :prepend-icon="'mdi-account'"
+                    :prepend-icon="'mdi-application'"
                   />
                   <v-text-field
                     v-model="create.description"
@@ -92,7 +92,7 @@
                     :disabled="create.formLoadStatus === STATUS.LOADING"
                     @input="$v.create.description.$touch()"
                     @blur="$v.create.description.$touch()"
-                    :prepend-icon="'mdi-account'"
+                    :prepend-icon="'mdi-text'"
                   />
                   <v-text-field
                     v-model="create.loginURL"
@@ -103,9 +103,9 @@
                     :disabled="create.formLoadStatus === STATUS.LOADING"
                     @input="$v.create.loginURL.$touch()"
                     @blur="$v.create.loginURL.$touch()"
-                    :prepend-icon="'mdi-account'"
+                    :prepend-icon="'mdi-login-variant'"
                   />
-                  <v-textarea
+                  <v-text-field
                     v-model="create.callbackURL"
                     :error-messages="callbackURLErrors"
                     label="Callback URL"
@@ -114,7 +114,7 @@
                     :disabled="create.formLoadStatus === STATUS.LOADING"
                     @input="$v.create.callbackURL.$touch()"
                     @blur="$v.create.callbackURL.$touch()"
-                    :prepend-icon="'mdi-account'"
+                    :prepend-icon="'mdi-undo-variant'"
                   />
                   <v-text-field
                     v-model="create.logoutURL"
@@ -125,7 +125,7 @@
                     :disabled="create.formLoadStatus === STATUS.LOADING"
                     @input="$v.create.logoutURL.$touch()"
                     @blur="$v.create.logoutURL.$touch()"
-                    :prepend-icon="'mdi-account'"
+                    :prepend-icon="'mdi-logout-variant'"
                   />
                 </v-col>
               </v-row>
@@ -158,9 +158,19 @@
                       <code>{{ application.client_id }}</code>
                     </v-col>
                     <v-col cols="auto" md="auto">
-                      <v-btn rounded text color="secondary lighten-1"
-                        >manage</v-btn
+                      <v-btn
+                        rounded
+                        text
+                        color="secondary lighten-1"
+                        @click="
+                          $router.push({
+                            name: 'manage:application-detail',
+                            params: { clientId: application.client_id }
+                          })
+                        "
                       >
+                        manage
+                      </v-btn>
                     </v-col>
                   </v-row>
                 </v-list-item-content>
@@ -177,7 +187,7 @@
         opacity="0"
         absolute
       >
-        <v-progress-circular indeterminate size="64"></v-progress-circular>
+        <v-progress-circular indeterminate size="64" />
       </v-overlay>
     </v-fade-transition>
   </div>
@@ -190,7 +200,7 @@ import { STATUS } from "@/constants/status";
 import { maxLength, required, url } from "vuelidate/lib/validators";
 
 export default Vue.extend({
-  data: function() {
+  data() {
     return {
       applications: [],
       create: {
@@ -218,6 +228,8 @@ export default Vue.extend({
     descriptionErrors() {
       const errors: string[] = [];
       if (!this.$v.create.description?.$dirty) return errors;
+      !this.$v.create.description.required &&
+        errors.push("Description required");
       !this.$v.create.description.maxLength &&
         errors.push("Description too long");
       return errors;
@@ -249,7 +261,7 @@ export default Vue.extend({
   validations: {
     create: {
       name: { required, maxLength: maxLength(20) },
-      description: { maxLength: maxLength(50) },
+      description: { required, maxLength: maxLength(50) },
       loginURL: { required, url },
       callbackURL: { required, url },
       logoutURL: { required, url }
@@ -264,10 +276,10 @@ export default Vue.extend({
     loadApplications() {
       this.pageLoadStatus = STATUS.PRE_LOADING;
       api.application
-        .getAll()
+        .list()
         .then(response => {
           this.applications = response.data.data;
-          this.applications.sort((a, b) => b.created_at - a.created_at);
+          this.applications.sort((a, b) => b["created_at"] - a["created_at"]);
           this.pageLoadStatus = STATUS.COMPLETE;
         })
         .catch(error => {
