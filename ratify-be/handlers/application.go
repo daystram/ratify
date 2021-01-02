@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
@@ -26,8 +25,18 @@ func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, 
 		LogoutURL:    application.LogoutURL,
 		Metadata:     application.Metadata,
 	}); err != nil {
-		log.Print(err)
 		return "", errors.New(fmt.Sprintf("error inserting application. %v", err))
+	}
+	return
+}
+
+func (m *module) RenewApplicationClientSecret(clientID string) (clientSecret string, err error) {
+	clientSecret = utils.GenerateRandomString(constants.ClientSecretLength)
+	if err = m.db.applicationOrmer.UpdateApplication(models.Application{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+	}); err != nil {
+		return "", errors.New(fmt.Sprintf("error renewing application client_secret. %v", err))
 	}
 	return
 }
@@ -39,7 +48,6 @@ func (m *module) RetrieveApplication(clientID string) (application models.Applic
 	return
 }
 
-// TODO: paginate
 func (m *module) RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error) {
 	if applications, err = m.db.applicationOrmer.GetAllByOwnerSubject(ownerSubject); err != nil {
 		return []models.Application{}, errors.New("cannot retrieve applications")
