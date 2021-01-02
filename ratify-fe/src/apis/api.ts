@@ -26,6 +26,9 @@ export default {
     ): Promise<AxiosResponse> {
       return apiClient.put(`application/${clientId}`, application, withAuth);
     },
+    revoke: function(clientId: string): Promise<AxiosResponse> {
+      return apiClient.put(`application/${clientId}/revoke`, {}, withAuth);
+    },
     delete: function(clientId: string): Promise<AxiosResponse> {
       return apiClient.delete(`application/${clientId}`, withAuth);
     },
