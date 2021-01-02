@@ -29,23 +29,23 @@ func GETOneApplicationDetail(c *gin.Context) {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
-	// check ownership
-	if application.Owner.Subject != c.GetString(constants.UserSubjectKey) {
+	// check superuser
+	if !c.GetBool(constants.IsSuperuserKey) {
 		c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
 			Name: application.Name,
 		}})
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
-		ClientID:     application.ClientID,
-		ClientSecret: application.ClientSecret,
-		Name:         application.Name,
-		Description:  application.Description,
-		LoginURL:     application.LoginURL,
-		CallbackURL:  application.CallbackURL,
-		LogoutURL:    application.LogoutURL,
-		Metadata:     application.Metadata,
-		CreatedAt:    application.CreatedAt,
+		ClientID:    application.ClientID,
+		Name:        application.Name,
+		Description: application.Description,
+		LoginURL:    application.LoginURL,
+		CallbackURL: application.CallbackURL,
+		LogoutURL:   application.LogoutURL,
+		Metadata:    application.Metadata,
+		Locked:      application.Locked,
+		CreatedAt:   application.CreatedAt,
 	}})
 	return
 }

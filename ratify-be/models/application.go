@@ -22,6 +22,7 @@ type Application struct {
 	CallbackURL  string `gorm:"column:callback_url;type:text" json:"-"`
 	LogoutURL    string `gorm:"column:logout_url;type:text" json:"-"`
 	Metadata     string `gorm:"column:metadata;type:text" json:"-"`
+	Locked       bool   `gorm:"column:locked;default:false" json:"-"`
 	CreatedAt    int64  `gorm:"column:created_at;autoCreateTime" json:"-"`
 	UpdatedAt    int64  `gorm:"column:updated_at;autoUpdateTime" json:"-"`
 }
