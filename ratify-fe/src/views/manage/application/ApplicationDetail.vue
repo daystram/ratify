@@ -115,15 +115,155 @@
                     </div>
                     <div style="height: 24px">
                       <code>••••••••••••••••</code>
-                      <v-btn
-                        :ripple="false"
-                        plain
-                        color="error"
-                        class="my-n4"
-                        :disabled="application.editing"
+                      <v-dialog
+                        v-model="revoke.prompt"
+                        width="545"
+                        :persistent="revoke.formLoadStatus === STATUS.COMPLETE"
+                        @input="v => v || cancelRevoke()"
                       >
-                        Revoke
-                      </v-btn>
+                        <template v-slot:activator="{ on, attrs }">
+                          <v-btn
+                            :ripple="false"
+                            plain
+                            color="error"
+                            class="my-n4"
+                            :disabled="application.editing"
+                            v-bind="attrs"
+                            v-on="on"
+                            @click="() => (revoke.formLoadStatus = STATUS.IDLE)"
+                          >
+                            Revoke
+                          </v-btn>
+                        </template>
+                        <v-card class="danger-border">
+                          <v-card-title>
+                            <v-row no-gutters align="center">
+                              <v-col cols="auto" class="error--text">
+                                Revoke Client Secret
+                              </v-col>
+                              <v-spacer />
+                              <v-col cols="auto">
+                                <v-btn
+                                  v-if="
+                                    revoke.formLoadStatus !== STATUS.COMPLETE
+                                  "
+                                  text
+                                  icon
+                                  color="grey"
+                                  @click="cancelRevoke"
+                                >
+                                  <v-icon v-text="'mdi-close'" />
+                                </v-btn>
+                                <v-btn
+                                  v-if="
+                                    revoke.formLoadStatus === STATUS.COMPLETE
+                                  "
+                                  text
+                                  rounded
+                                  color="success"
+                                  @click="
+                                    () => {
+                                      cancelRevoke();
+                                      revoke.clientSecret = '';
+                                    }
+                                  "
+                                >
+                                  Confirm
+                                </v-btn>
+                              </v-col>
+                            </v-row>
+                          </v-card-title>
+                          <v-divider inset />
+                          <div class="v-card__body">
+                            <v-expand-transition>
+                              <div
+                                v-if="revoke.formLoadStatus === STATUS.ERROR"
+                              >
+                                <v-alert type="error" text dense>
+                                  Failed revoking application client secret!
+                                </v-alert>
+                              </div>
+                            </v-expand-transition>
+                            <v-expand-transition>
+                              <div
+                                v-if="revoke.formLoadStatus === STATUS.COMPLETE"
+                              >
+                                <v-alert type="info" text dense>
+                                  New client secret issued!
+                                </v-alert>
+                              </div>
+                            </v-expand-transition>
+                            <v-expand-transition>
+                              <div
+                                v-if="revoke.formLoadStatus !== STATUS.COMPLETE"
+                              >
+                                <v-row>
+                                  <v-col>
+                                    <div>
+                                      Are you sure you want to revoke the client
+                                      secret for
+                                      <b>{{ this.application.name }}</b
+                                      >? This is action will render the
+                                      previously issued client secret unusable.
+                                    </div>
+                                    <div class="mt-4">
+                                      Type <b>{{ this.application.name }}</b> to
+                                      confirm.
+                                    </div>
+                                    <v-text-field
+                                      v-model="revoke.confirmName"
+                                      class="pt-0"
+                                      :prepend-icon="'mdi-application'"
+                                    />
+                                    <v-btn
+                                      rounded
+                                      block
+                                      outlined
+                                      color="error"
+                                      :disabled="
+                                        revoke.confirmName !==
+                                          this.application.name
+                                      "
+                                      @click="revokeApplication"
+                                    >
+                                      Revoke
+                                    </v-btn>
+                                  </v-col>
+                                </v-row>
+                              </div>
+                            </v-expand-transition>
+                            <v-expand-transition>
+                              <div
+                                v-if="revoke.formLoadStatus === STATUS.COMPLETE"
+                              >
+                                <v-row>
+                                  <v-col cols="12">
+                                    <div>
+                                      Safely store the following
+                                      <b>client_secret</b>, it <b>cannot</b> be
+                                      seen again once this prompt is closed.
+                                      Exposing this secret will leave your
+                                      application vulnerable.
+                                    </div>
+                                    <div class="mt-2">
+                                      <div
+                                        class="mb-1 text-overline text--secondary"
+                                      >
+                                        Client Secret
+                                      </div>
+                                      <div>
+                                        <code>
+                                          {{ this.revoke.clientSecret }}
+                                        </code>
+                                      </div>
+                                    </div>
+                                  </v-col>
+                                </v-row>
+                              </div>
+                            </v-expand-transition>
+                          </div>
+                        </v-card>
+                      </v-dialog>
                     </div>
                   </div>
                 </v-col>
@@ -295,16 +435,7 @@
                           </v-col>
                           <v-spacer />
                           <v-col cols="auto">
-                            <v-btn
-                              text
-                              icon
-                              color="grey"
-                              @click="
-                                () => {
-                                  this.deleting.prompt = false;
-                                }
-                              "
-                            >
+                            <v-btn text icon color="grey" @click="cancelDelete">
                               <v-icon v-text="'mdi-close'" />
                             </v-btn>
                           </v-col>
@@ -317,23 +448,24 @@
                         </v-alert>
                         <v-row align="center">
                           <v-col>
-                            Are you sure you want to permanently delete
-                            <b>{{ this.application.name }}</b
-                            >? This is action is <b>irreversible</b> and all of
-                            this application's clients will not be able to user
-                            Ratify authentication service.
-                          </v-col>
-                        </v-row>
-                        <v-row align="center">
-                          <v-col>
                             <div>
+                              Are you sure you want to permanently delete
+                              <b>{{ this.application.name }}</b
+                              >? This is action is <b>irreversible</b> and all
+                              of this application's clients will not be able to
+                              user Ratify authentication service.
+                            </div>
+                            <div class="mt-4">
                               Type <b>{{ this.application.name }}</b> to
                               confirm.
                             </div>
-                            <v-text-field
-                              v-model="deleting.confirmName"
-                              :prepend-icon="'mdi-application'"
-                            />
+                            <div>
+                              <v-text-field
+                                v-model="deleting.confirmName"
+                                class="pt-0"
+                                :prepend-icon="'mdi-application'"
+                              />
+                            </div>
                             <v-btn
                               rounded
                               block
@@ -395,6 +527,11 @@ export default Vue.extend({
       },
       formLoadStatus: STATUS.IDLE,
       apiResponseCode: ""
+    },
+    revoke: {
+      prompt: false,
+      confirmName: "",
+      formLoadStatus: STATUS.IDLE
     },
     deleting: {
       prompt: false,
@@ -565,8 +702,26 @@ export default Vue.extend({
         });
     },
     cancelDelete() {
+      this.deleting.prompt = false;
       this.deleting.confirmName = "";
       this.deleting.formLoadStatus = STATUS.IDLE;
+    },
+    revokeApplication() {
+      this.revoke.formLoadStatus = STATUS.LOADING;
+      api.application
+        .revoke(this.application.clientId)
+        .then(response => {
+          this.revoke.clientSecret = response.data.data.client_secret;
+          this.revoke.formLoadStatus = STATUS.COMPLETE;
+        })
+        .catch(error => {
+          console.error(error);
+          this.revoke.formLoadStatus = STATUS.ERROR;
+        });
+    },
+    cancelRevoke() {
+      this.revoke.prompt = false;
+      this.revoke.confirmName = "";
     }
   }
 });
