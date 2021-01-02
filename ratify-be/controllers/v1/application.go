@@ -156,3 +156,27 @@ func DELETEApplication(c *gin.Context) {
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
+
+// @Summary Revoke application secret
+// @Tags application
+// @Security BearerAuth
+// @Param client_id path string true "Client ID"
+// @Success 200 "OK"
+// @Router /api/v1/application/{client_id}/revoke [PUT]
+func PUTApplicationRevokeSecret(c *gin.Context) {
+	var err error
+	// fetch application info
+	clientID := strings.TrimPrefix(c.Param("client_id"), "/")
+	if _, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	// renew application client_secret
+	var clientSecret string
+	if clientSecret, err = handlers.Handler.RenewApplicationClientSecret(clientID); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed renewing application client_secret"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_secret": clientSecret}})
+	return
+}

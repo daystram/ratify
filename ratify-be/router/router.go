@@ -38,6 +38,7 @@ func InitializeRouter() (router *gin.Engine) {
 			application.GET("/:client_id", v1.GETOneApplicationDetail)
 			application.POST("/", utils.AuthOnly, utils.SuperuserOnly, v1.POSTApplication)
 			application.PUT("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplication)
+			application.PUT("/:client_id/revoke", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplicationRevokeSecret)
 			application.DELETE("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.DELETEApplication)
 		}
 	}
