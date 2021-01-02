@@ -21,46 +21,45 @@ import (
 // @Router /api/v1/application/{client_id} [GET]
 func GETOneApplicationDetail(c *gin.Context) {
 	var err error
-	// fetch clientID
-	clientID := strings.TrimPrefix(c.Param("client_id"), "/") // trim due to router catch-all
-	// get application
+	// fetch application info
 	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
+	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/") // trim due to router catch-all
+	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
-	// check ownership
-	if application.Owner.Subject != c.GetString(constants.UserSubjectKey) {
-		c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.ApplicationInfo{
+	// check superuser
+	if !c.GetBool(constants.IsSuperuserKey) {
+		c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
 			Name: application.Name,
 		}})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: datatransfers.ApplicationInfo{
-		ClientID:     application.ClientID,
-		ClientSecret: application.ClientSecret,
-		Name:         application.Name,
-		Description:  application.Description,
-		LoginURL:     application.LoginURL,
-		CallbackURL:  application.CallbackURL,
-		LogoutURL:    application.LogoutURL,
-		Metadata:     application.Metadata,
-		CreatedAt:    application.CreatedAt,
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
+		ClientID:    application.ClientID,
+		Name:        application.Name,
+		Description: application.Description,
+		LoginURL:    application.LoginURL,
+		CallbackURL: application.CallbackURL,
+		LogoutURL:   application.LogoutURL,
+		Metadata:    application.Metadata,
+		Locked:      application.Locked,
+		CreatedAt:   application.CreatedAt,
 	}})
 	return
 }
 
-// @Summary Get owned applications
+// @Summary Get all applications
 // @Tags application
 // @Security BearerAuth
 // @Success 200 "OK"
 // @Router /api/v1/application [GET]
-func GETOwnedApplications(c *gin.Context) {
+func GETApplicationList(c *gin.Context) {
 	var err error
 	// get all owned applications
 	var applications []models.Application
-	if applications, err = handlers.Handler.RetrieveOwnedApplications(c.GetString(constants.UserSubjectKey)); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "cannot retrieve applications"})
+	if applications, err = handlers.Handler.RetrieveAllApplications(); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "cannot retrieve applications"})
 		return
 	}
 	var applicationsResponse []datatransfers.ApplicationInfo
@@ -72,7 +71,7 @@ func GETOwnedApplications(c *gin.Context) {
 			CreatedAt:   application.CreatedAt,
 		})
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: applicationsResponse})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: applicationsResponse})
 	return
 }
 
@@ -87,15 +86,16 @@ func POSTApplication(c *gin.Context) {
 	// fetch application info
 	var applicationInfo datatransfers.ApplicationInfo
 	if err = c.ShouldBindJSON(&applicationInfo); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
 	// register application
-	if applicationInfo.ClientID, err = handlers.Handler.RegisterApplication(applicationInfo, c.GetString(constants.UserSubjectKey)); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed updating application"})
+	var clientSecret string
+	if applicationInfo.ClientID, clientSecret, err = handlers.Handler.RegisterApplication(applicationInfo, c.GetString(constants.UserSubjectKey)); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{Data: gin.H{"client_id": applicationInfo.ClientID}})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_id": applicationInfo.ClientID, "client_secret": clientSecret}})
 	return
 }
 
@@ -109,27 +109,83 @@ func POSTApplication(c *gin.Context) {
 func PUTApplication(c *gin.Context) {
 	var err error
 	// fetch application info
-	clientID := c.Param("client_id")
 	var applicationInfo datatransfers.ApplicationInfo
 	if err = c.ShouldBindJSON(&applicationInfo); err != nil {
-		c.JSON(http.StatusBadRequest, datatransfers.Response{Error: err.Error()})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
-	// check ownership
 	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.Response{Error: "application not found"})
+	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/")
+	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
-	if application.Owner.Subject != c.GetString(constants.UserSubjectKey) {
-		c.JSON(http.StatusUnauthorized, datatransfers.Response{Error: "access to resource unauthorized"})
+	// checked locked flag
+	if application.Locked &&
+		(applicationInfo.LoginURL != application.LoginURL ||
+			applicationInfo.CallbackURL != application.CallbackURL ||
+			applicationInfo.LogoutURL != application.LogoutURL) {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "application is locked"})
 		return
 	}
 	// update application
 	if err = handlers.Handler.UpdateApplication(applicationInfo); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.Response{Error: "failed updating application"})
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.Response{})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
+
+// @Summary Delete application
+// @Tags application
+// @Security BearerAuth
+// @Param client_id path string true "Client ID"
+// @Success 200 "OK"
+// @Router /api/v1/application/{client_id} [DELETE]
+func DELETEApplication(c *gin.Context) {
+	var err error
+	// fetch application info
+	var application models.Application
+	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/")
+	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	// checked locked flag
+	if application.Locked {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "application is locked"})
+		return
+	}
+	// delete application
+	if err = handlers.Handler.DeleteApplication(application.ClientID); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed deleting application"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
+
+// @Summary Revoke application secret
+// @Tags application
+// @Security BearerAuth
+// @Param client_id path string true "Client ID"
+// @Success 200 "OK"
+// @Router /api/v1/application/{client_id}/revoke [PUT]
+func PUTApplicationRevokeSecret(c *gin.Context) {
+	var err error
+	// fetch application info
+	clientID := strings.TrimPrefix(c.Param("client_id"), "/")
+	if _, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	// renew application client_secret
+	var clientSecret string
+	if clientSecret, err = handlers.Handler.RenewApplicationClientSecret(clientID); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed renewing application client_secret"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_secret": clientSecret}})
 	return
 }

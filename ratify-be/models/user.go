@@ -12,7 +12,8 @@ type userOrm struct {
 type User struct {
 	Subject       string `gorm:"column:sub;primaryKey;type:uuid;default:uuid_generate_v4()" json:"-"`
 	Superuser     bool   `gorm:"column:superuser;default:false" json:"-"`
-	Name          string `gorm:"column:name;type:varchar(50);not null" json:"-"`
+	GivenName     string `gorm:"column:given_name;type:varchar(20);not null" json:"-"`
+	FamilyName    string `gorm:"column:family_name;type:varchar(12);not null" json:"-"`
 	Username      string `gorm:"column:preferred_username;uniqueIndex;type:varchar(12);not null" json:"-"`
 	Email         string `gorm:"column:email;uniqueIndex;type:varchar(50);not null" json:"-"`
 	EmailVerified bool   `gorm:"column:email_verified;default:false" json:"-"`
@@ -25,6 +26,7 @@ type User struct {
 type UserOrmer interface {
 	GetOneBySubject(subject string) (user User, err error)
 	GetOneByUsername(username string) (user User, err error)
+	GetOneByEmail(email string) (user User, err error)
 	InsertUser(user User) (subject string, err error)
 	UpdateUser(user User) (err error)
 }
@@ -35,12 +37,17 @@ func NewUserOrmer(db *gorm.DB) UserOrmer {
 }
 
 func (o *userOrm) GetOneBySubject(subject string) (user User, err error) {
-	result := o.db.Model(&User{}).Where("subject = ?", subject).First(&user)
+	result := o.db.Model(&User{}).Where("sub	 = ?", subject).First(&user)
 	return user, result.Error
 }
 
 func (o *userOrm) GetOneByUsername(username string) (user User, err error) {
 	result := o.db.Model(&User{}).Where("preferred_username = ?", username).First(&user)
+	return user, result.Error
+}
+
+func (o *userOrm) GetOneByEmail(email string) (user User, err error) {
+	result := o.db.Model(&User{}).Where("email = ?", email).First(&user)
 	return user, result.Error
 }
 
@@ -51,6 +58,6 @@ func (o *userOrm) InsertUser(user User) (subject string, err error) {
 
 func (o *userOrm) UpdateUser(user User) (err error) {
 	// By default, only non-empty fields are updated. See https://gorm.io/docs/update.html#Updates-multiple-columns
-	result := o.db.Model(&User{}).Model(&user).Updates(&user)
+	result := o.db.Model(&User{}).Where("sub = ?", user.Subject).Updates(&user)
 	return result.Error
 }

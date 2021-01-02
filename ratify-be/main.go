@@ -27,7 +27,7 @@ func init() {
 }
 
 func main() {
-	docs.SwaggerInfo.Host = fmt.Sprintf("%s:%d", config.AppConfig.Hostname, config.AppConfig.Port)
+	docs.SwaggerInfo.Host = config.AppConfig.Hostname
 	handlers.InitializeHandler()
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%d", config.AppConfig.Port),

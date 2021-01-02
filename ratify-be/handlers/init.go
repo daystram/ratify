@@ -17,20 +17,26 @@ import (
 var Handler HandlerFunc
 
 type HandlerFunc interface {
-	AuthenticateUser(credentials datatransfers.UserLogin) (token string, err error)
-	RegisterUser(credentials datatransfers.UserSignup) (err error)
-
-	RetrieveUser(username string) (user models.User, err error)
+	AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, err error)
+	RegisterUser(credentials datatransfers.UserSignup) (userSubject string, err error)
+	RetrieveUserBySubject(subject string) (user models.User, err error)
+	RetrieveUserByUsername(username string) (user models.User, err error)
+	RetrieveUserByEmail(email string) (user models.User, err error)
 	UpdateUser(id string, user datatransfers.UserUpdate) (err error)
 
 	RetrieveApplication(clientID string) (application models.Application, err error)
 	RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error)
-	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error)
+	RetrieveAllApplications() (applications []models.Application, err error)
+	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID, clientSecret string, err error)
 	UpdateApplication(application datatransfers.ApplicationInfo) (err error)
+	RenewApplicationClientSecret(clientID string) (clientSecret string, err error)
+	DeleteApplication(clientID string) (err error)
 
-	GenerateAuthorizationCode(application models.Application) (authorizationCode string, err error)
-	ValidateAuthorizationCode(application models.Application, authorizationCode string) (err error)
-	GenerateAccessRefreshToken(application models.Application) (accessToken, refreshToken string, err error)
+	GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject string) (authorizationCode string, err error)
+	ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error)
+	GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, subject string, withRefresh bool) (accessToken, refreshToken string, err error)
+	GenerateIDToken(clientID, subject string, scope []string) (idToken string, err error)
+	IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error)
 	StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
 	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
 }

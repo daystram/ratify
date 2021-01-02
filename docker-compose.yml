@@ -14,3 +14,13 @@ services:
     volumes:
       - /opt/redis:/data
     restart: always
+  proxy:
+    image: nginx:1.18-alpine
+    ports:
+      - "80:80"
+    extra_hosts:
+      - "host:${LOCAL_IP}"
+    volumes:
+      - /opt/nginx:/etc/nginx
+    restart: always
+

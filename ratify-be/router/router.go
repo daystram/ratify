@@ -22,22 +22,24 @@ func InitializeRouter() (router *gin.Engine) {
 		middleware.AuthMiddleware,
 	)
 	{
-		auth := apiv1.Group("/auth")
+		form := apiv1.Group("/form")
 		{
-			auth.POST("/login", v1.POSTLogin)
-			auth.POST("/signup", v1.POSTRegister)
+			form.POST("/unique", v1.POSTUniqueCheck)
 		}
 		user := apiv1.Group("/user")
 		{
-			user.GET("/:username", utils.AuthOnly, v1.GETUser)
+			user.GET("/", utils.AuthOnly, v1.GETUser)
+			user.POST("/", v1.POSTRegister)
 			user.PUT("/", utils.AuthOnly, v1.PUTUser)
 		}
 		application := apiv1.Group("/application")
 		{
-			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETOwnedApplications)
+			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETApplicationList)
 			application.GET("/:client_id", v1.GETOneApplicationDetail)
 			application.POST("/", utils.AuthOnly, utils.SuperuserOnly, v1.POSTApplication)
 			application.PUT("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplication)
+			application.PUT("/:client_id/revoke", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplicationRevokeSecret)
+			application.DELETE("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.DELETEApplication)
 		}
 	}
 	oauth := router.Group("/oauth") // oauth
@@ -45,9 +47,9 @@ func InitializeRouter() (router *gin.Engine) {
 		middleware.CORSMiddleware,
 	)
 	{
-		// TODO: opaque token verification endpoint; or, change token into locally verifiable JWT
 		oauth.POST("/authorize", v1.POSTAuthorize)
 		oauth.POST("/token", v1.POSTToken)
+		oauth.POST("/introspect", v1.POSTIntrospect)
 	}
 	return
 }

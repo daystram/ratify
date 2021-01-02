@@ -8,6 +8,7 @@ type AuthorizationRequest struct {
 	ResponseType string `json:"response_type" binding:"required"`
 	ClientID     string `json:"client_id" binding:"required"`
 	RedirectURI  string `json:"redirect_uri" binding:"-"`
+	Scope        string `json:"scope" binding:"-"`
 	State        string `json:"state" binding:"-"`
 	UserLogin
 	PKCEAuthFields
@@ -33,19 +34,19 @@ type PKCEAuthFields struct {
 }
 
 type PKCETokenFields struct {
-	CodeVerifier string `json:"code_verifier" binding:"-"`
+	CodeVerifier string `form:"code_verifier" binding:"-"`
 }
 
 type AuthorizationResponse struct {
-	AuthorizationCode string `json:"code"`
-	State             string `json:"state"`
+	AuthorizationCode string `json:"code" url:"code"`
+	State             string `json:"state" url:"state"`
 }
 
 type TokenRequest struct {
-	GrantType    string `json:"grant_type" binding:"required"`
-	ClientID     string `json:"client_id" binding:"required"`
-	ClientSecret string `json:"client_secret" binding:"-"`
-	Code         string `json:"code" binding:"required"`
+	GrantType    string `form:"grant_type" binding:"required"`
+	ClientID     string `form:"client_id" binding:"required"`
+	ClientSecret string `form:"client_secret" binding:"-"`
+	Code         string `form:"code" binding:"required"`
 	PKCETokenFields
 }
 
@@ -64,8 +65,22 @@ func (tokenRequest *TokenRequest) Flow() string {
 
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	IDToken      string `json:"id_token"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	IDToken      string `json:"id_token,omitempty"`
 	TokenType    string `json:"token_type"`
 	ExpiresIn    int    `json:"expires_in"`
+}
+
+type IntrospectRequest struct {
+	Token        string `form:"token" binding:"required"`
+	Hint         string `form:"token_type_hint" binding:"-"`
+	ClientID     string `form:"client_id" binding:"required"`
+	ClientSecret string `form:"client_secret" binding:"required"`
+}
+
+type TokenIntrospection struct {
+	Active   bool   `json:"active"`
+	ClientID string `json:"client_id,omitempty"`
+	Subject  string `json:"sub,omitempty"`
+	Scope    string `json:"scope,omitempty"`
 }

@@ -3,7 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
-	"log"
+	"golang.org/x/crypto/bcrypt"
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
@@ -11,11 +11,19 @@ import (
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error) {
+func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID, clientSecret string, err error) {
+	if application.Description == "" {
+		application.Description = "New application"
+	}
+	clientSecret = utils.GenerateRandomString(constants.ClientSecretLength)
+	var hashedClientSecret []byte
+	if hashedClientSecret, err = bcrypt.GenerateFromPassword([]byte(clientSecret), bcrypt.DefaultCost); err != nil {
+		return "", "", errors.New("failed hashing client_secret")
+	}
 	if clientID, err = m.db.applicationOrmer.InsertApplication(models.Application{
 		OwnerSubject: ownerSubject,
 		ClientID:     utils.GenerateRandomString(constants.ClientIDLength),
-		ClientSecret: utils.GenerateRandomString(constants.ClientSecretLength),
+		ClientSecret: string(hashedClientSecret),
 		Name:         application.Name,
 		Description:  application.Description,
 		LoginURL:     application.LoginURL,
@@ -23,8 +31,18 @@ func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, 
 		LogoutURL:    application.LogoutURL,
 		Metadata:     application.Metadata,
 	}); err != nil {
-		log.Print(err)
-		return "", errors.New(fmt.Sprintf("error inserting application. %v", err))
+		return "", "", errors.New(fmt.Sprintf("error inserting application. %v", err))
+	}
+	return
+}
+
+func (m *module) RenewApplicationClientSecret(clientID string) (clientSecret string, err error) {
+	clientSecret = utils.GenerateRandomString(constants.ClientSecretLength)
+	if err = m.db.applicationOrmer.UpdateApplication(models.Application{
+		ClientID:     clientID,
+		ClientSecret: clientSecret,
+	}); err != nil {
+		return "", errors.New(fmt.Sprintf("error renewing application client_secret. %v", err))
 	}
 	return
 }
@@ -36,7 +54,6 @@ func (m *module) RetrieveApplication(clientID string) (application models.Applic
 	return
 }
 
-// TODO: paginate
 func (m *module) RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error) {
 	if applications, err = m.db.applicationOrmer.GetAllByOwnerSubject(ownerSubject); err != nil {
 		return []models.Application{}, errors.New("cannot retrieve applications")
@@ -44,17 +61,31 @@ func (m *module) RetrieveOwnedApplications(ownerSubject string) (applications []
 	return
 }
 
+func (m *module) RetrieveAllApplications() (applications []models.Application, err error) {
+	if applications, err = m.db.applicationOrmer.GetAll(); err != nil {
+		return []models.Application{}, errors.New("cannot retrieve applications")
+	}
+	return
+}
+
 func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (err error) {
 	if err = m.db.applicationOrmer.UpdateApplication(models.Application{
-		Name:         application.Name,
-		Description:  application.Description,
-		LoginURL:     application.LoginURL,
-		CallbackURL:  application.CallbackURL,
-		LogoutURL:    application.LogoutURL,
-		Metadata:     application.Metadata,
+		ClientID:    application.ClientID,
+		Name:        application.Name,
+		Description: application.Description,
+		LoginURL:    application.LoginURL,
+		CallbackURL: application.CallbackURL,
+		LogoutURL:   application.LogoutURL,
+		Metadata:    application.Metadata,
 	}); err != nil {
-		log.Print(err)
 		return errors.New(fmt.Sprintf("error updating application. %v", err))
+	}
+	return
+}
+
+func (m *module) DeleteApplication(clientID string) (err error) {
+	if err = m.db.applicationOrmer.DeleteApplication(clientID); err != nil {
+		return errors.New(fmt.Sprintf("error deleting application. %v", err))
 	}
 	return
 }
