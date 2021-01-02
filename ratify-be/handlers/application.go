@@ -64,8 +64,14 @@ func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (e
 		LogoutURL:   application.LogoutURL,
 		Metadata:    application.Metadata,
 	}); err != nil {
-		log.Print(err)
 		return errors.New(fmt.Sprintf("error updating application. %v", err))
+	}
+	return
+}
+
+func (m *module) DeleteApplication(clientID string) (err error) {
+	if err = m.db.applicationOrmer.DeleteApplication(clientID); err != nil {
+		return errors.New(fmt.Sprintf("error deleting application. %v", err))
 	}
 	return
 }

@@ -33,6 +33,7 @@ type ApplicationOrmer interface {
 	GetAll() (applications []Application, err error)
 	InsertApplication(application Application) (clientID string, err error)
 	UpdateApplication(application Application) (err error)
+	DeleteApplication(clientID string) (err error)
 }
 
 func NewApplicationOrmer(db *gorm.DB) ApplicationOrmer {
@@ -62,5 +63,10 @@ func (o *applicationOrm) InsertApplication(application Application) (clientID st
 
 func (o *applicationOrm) UpdateApplication(application Application) (err error) {
 	result := o.db.Model(&Application{}).Where("client_id = ?", application.ClientID).Updates(&application)
+	return result.Error
+}
+
+func (o *applicationOrm) DeleteApplication(clientID string) (err error) {
+	result := o.db.Model(&Application{}).Where("client_id = ?", clientID).Delete(Application{})
 	return result.Error
 }

@@ -29,6 +29,7 @@ type HandlerFunc interface {
 	RetrieveAllApplications() (applications []models.Application, err error)
 	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error)
 	UpdateApplication(application datatransfers.ApplicationInfo) (err error)
+	DeleteApplication(clientID string) (err error)
 
 	GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject string) (authorizationCode string, err error)
 	ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error)

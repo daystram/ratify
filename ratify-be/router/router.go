@@ -34,10 +34,11 @@ func InitializeRouter() (router *gin.Engine) {
 		}
 		application := apiv1.Group("/application")
 		{
-			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETApplications)
+			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETApplicationList)
 			application.GET("/:client_id", v1.GETOneApplicationDetail)
 			application.POST("/", utils.AuthOnly, utils.SuperuserOnly, v1.POSTApplication)
 			application.PUT("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplication)
+			application.DELETE("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.DELETEApplication)
 		}
 	}
 	oauth := router.Group("/oauth") // oauth

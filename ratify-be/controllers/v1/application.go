@@ -55,7 +55,7 @@ func GETOneApplicationDetail(c *gin.Context) {
 // @Security BearerAuth
 // @Success 200 "OK"
 // @Router /api/v1/application [GET]
-func GETApplications(c *gin.Context) {
+func GETApplicationList(c *gin.Context) {
 	var err error
 	// get all owned applications
 	var applications []models.Application
@@ -114,7 +114,7 @@ func PUTApplication(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
-	applicationInfo.ClientID = c.Param("client_id")
+	applicationInfo.ClientID = strings.TrimPrefix(c.Param("client_id"), "/")
 	if _, err = handlers.Handler.RetrieveApplication(applicationInfo.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
@@ -122,6 +122,29 @@ func PUTApplication(c *gin.Context) {
 	// update application
 	if err = handlers.Handler.UpdateApplication(applicationInfo); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
+
+// @Summary Delete application
+// @Tags application
+// @Security BearerAuth
+// @Param client_id path string true "Client ID"
+// @Success 200 "OK"
+// @Router /api/v1/application/{client_id} [DELETE]
+func DELETEApplication(c *gin.Context) {
+	var err error
+	// fetch application info
+	clientID := strings.TrimPrefix(c.Param("client_id"), "/")
+	if _, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	// delete application
+	if err = handlers.Handler.DeleteApplication(clientID); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed deleting application"})
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
