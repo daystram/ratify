@@ -14,10 +14,19 @@ const withAuth = {
 
 export default {
   application: {
-    getOne: function(clientId: string): Promise<AxiosResponse> {
-      return apiClient.get(`application/${clientId}`);
+    detail: function(
+      clientId: string,
+      complete?: boolean
+    ): Promise<AxiosResponse> {
+      return apiClient.get(`application/${clientId}`, complete ? withAuth : {});
     },
-    getAll: function(): Promise<AxiosResponse> {
+    update: function(
+      clientId: string,
+      application: object
+    ): Promise<AxiosResponse> {
+      return apiClient.put(`application/${clientId}`, application, withAuth);
+    },
+    list: function(): Promise<AxiosResponse> {
       return apiClient.get(`application`, withAuth);
     },
     register: function(application: object): Promise<AxiosResponse> {
