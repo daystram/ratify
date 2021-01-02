@@ -30,7 +30,7 @@ export default {
       return apiClient.delete(`application/${clientId}`, withAuth);
     },
     list: function(): Promise<AxiosResponse> {
-      return apiClient.get(`application`, withAuth);
+      return apiClient.get(`application/`, withAuth);
     },
     register: function(application: object): Promise<AxiosResponse> {
       return apiClient.post(`application`, application, withAuth);
