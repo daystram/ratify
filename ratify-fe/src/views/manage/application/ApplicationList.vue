@@ -106,86 +106,90 @@
                 </div>
               </v-expand-transition>
               <v-expand-transition>
-                <v-row v-if="create.formLoadStatus !== STATUS.COMPLETE">
-                  <v-col cols="12">
-                    <v-text-field
-                      v-model="create.name"
-                      :error-messages="nameErrors"
-                      :counter="20"
-                      label="Name"
-                      required
-                      :disabled="create.formLoadStatus === STATUS.LOADING"
-                      @input="$v.create.name.$touch()"
-                      @blur="$v.create.name.$touch()"
-                      :prepend-icon="'mdi-application'"
-                    />
-                    <v-text-field
-                      v-model="create.description"
-                      :error-messages="descriptionErrors"
-                      :counter="50"
-                      label="Description"
-                      required
-                      :disabled="create.formLoadStatus === STATUS.LOADING"
-                      @input="$v.create.description.$touch()"
-                      @blur="$v.create.description.$touch()"
-                      :prepend-icon="'mdi-text'"
-                    />
-                    <v-text-field
-                      v-model="create.loginURL"
-                      :error-messages="loginURLErrors"
-                      label="Login URL"
-                      required
-                      hint="Ratify may require to redirect users back to your application's login page"
-                      :disabled="create.formLoadStatus === STATUS.LOADING"
-                      @input="$v.create.loginURL.$touch()"
-                      @blur="$v.create.loginURL.$touch()"
-                      :prepend-icon="'mdi-login-variant'"
-                    />
-                    <v-text-field
-                      v-model="create.callbackURL"
-                      :error-messages="callbackURLErrors"
-                      label="Callback URL"
-                      required
-                      hint="Use semicolon to separate multiple allowed callback URLs"
-                      :disabled="create.formLoadStatus === STATUS.LOADING"
-                      @input="$v.create.callbackURL.$touch()"
-                      @blur="$v.create.callbackURL.$touch()"
-                      :prepend-icon="'mdi-undo-variant'"
-                    />
-                    <v-text-field
-                      v-model="create.logoutURL"
-                      :error-messages="logoutURLErrors"
-                      label="Logout URL"
-                      required
-                      hint="Your application's logout URL to trigger global logout"
-                      :disabled="create.formLoadStatus === STATUS.LOADING"
-                      @input="$v.create.logoutURL.$touch()"
-                      @blur="$v.create.logoutURL.$touch()"
-                      :prepend-icon="'mdi-logout-variant'"
-                    />
-                  </v-col>
-                </v-row>
+                <div v-if="create.formLoadStatus !== STATUS.COMPLETE">
+                  <v-row>
+                    <v-col cols="12">
+                      <v-text-field
+                        v-model="create.name"
+                        :error-messages="nameErrors"
+                        :counter="20"
+                        label="Name"
+                        required
+                        :disabled="create.formLoadStatus === STATUS.LOADING"
+                        @input="$v.create.name.$touch()"
+                        @blur="$v.create.name.$touch()"
+                        :prepend-icon="'mdi-application'"
+                      />
+                      <v-text-field
+                        v-model="create.description"
+                        :error-messages="descriptionErrors"
+                        :counter="50"
+                        label="Description"
+                        required
+                        :disabled="create.formLoadStatus === STATUS.LOADING"
+                        @input="$v.create.description.$touch()"
+                        @blur="$v.create.description.$touch()"
+                        :prepend-icon="'mdi-text'"
+                      />
+                      <v-text-field
+                        v-model="create.loginURL"
+                        :error-messages="loginURLErrors"
+                        label="Login URL"
+                        required
+                        hint="Ratify may require to redirect users back to your application's login page"
+                        :disabled="create.formLoadStatus === STATUS.LOADING"
+                        @input="$v.create.loginURL.$touch()"
+                        @blur="$v.create.loginURL.$touch()"
+                        :prepend-icon="'mdi-login-variant'"
+                      />
+                      <v-text-field
+                        v-model="create.callbackURL"
+                        :error-messages="callbackURLErrors"
+                        label="Callback URL"
+                        required
+                        hint="Use semicolon to separate multiple allowed callback URLs"
+                        :disabled="create.formLoadStatus === STATUS.LOADING"
+                        @input="$v.create.callbackURL.$touch()"
+                        @blur="$v.create.callbackURL.$touch()"
+                        :prepend-icon="'mdi-undo-variant'"
+                      />
+                      <v-text-field
+                        v-model="create.logoutURL"
+                        :error-messages="logoutURLErrors"
+                        label="Logout URL"
+                        required
+                        hint="Your application's logout URL to trigger global logout"
+                        :disabled="create.formLoadStatus === STATUS.LOADING"
+                        @input="$v.create.logoutURL.$touch()"
+                        @blur="$v.create.logoutURL.$touch()"
+                        :prepend-icon="'mdi-logout-variant'"
+                      />
+                    </v-col>
+                  </v-row>
+                </div>
               </v-expand-transition>
               <v-expand-transition>
-                <v-row v-if="create.formLoadStatus === STATUS.COMPLETE">
-                  <v-col cols="12">
-                    <div>
-                      <b>{{ this.create.name }}</b> has been created. Safely
-                      store the following <b>client_secret</b>, it
-                      <b>cannot</b> be seen again once this prompt is closed.
-                      Exposing this secret will leave your application
-                      vulnerable.
-                    </div>
-                    <div class="mt-2">
-                      <div class="mb-1 text-overline text--secondary">
-                        Client Secret
-                      </div>
+                <div v-if="create.formLoadStatus === STATUS.COMPLETE">
+                  <v-row>
+                    <v-col cols="12">
                       <div>
-                        <code>{{ this.create.clientSecret }}</code>
+                        <b>{{ this.create.name }}</b> has been created. Safely
+                        store the following <b>client_secret</b>, it
+                        <b>cannot</b> be seen again once this prompt is closed.
+                        Exposing this secret will leave your application
+                        vulnerable.
                       </div>
-                    </div>
-                  </v-col>
-                </v-row>
+                      <div class="mt-2">
+                        <div class="mb-1 text-overline text--secondary">
+                          Client Secret
+                        </div>
+                        <div>
+                          <code>{{ this.create.clientSecret }}</code>
+                        </div>
+                      </div>
+                    </v-col>
+                  </v-row>
+                </div>
               </v-expand-transition>
             </div>
           </v-card>
