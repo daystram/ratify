@@ -329,7 +329,10 @@
                       label="Login URL"
                       required
                       hint="Ratify may require to redirect users back to your application's login page"
-                      :disabled="application.formLoadStatus === STATUS.LOADING"
+                      :disabled="
+                        application.formLoadStatus === STATUS.LOADING ||
+                          application.locked
+                      "
                       @input="$v.application.loginURL.$touch()"
                       @blur="$v.application.loginURL.$touch()"
                       :prepend-icon="'mdi-login-variant'"
@@ -352,7 +355,10 @@
                       label="Callback URL"
                       required
                       hint="Use semicolon to separate multiple allowed callback URLs"
-                      :disabled="application.formLoadStatus === STATUS.LOADING"
+                      :disabled="
+                        application.formLoadStatus === STATUS.LOADING ||
+                          application.locked
+                      "
                       @input="$v.application.callbackURL.$touch()"
                       @blur="$v.application.callbackURL.$touch()"
                       :prepend-icon="'mdi-undo-variant'"
@@ -375,7 +381,10 @@
                       label="Logout URL"
                       required
                       hint="Your application's logout URL to trigger global logout"
-                      :disabled="application.formLoadStatus === STATUS.LOADING"
+                      :disabled="
+                        application.formLoadStatus === STATUS.LOADING ||
+                          application.locked
+                      "
                       @input="$v.application.logoutURL.$touch()"
                       @blur="$v.application.logoutURL.$touch()"
                       :prepend-icon="'mdi-logout-variant'"
@@ -423,6 +432,7 @@
                         color="error"
                         v-bind="attrs"
                         v-on="on"
+                        :disabled="application.locked"
                       >
                         Delete
                       </v-btn>
@@ -517,6 +527,7 @@ export default Vue.extend({
       loginURL: "",
       callbackURL: "",
       logoutURL: "",
+      locked: false,
       editing: false,
       before: {
         name: "",
@@ -618,6 +629,7 @@ export default Vue.extend({
         this.application.loginURL = response.data.data.login_url;
         this.application.callbackURL = response.data.data.callback_url;
         this.application.logoutURL = response.data.data.logout_url;
+        this.application.locked = response.data.data.locked;
         this.pageLoadStatus = STATUS.COMPLETE;
       })
       .catch(error => {
