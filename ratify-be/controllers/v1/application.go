@@ -114,9 +114,18 @@ func PUTApplication(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
-	applicationInfo.ClientID = strings.TrimPrefix(c.Param("client_id"), "/")
-	if _, err = handlers.Handler.RetrieveApplication(applicationInfo.ClientID); err != nil {
+	var application models.Application
+	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/")
+	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	// checked locked flag
+	if application.Locked &&
+		(applicationInfo.LoginURL != application.LoginURL ||
+			applicationInfo.CallbackURL != application.CallbackURL ||
+			applicationInfo.LogoutURL != application.LogoutURL) {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "application is locked"})
 		return
 	}
 	// update application
@@ -137,13 +146,19 @@ func PUTApplication(c *gin.Context) {
 func DELETEApplication(c *gin.Context) {
 	var err error
 	// fetch application info
-	clientID := strings.TrimPrefix(c.Param("client_id"), "/")
-	if _, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
+	var application models.Application
+	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/")
+	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
+	// checked locked flag
+	if application.Locked {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "application is locked"})
+		return
+	}
 	// delete application
-	if err = handlers.Handler.DeleteApplication(clientID); err != nil {
+	if err = handlers.Handler.DeleteApplication(application.ClientID); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed deleting application"})
 		return
 	}

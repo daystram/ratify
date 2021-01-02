@@ -27,7 +27,7 @@ type HandlerFunc interface {
 	RetrieveApplication(clientID string) (application models.Application, err error)
 	RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error)
 	RetrieveAllApplications() (applications []models.Application, err error)
-	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID string, err error)
+	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID, clientSecret string, err error)
 	UpdateApplication(application datatransfers.ApplicationInfo) (err error)
 	RenewApplicationClientSecret(clientID string) (clientSecret string, err error)
 	DeleteApplication(clientID string) (err error)
