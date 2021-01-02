@@ -156,10 +156,10 @@ func (m *module) ValidateCodeVerifier(authorizationCode string, pkce datatransfe
 
 func (m *module) IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error) {
 	var result *redis.StringStringMapCmd
-	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDKeyAccessToken, accessToken)); result.Err() != nil && err != redis.Nil {
+	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDKeyAccessToken, accessToken)); result.Err() != nil {
 		return datatransfers.TokenIntrospection{Active: false}, errors.New(fmt.Sprintf("failed retrieving access token. %v", result.Err()))
 	}
-	if err == redis.Nil {
+	if result.Val()["client_id"] == "" {
 		return datatransfers.TokenIntrospection{Active: false}, nil
 	}
 	return datatransfers.TokenIntrospection{

@@ -22,12 +22,12 @@ func AuthMiddleware(c *gin.Context) {
 	var err error
 	var tokenInfo datatransfers.TokenIntrospection
 	if tokenInfo, err = handlers.Handler.IntrospectAccessToken(accessToken); err != nil || !tokenInfo.Active {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid access_token"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "invalid_token", Error: "invalid access_token"})
 		return
 	}
 	var user models.User
 	if user, err = handlers.Handler.RetrieveUserBySubject(tokenInfo.Subject); err != nil {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: err.Error()})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code:"invalid_token", Error: err.Error()})
 		return
 	}
 	c.Set(constants.IsAuthenticatedKey, true)

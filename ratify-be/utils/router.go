@@ -11,12 +11,12 @@ import (
 
 func AuthOnly(c *gin.Context) {
 	if !c.GetBool(constants.IsAuthenticatedKey) {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "user not authenticated"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "invalid_token", Error: "user not authenticated"})
 	}
 }
 
 func SuperuserOnly(c *gin.Context) {
 	if !c.GetBool(constants.IsSuperuserKey) {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "access unauthorized"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "unauthorized", Error: "access unauthorized"})
 	}
 }
