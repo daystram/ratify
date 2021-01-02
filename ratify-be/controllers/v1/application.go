@@ -95,7 +95,13 @@ func POSTApplication(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
 	}
-	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_id": applicationInfo.ClientID}})
+	// get application secret
+	var application models.Application
+	if application, err = handlers.Handler.RetrieveApplication(applicationInfo.ClientID); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed retrieving application"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_id": application.ClientID, "client_secret": application.ClientSecret}})
 	return
 }
 
