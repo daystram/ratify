@@ -542,6 +542,7 @@ export default Vue.extend({
     revoke: {
       prompt: false,
       confirmName: "",
+      clientSecret: "",
       formLoadStatus: STATUS.IDLE
     },
     deleting: {
