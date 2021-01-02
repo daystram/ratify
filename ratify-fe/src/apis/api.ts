@@ -26,6 +26,9 @@ export default {
     ): Promise<AxiosResponse> {
       return apiClient.put(`application/${clientId}`, application, withAuth);
     },
+    delete: function(clientId: string): Promise<AxiosResponse> {
+      return apiClient.delete(`application/${clientId}`, withAuth);
+    },
     list: function(): Promise<AxiosResponse> {
       return apiClient.get(`application`, withAuth);
     },
