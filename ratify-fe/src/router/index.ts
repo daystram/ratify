@@ -26,12 +26,18 @@ const routes: Array<RouteConfig> = [
   {
     path: "/",
     name: "home",
-    component: Home
+    component: Home,
+    meta: {
+      title: "Ratify"
+    }
   },
   {
     path: "/authorize",
     name: "authorize",
-    component: Authorize
+    component: Authorize,
+    meta: {
+      title: "Authorize | Ratify"
+    }
   },
   {
     path: "/manage",
@@ -42,47 +48,74 @@ const routes: Array<RouteConfig> = [
       {
         path: "dashboard",
         name: "manage:dashboard",
-        component: Dashboard
+        component: Dashboard,
+        meta: {
+          title: "Dashboard | Ratify"
+        }
       },
       {
         path: "profile",
         name: "manage:profile",
-        component: Profile
+        component: Profile,
+        meta: {
+          title: "Profile | Ratify"
+        }
       },
       {
         path: "incident",
         name: "manage:incident",
-        component: Placeholder
+        component: Placeholder,
+        meta: {
+          title: "WIP:Incidents | Ratify"
+        }
       },
       {
         path: "session",
         name: "manage:session",
-        component: Placeholder
+        component: Placeholder,
+        meta: {
+          title: "WIP:Sessions | Ratify"
+        }
       },
       {
         path: "setting",
         name: "manage:setting",
-        component: Placeholder
+        component: Placeholder,
+        meta: {
+          title: "WIP:Settings | Ratify"
+        }
       },
       {
         path: "user",
         name: "manage:user",
-        component: User
+        component: User,
+        meta: {
+          title: "WIP:Users | Ratify"
+        }
       },
       {
         path: "application",
         name: "manage:application",
-        component: ApplicationList
+        component: ApplicationList,
+        meta: {
+          title: "Applications | Ratify"
+        }
       },
       {
         path: "application/:clientId",
         name: "manage:application-detail",
-        component: ApplicationDetail
+        component: ApplicationDetail,
+        meta: {
+          title: "Application Detail | Ratify"
+        }
       },
       {
         path: "log",
         name: "manage:log",
-        component: Placeholder
+        component: Placeholder,
+        meta: {
+          title: "WIP:Logs | Ratify"
+        }
       },
       { path: "*", redirect: "/" }
     ]
@@ -102,7 +135,10 @@ const routes: Array<RouteConfig> = [
     path: "/signup",
     name: "signup",
     beforeEnter: unAuthenticatedOnly,
-    component: Signup
+    component: Signup,
+    meta: {
+      title: "Signup | Ratify"
+    }
   },
   {
     path: "/callback",
@@ -116,6 +152,11 @@ const router = new VueRouter({
   mode: "history",
   base: process.env.BASE_URL,
   routes
+});
+
+router.beforeEach((to, from, next) => {
+  document.title = to.meta.title || "Ratify";
+  next();
 });
 
 export default router;
