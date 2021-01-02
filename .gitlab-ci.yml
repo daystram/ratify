@@ -96,7 +96,7 @@ deploy dev ratify-fe:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd ratify-fe
-    - cp $VUE_ENV_FILE .
+    - cp $VUE_ENV_FILE ./.env.development
     - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe-dev .
     - docker push $CI_REGISTRY_IMAGE:ratify-fe-dev
   when: manual
@@ -119,7 +119,7 @@ deploy prod ratify-fe:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd ratify-fe
-    - cp $VUE_ENV_FILE .
+    - cp $VUE_ENV_FILE  ./.env.production
     - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe .
     - docker push $CI_REGISTRY_IMAGE:ratify-fe
   when: manual
