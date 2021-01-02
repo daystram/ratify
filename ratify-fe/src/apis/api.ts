@@ -6,11 +6,11 @@ const apiClient: AxiosInstance = axios.create({
   baseURL: "/api/v1/"
 });
 
-const withAuth = {
+const withAuth = () => ({
   headers: {
     Authorization: `Bearer ${authManager.getToken(ACCESS_TOKEN)}`
   }
-};
+});
 
 export default {
   application: {
@@ -18,25 +18,28 @@ export default {
       clientId: string,
       complete?: boolean
     ): Promise<AxiosResponse> {
-      return apiClient.get(`application/${clientId}`, complete ? withAuth : {});
+      return apiClient.get(
+        `application/${clientId}`,
+        complete ? withAuth() : {}
+      );
     },
     update: function(
       clientId: string,
       application: object
     ): Promise<AxiosResponse> {
-      return apiClient.put(`application/${clientId}`, application, withAuth);
+      return apiClient.put(`application/${clientId}`, application, withAuth());
     },
     revoke: function(clientId: string): Promise<AxiosResponse> {
-      return apiClient.put(`application/${clientId}/revoke`, {}, withAuth);
+      return apiClient.put(`application/${clientId}/revoke`, {}, withAuth());
     },
     delete: function(clientId: string): Promise<AxiosResponse> {
-      return apiClient.delete(`application/${clientId}`, withAuth);
+      return apiClient.delete(`application/${clientId}`, withAuth());
     },
     list: function(): Promise<AxiosResponse> {
-      return apiClient.get(`application/`, withAuth);
+      return apiClient.get(`application/`, withAuth());
     },
     register: function(application: object): Promise<AxiosResponse> {
-      return apiClient.post(`application`, application, withAuth);
+      return apiClient.post(`application`, application, withAuth());
     }
   },
   form: {
@@ -46,10 +49,10 @@ export default {
   },
   user: {
     detail: function(subject?: string): Promise<AxiosResponse> {
-      return apiClient.get(`user/${subject || ""}`, withAuth);
+      return apiClient.get(`user/${subject || ""}`, withAuth());
     },
     update: function(user: object): Promise<AxiosResponse> {
-      return apiClient.put(`user`, user, withAuth);
+      return apiClient.put(`user`, user, withAuth());
     },
     signup: function(userSignup: object): Promise<AxiosResponse> {
       return apiClient.post("user", userSignup);
