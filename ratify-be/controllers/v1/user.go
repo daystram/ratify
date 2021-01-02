@@ -55,7 +55,7 @@ func POSTRegister(c *gin.Context) {
 		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: "email_exists", Error: "email already used"})
 		return
 	}
-	if err = handlers.Handler.RegisterUser(user); err != nil {
+	if _, err = handlers.Handler.RegisterUser(user); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering user"})
 		return
 	}

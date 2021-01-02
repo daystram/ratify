@@ -20,19 +20,19 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user mod
 	return user, nil
 }
 
-func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (err error) {
+func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject string, err error) {
 	var hashedPassword []byte
 	if hashedPassword, err = bcrypt.GenerateFromPassword([]byte(userSignup.Password), bcrypt.DefaultCost); err != nil {
-		return errors.New("failed hashing password")
+		return "", errors.New("failed hashing password")
 	}
-	if _, err = m.db.userOrmer.InsertUser(models.User{
+	if userSubject, err = m.db.userOrmer.InsertUser(models.User{
 		GivenName:  userSignup.GivenName,
 		FamilyName: userSignup.FamilyName,
 		Username:   userSignup.Username,
 		Email:      userSignup.Email,
 		Password:   string(hashedPassword),
 	}); err != nil  {
-		return errors.New(fmt.Sprintf("error inserting user. %v", err))
+		return "", errors.New(fmt.Sprintf("error inserting user. %v", err))
 	}
 	return
 }
