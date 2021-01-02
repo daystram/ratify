@@ -114,9 +114,7 @@
                       Client Secret
                     </div>
                     <div style="height: 24px">
-                      <code>
-                        ••••••••••••••••
-                      </code>
+                      <code>••••••••••••••••</code>
                       <v-btn
                         :ripple="false"
                         plain
@@ -250,6 +248,116 @@
         </v-col>
       </v-fade-transition>
     </v-row>
+    <v-row>
+      <v-fade-transition>
+        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+          <v-card class="danger-border">
+            <v-card-title>
+              <v-row no-gutters align="center">
+                <v-col cols="auto" class="error--text">
+                  Danger Zone
+                </v-col>
+              </v-row>
+            </v-card-title>
+            <v-divider inset />
+            <div class="v-card__body">
+              <v-row justify="end" align="center">
+                <v-col cols="">
+                  <div>
+                    Delete application
+                  </div>
+                  <div class="text--secondary">
+                    You cannot un-delete an application. Take extreme caution.
+                  </div>
+                </v-col>
+                <v-col cols="auto">
+                  <v-dialog
+                    v-model="deleting.prompt"
+                    width="500"
+                    @input="v => v || cancelDelete()"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        rounded
+                        outlined
+                        color="error"
+                        v-bind="attrs"
+                        v-on="on"
+                      >
+                        Delete
+                      </v-btn>
+                    </template>
+                    <v-card class="danger-border">
+                      <v-card-title>
+                        <v-row no-gutters align="center">
+                          <v-col cols="auto" class="error--text">
+                            Delete Application
+                          </v-col>
+                          <v-spacer />
+                          <v-col cols="auto">
+                            <v-btn
+                              text
+                              icon
+                              color="grey"
+                              @click="
+                                () => {
+                                  this.deleting.prompt = false;
+                                }
+                              "
+                            >
+                              <v-icon v-text="'mdi-close'" />
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                      </v-card-title>
+                      <v-divider inset />
+                      <div class="v-card__body">
+                        <v-alert type="warning" text dense>
+                          You are about to delete this application!
+                        </v-alert>
+                        <v-row align="center">
+                          <v-col>
+                            Are you sure you want to permanently delete
+                            <b>{{ this.application.name }}</b
+                            >? This is action is <b>irreversible</b> and all of
+                            this application's clients will not be able to user
+                            Ratify authentication service.
+                          </v-col>
+                        </v-row>
+                        <v-row align="center">
+                          <v-col>
+                            <div>
+                              Type <b>{{ this.application.name }}</b> to
+                              confirm.
+                            </div>
+                            <v-text-field
+                              v-model="deleting.confirmName"
+                              :prepend-icon="'mdi-application'"
+                            />
+                            <v-btn
+                              rounded
+                              block
+                              outlined
+                              color="error"
+                              :disabled="
+                                deleting.confirmName !== this.application.name
+                              "
+                              @click="deleteApplication"
+                            >
+                              Delete
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                      </div>
+                    </v-card>
+                  </v-dialog>
+                </v-col>
+              </v-row>
+            </div>
+          </v-card>
+        </v-col>
+      </v-fade-transition>
+    </v-row>
     <v-fade-transition>
       <v-overlay
         v-show="pageLoadStatus !== STATUS.COMPLETE"
@@ -269,29 +377,32 @@ import api from "@/apis/api";
 import { maxLength, required, url } from "vuelidate/lib/validators";
 
 export default Vue.extend({
-  data() {
-    return {
-      application: {
+  data: () => ({
+    application: {
+      name: "",
+      clientId: "",
+      description: "",
+      loginURL: "",
+      callbackURL: "",
+      logoutURL: "",
+      editing: false,
+      before: {
         name: "",
-        clientId: "",
         description: "",
         loginURL: "",
         callbackURL: "",
-        logoutURL: "",
-        editing: false,
-        before: {
-          name: "",
-          description: "",
-          loginURL: "",
-          callbackURL: "",
-          logoutURL: ""
-        },
-        formLoadStatus: STATUS.IDLE,
-        apiResponseCode: ""
+        logoutURL: ""
       },
-      pageLoadStatus: STATUS.PRE_LOADING
-    };
-  },
+      formLoadStatus: STATUS.IDLE,
+      apiResponseCode: ""
+    },
+    deleting: {
+      prompt: false,
+      confirmName: "",
+      formLoadStatus: STATUS.IDLE
+    },
+    pageLoadStatus: STATUS.PRE_LOADING
+  }),
 
   validations: {
     application: {
@@ -361,15 +472,22 @@ export default Vue.extend({
   },
 
   created() {
-    api.application.detail(this.$route.params.clientId, true).then(response => {
-      this.application.name = response.data.data.name;
-      this.application.clientId = response.data.data.client_id;
-      this.application.description = response.data.data.description;
-      this.application.loginURL = response.data.data.login_url;
-      this.application.callbackURL = response.data.data.callback_url;
-      this.application.logoutURL = response.data.data.logout_url;
-      this.pageLoadStatus = STATUS.COMPLETE;
-    });
+    api.application
+      .detail(this.$route.params.clientId, true)
+      .then(response => {
+        this.application.name = response.data.data.name;
+        this.application.clientId = response.data.data.client_id;
+        this.application.description = response.data.data.description;
+        this.application.loginURL = response.data.data.login_url;
+        this.application.callbackURL = response.data.data.callback_url;
+        this.application.logoutURL = response.data.data.logout_url;
+        this.pageLoadStatus = STATUS.COMPLETE;
+      })
+      .catch(error => {
+        if (error.response.status === 404) {
+          this.$router.push({ name: "manage:application" });
+        }
+      });
   },
 
   methods: {
@@ -419,7 +537,7 @@ export default Vue.extend({
               .then(response => {
                 console.log(response.data);
                 this.application.editing = false;
-                this.application.formLoadStatus = STATUS.SUCCESS;
+                this.application.formLoadStatus = STATUS.COMPLETE;
               })
               .catch(error => {
                 console.error(error.response.data);
@@ -433,6 +551,22 @@ export default Vue.extend({
           2000
         );
       }
+    },
+    deleteApplication() {
+      this.deleting.formLoadStatus = STATUS.LOADING;
+      api.application
+        .delete(this.application.clientId)
+        .then(() => {
+          this.$router.push({ name: "manage:application" });
+        })
+        .catch(error => {
+          console.error(error);
+          this.deleting.formLoadStatus = STATUS.ERROR;
+        });
+    },
+    cancelDelete() {
+      this.deleting.confirmName = "";
+      this.deleting.formLoadStatus = STATUS.IDLE;
     }
   }
 });

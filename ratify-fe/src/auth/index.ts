@@ -40,7 +40,7 @@ const callback = function() {
     });
 };
 
-const authenticatedOnly = function(to: any, from: any, next: () => void) {
+const authenticatedOnly = function(to: object, from: object, next: () => void) {
   if (authManager.getToken(ACCESS_TOKEN)) {
     next();
   } else {
@@ -50,7 +50,11 @@ const authenticatedOnly = function(to: any, from: any, next: () => void) {
   }
 };
 
-const unAuthenticatedOnly = function(to: any, from: any, next: () => void) {
+const unAuthenticatedOnly = function(
+  to: object,
+  from: object,
+  next: () => void
+) {
   if (!authManager.getToken(ACCESS_TOKEN)) {
     next();
   } else {
