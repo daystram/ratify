@@ -115,14 +115,8 @@ func PUTApplication(c *gin.Context) {
 		return
 	}
 	applicationInfo.ClientID = c.Param("client_id")
-	// check ownership
-	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(applicationInfo.ClientID); err != nil {
+	if _, err = handlers.Handler.RetrieveApplication(applicationInfo.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
-		return
-	}
-	if application.Owner.Subject != c.GetString(constants.UserSubjectKey) {
-		c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "access to resource unauthorized"})
 		return
 	}
 	// update application
