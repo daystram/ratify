@@ -58,7 +58,7 @@
             </v-list-item>
             <v-list-item :to="{ name: 'logout' }" dense>
               <v-list-item-icon>
-                <v-icon color="error">mdi-key</v-icon>
+                <v-icon color="error">mdi-logout-variant</v-icon>
               </v-list-item-icon>
               <v-list-item-content>
                 <v-list-item-title class="error--text">

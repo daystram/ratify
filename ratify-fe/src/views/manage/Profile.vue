@@ -187,7 +187,7 @@
         opacity="0"
         absolute
       >
-        <v-progress-circular indeterminate size="64"></v-progress-circular>
+        <v-progress-circular indeterminate size="64" />
       </v-overlay>
     </v-fade-transition>
   </div>
@@ -317,6 +317,7 @@ export default Vue.extend({
         familyName: "",
         email: ""
       };
+      this.$v.$reset();
     },
     saveUser() {
       if (!this.user.editing) {
@@ -329,7 +330,6 @@ export default Vue.extend({
       this.$v.$touch();
       if (!this.$v.$invalid) {
         this.user.formLoadStatus = STATUS.LOADING;
-
         setTimeout(
           () =>
             api.user

@@ -231,7 +231,7 @@ export default Vue.extend({
       this.startRedirectCounter();
     }
     api.application
-      .getOne(this.authRequest.clientId)
+      .detail(this.authRequest.clientId)
       .then(response => {
         this.application = response.data.data;
         this.pageLoadStatus = STATUS.COMPLETE;
