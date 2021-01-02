@@ -200,22 +200,20 @@ import { STATUS } from "@/constants/status";
 import { maxLength, required, url } from "vuelidate/lib/validators";
 
 export default Vue.extend({
-  data() {
-    return {
-      applications: [],
-      create: {
-        creating: false,
-        name: "",
-        description: "",
-        loginURL: "",
-        callbackURL: "",
-        logoutURL: "",
-        formLoadStatus: STATUS.IDLE,
-        apiResponseCode: ""
-      },
-      pageLoadStatus: STATUS.PRE_LOADING
-    };
-  },
+  data: () => ({
+    applications: [],
+    create: {
+      creating: false,
+      name: "",
+      description: "",
+      loginURL: "",
+      callbackURL: "",
+      logoutURL: "",
+      formLoadStatus: STATUS.IDLE,
+      apiResponseCode: ""
+    },
+    pageLoadStatus: STATUS.PRE_LOADING
+  }),
 
   computed: {
     nameErrors() {

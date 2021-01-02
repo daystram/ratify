@@ -340,10 +340,9 @@ export default Vue.extend({
                 email: this.user.email
                 /* eslint-enable @typescript-eslint/camelcase */
               })
-              .then(response => {
-                console.log(response.data);
+              .then(() => {
                 this.user.editing = false;
-                this.user.formLoadStatus = STATUS.SUCCESS;
+                this.user.formLoadStatus = STATUS.COMPLETE;
               })
               .catch(error => {
                 console.error(error.response.data);
