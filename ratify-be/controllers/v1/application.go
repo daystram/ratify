@@ -1,7 +1,10 @@
 package v1
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -30,6 +33,14 @@ func GETOneApplicationDetail(c *gin.Context) {
 	}
 	// check superuser
 	if !c.GetBool(constants.IsSuperuserKey) {
+		var next int
+		if sessionCookie, err := c.Request.Cookie("test"); err == nil {
+			// user still signed in, check cookie
+			next, _ = strconv.Atoi(sessionCookie.Value)
+		} else {
+			log.Println(err)
+		}
+		c.SetCookie("test", fmt.Sprintf("%d", next + 1), 120, "/api/v1/application", "localhost", false, true)
 		c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
 			Name: application.Name,
 		}})
