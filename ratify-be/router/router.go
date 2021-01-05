@@ -20,6 +20,7 @@ func InitializeRouter() (router *gin.Engine) {
 	apiv1.Use(
 		middleware.CORSMiddleware,
 		middleware.AuthMiddleware,
+		utils.LogIP,
 	)
 	{
 		form := apiv1.Group("/form")

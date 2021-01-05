@@ -20,7 +20,7 @@ require (
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 	golang.org/x/net v0.0.0-20201216054612-986b41b23924 // indirect
 	golang.org/x/sys v0.0.0-20201214210602-f9fddec55a1e // indirect
-	golang.org/x/tools v0.0.0-20201223010750-3fa0e8f87c1a // indirect
+	golang.org/x/tools v0.0.0-20201223010750-3fa0e8f87c1a
 	gorm.io/driver/postgres v1.0.5
 	gorm.io/gorm v1.20.8
 )
