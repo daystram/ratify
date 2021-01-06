@@ -2,6 +2,7 @@ package oauth
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -40,14 +41,13 @@ func POSTAuthorize(c *gin.Context) {
 		var user models.User
 		if authRequest.Username == "" && authRequest.Password == "" {
 			// get session cookie
-			var cookie *http.Cookie
-			cookie, err = c.Request.Cookie(constants.SessionIDCookieKey)
+			sessionID, err = c.Cookie(constants.SessionIDCookieKey)
 			if err != nil {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "invalid cookie"})
 				return
 			} else {
 				// verify user session
-				if user, sessionID, err = handlers.Handler.CheckSession(cookie.Value); err != nil {
+				if user, sessionID, err = handlers.Handler.CheckSession(sessionID); err != nil {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "invalid session_id"})
 					return
 				}
@@ -83,7 +83,7 @@ func POSTAuthorize(c *gin.Context) {
 			State:             authRequest.State,
 		})
 		c.SetSameSite(http.SameSiteStrictMode)
-		c.SetCookie(constants.SessionIDCookieKey, sessionID, int(constants.SessionIDExpiry.Seconds()), "/oauth/authorize", "", false, true)
+		c.SetCookie(constants.SessionIDCookieKey, sessionID, int(constants.SessionIDExpiry.Seconds()), "/oauth", "", true, true)
 		c.JSON(http.StatusOK, gin.H{
 			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
 		})
@@ -91,4 +91,36 @@ func POSTAuthorize(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "unsupported authorization flow"})
 		return
 	}
+}
+
+// @Summary Request logout
+// @Tags oauth
+// @Param user body datatransfers.LogoutRequest true "Logout request info"
+// @Success 200 "OK"
+// @Router /oauth/logout [POST]
+func POSTLogout(c *gin.Context) {
+	var err error
+	// fetch request info
+	var logoutRequest datatransfers.LogoutRequest
+	if err = c.ShouldBindJSON(&logoutRequest); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
+		return
+	}
+	// retrieve application
+	if _, err = handlers.Handler.RetrieveApplication(logoutRequest.ClientID); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	// TODO: revoke access+refresh tokens
+	if logoutRequest.Global {
+		var sessionID string
+		if sessionID, err = c.Cookie(constants.SessionIDCookieKey); err != nil {
+			if err = handlers.Handler.ClearSession(sessionID); err != nil {
+				log.Printf("failed clearing session. %v", err)
+			}
+		}
+		c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
 }
