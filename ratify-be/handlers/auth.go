@@ -22,7 +22,7 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user mod
 		return models.User{}, "", errors.New("incorrect credentials")
 	}
 	sessionID = utils.GenerateRandomString(constants.SessionIDLength)
-	sessionTokenKey := fmt.Sprintf(constants.RDKeySessionToken, sessionID)
+	sessionTokenKey := fmt.Sprintf(constants.RDTemSessionToken, sessionID)
 	sessionTokenValue := map[string]interface{}{
 		"subject": user.Subject,
 	}
@@ -38,7 +38,7 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user mod
 
 func (m *module) CheckSession(sessionID string) (user models.User, newSessionID string, err error) {
 	var result *redis.StringStringMapCmd
-	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDKeySessionToken, sessionID)); result.Err() != nil {
+	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemSessionToken, sessionID)); result.Err() != nil {
 		return models.User{}, "", errors.New(fmt.Sprintf("failed retrieving authorization_code. %v", result.Err()))
 	}
 	// TODO: rotate/refresh sessionID?
@@ -51,7 +51,7 @@ func (m *module) CheckSession(sessionID string) (user models.User, newSessionID 
 }
 
 func (m *module) ClearSession(sessionID string) (err error) {
-	return m.rd.Del(context.Background(), fmt.Sprintf(constants.RDKeySessionToken, sessionID)).Err()
+	return m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemSessionToken, sessionID)).Err()
 }
 
 func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject string, err error) {

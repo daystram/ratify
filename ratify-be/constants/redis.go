@@ -4,9 +4,14 @@ const (
 	RDDelimiter      = "::"
 	defaultDelimiter = RDDelimiter + "%s"
 
-	RDKeyAuthorizationCode = GrantTypeAuthorizationCode + defaultDelimiter
-	RDKeyCodeChallenge     = "code_challenge" + defaultDelimiter
-	RDKeySessionToken      = "session_token" + defaultDelimiter
-	RDKeyAccessToken       = "access_token" + defaultDelimiter
-	RDKeyRefreshToken      = "refresh_token" + defaultDelimiter
+	RDTemAuthorizationCode = GrantTypeAuthorizationCode + defaultDelimiter
+	RDTemCodeChallenge     = RDKeyCodeChallenge + defaultDelimiter
+	RDTemSessionToken      = RDKeySessionToken + defaultDelimiter
+	RDTemAccessToken       = RDKeyAccessToken + defaultDelimiter
+	RDTemRefreshToken      = RDKeyRefreshToken + defaultDelimiter
+
+	RDKeyCodeChallenge = "code_challenge"
+	RDKeySessionToken  = "session_token"
+	RDKeyAccessToken   = "access_token"
+	RDKeyRefreshToken  = "refresh_token"
 )
