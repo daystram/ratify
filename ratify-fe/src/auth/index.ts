@@ -17,7 +17,7 @@ const login = function() {
 
 const logout = function(global: boolean) {
   return function() {
-    authManager.logout(global).then(() => {
+    authManager.logout(global).finally(() => {
       router.replace({ name: "home" });
     });
   };

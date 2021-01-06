@@ -41,6 +41,7 @@ type HandlerFunc interface {
 	IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error)
 	StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
 	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
+	RevokeTokens(userSubject, clientID string, global bool) (err error)
 }
 
 type module struct {
