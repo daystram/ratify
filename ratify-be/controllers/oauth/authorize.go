@@ -111,7 +111,11 @@ func POSTLogout(c *gin.Context) {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
-	// TODO: revoke access+refresh tokens
+	// revoke tokens
+	if err = handlers.Handler.RevokeTokens(c.GetString(constants.UserSubjectKey), logoutRequest.ClientID, logoutRequest.Global); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed revoking tokens"})
+		return
+	}
 	if logoutRequest.Global {
 		var sessionID string
 		if sessionID, err = c.Cookie(constants.SessionIDCookieKey); err == nil {
