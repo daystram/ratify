@@ -169,3 +169,32 @@ func (m *module) IntrospectAccessToken(accessToken string) (tokenInfo datatransf
 		Scope:  result.Val()["scope"],
 	}, nil
 }
+
+func (m *module) RevokeTokens(subject, clientID string, global bool) (err error) {
+	var matches *redis.StringSliceCmd
+	// revoke access_token
+	if matches = m.rd.Keys(context.Background(), constants.RDKeyAccessToken+"*"); matches.Err() != nil {
+		return errors.New(fmt.Sprintf("failed retrieving access_token keys. %v", matches.Err()))
+	}
+	for _, key := range matches.Val() {
+		var result *redis.StringStringMapCmd
+		if result = m.rd.HGetAll(context.Background(), key); result.Err() == nil {
+			if result.Val()["subject"] == subject && (global || result.Val()["client_id"] == clientID) {
+				_ = m.rd.Del(context.Background(), key)
+			}
+		}
+	}
+	// revoke refresh_token
+	if matches = m.rd.Keys(context.Background(), constants.RDKeyRefreshToken+"*"); matches.Err() != nil {
+		return errors.New(fmt.Sprintf("failed retrieving refresh_token keys. %v", matches.Err()))
+	}
+	for _, key := range matches.Val() {
+		var result *redis.StringStringMapCmd
+		if result = m.rd.HGetAll(context.Background(), key); result.Err() == nil {
+			if result.Val()["subject"] == subject && (global || result.Val()["client_id"] == clientID) {
+				_ = m.rd.Del(context.Background(), key)
+			}
+		}
+	}
+	return
+}
