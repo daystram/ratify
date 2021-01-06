@@ -151,7 +151,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { required, alphaNum } from "vuelidate/lib/validators";
+import { alphaNum, required } from "vuelidate/lib/validators";
 import api from "@/apis/api";
 import oauth from "@/apis/oauth";
 import { STATUS } from "@/constants/status";
@@ -234,7 +234,14 @@ export default Vue.extend({
       .detail(this.authRequest.clientId)
       .then(response => {
         this.application = response.data.data;
-        this.pageLoadStatus = STATUS.COMPLETE;
+        // attempt authorization via session_id cookie
+        this.authorizeUser()
+          .then(() => {
+            this.pageLoadStatus = STATUS.COMPLETE;
+          })
+          .catch(() => {
+            this.pageLoadStatus = STATUS.COMPLETE;
+          });
       })
       .catch(() => {
         this.pageLoadStatus = STATUS.BAD_REQUEST;
@@ -248,49 +255,45 @@ export default Vue.extend({
       this.$v.$touch();
       if (!this.$v.$invalid) {
         this.formLoadStatus = STATUS.LOADING;
-        setTimeout(
-          () =>
-            oauth
-              .authorize({
-                /* eslint-disable @typescript-eslint/camelcase */
-                client_id: this.authRequest.clientId,
-                response_type: this.authRequest.responseType,
-                redirect_uri: this.authRequest.redirectUri,
-                scope: this.authRequest.scope,
-                state: this.authRequest.state,
-                code_challenge: this.authRequest.codeChallenge,
-                code_challenge_method: this.authRequest.codeChallengeMethod,
-                preferred_username: this.username,
-                password: this.password
-                /* eslint-enable @typescript-eslint/camelcase */
-              })
-              .then(response => {
-                let count = 3;
-                this.successCountdown = `${count} second${
-                  count === 1 ? "" : "s"
-                }`;
-                this.redirectCounter = setInterval(() => {
-                  if (count) {
-                    this.successCountdown = `${count} second${
-                      count === 1 ? "" : "s"
-                    }`;
-                  } else {
-                    clearInterval(this.redirectCounter);
-                    window.location.replace(response.data.data);
-                  }
-                  count--;
-                }, 1000);
-                this.formLoadStatus = STATUS.COMPLETE;
-              })
-              .catch(error => {
-                this.apiResponseCode = error.response.data.code;
-                this.formLoadStatus = !this.apiResponseCode
-                  ? STATUS.ERROR
-                  : STATUS.IDLE;
-              }),
-          2000
-        );
+        this.authorizeUser().catch(error => {
+          this.apiResponseCode = error.response.data.code;
+          this.formLoadStatus = !this.apiResponseCode
+            ? STATUS.ERROR
+            : STATUS.IDLE;
+        });
       }
+    },
+    authorizeUser() {
+      return oauth
+        .authorize({
+          /* eslint-disable @typescript-eslint/camelcase */
+          client_id: this.authRequest.clientId,
+          response_type: this.authRequest.responseType,
+          redirect_uri: this.authRequest.redirectUri,
+          scope: this.authRequest.scope,
+          state: this.authRequest.state,
+          code_challenge: this.authRequest.codeChallenge,
+          code_challenge_method: this.authRequest.codeChallengeMethod,
+          preferred_username: this.username,
+          password: this.password
+          /* eslint-enable @typescript-eslint/camelcase */
+        })
+        .then(response => {
+          let count = 3;
+          this.successCountdown = `${count} second${count === 1 ? "" : "s"}`;
+          this.redirectCounter = setInterval(() => {
+            if (count) {
+              this.successCountdown = `${count} second${
+                count === 1 ? "" : "s"
+              }`;
+            } else {
+              clearInterval(this.redirectCounter);
+              window.location.replace(response.data.data);
+            }
+            count--;
+          }, 1000);
+          this.formLoadStatus = STATUS.COMPLETE;
+        });
     },
     startRedirectCounter() {
       let count = 3;
