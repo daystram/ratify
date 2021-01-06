@@ -64,6 +64,9 @@ export class AuthManager {
       })
       .then(() => {
         this.reset();
+      })
+      .catch(() => {
+        this.reset();
       });
   }
 
