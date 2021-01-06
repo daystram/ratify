@@ -58,10 +58,10 @@ import { authManager } from "@/auth";
 export default Vue.extend({
   components: { Logo },
 
-  data: function() {
-    return {
-      isAuthenticated: authManager.isAuthenticated()
-    };
+  computed: {
+    isAuthenticated() {
+      return authManager.isAuthenticated();
+    }
   }
 });
 </script>
