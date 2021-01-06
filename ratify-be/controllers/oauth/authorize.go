@@ -36,11 +36,28 @@ func POSTAuthorize(c *gin.Context) {
 	flow := authRequest.Flow()
 	switch flow {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
-		// verify user login
+		var sessionID string
 		var user models.User
-		if user, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
-			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "incorrect username or password"})
-			return
+		if authRequest.Username == "" && authRequest.Password == "" {
+			// get session cookie
+			var cookie *http.Cookie
+			cookie, err = c.Request.Cookie(constants.SessionIDCookieKey)
+			if err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "invalid cookie"})
+				return
+			} else {
+				// verify user session
+				if user, sessionID, err = handlers.Handler.CheckSession(cookie.Value); err != nil {
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "invalid session_id"})
+					return
+				}
+			}
+		} else {
+			// verify user login
+			if user, sessionID, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "incorrect username or password"})
+				return
+			}
 		}
 		// verify request credentials
 		// TODO: support comma-separated callback URLs
@@ -65,6 +82,8 @@ func POSTAuthorize(c *gin.Context) {
 			AuthorizationCode: authorizationCode,
 			State:             authRequest.State,
 		})
+		c.SetSameSite(http.SameSiteStrictMode)
+		c.SetCookie(constants.SessionIDCookieKey, sessionID, int(constants.SessionIDExpiry.Seconds()), "/oauth/authorize", "", false, true)
 		c.JSON(http.StatusOK, gin.H{
 			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
 		})
