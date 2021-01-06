@@ -327,10 +327,10 @@ export default Vue.extend({
             api.user
               .signup({
                 /* eslint-disable @typescript-eslint/camelcase */
-                given_name: this.firstname,
-                family_name: this.lastname,
-                preferred_username: this.username,
-                email: this.email,
+                given_name: this.firstname.trim(),
+                family_name: this.lastname.trim(),
+                preferred_username: this.username.trim(),
+                email: this.email.trim(),
                 password: this.password
                 /* eslint-enable @typescript-eslint/camelcase */
               })

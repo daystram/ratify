@@ -677,11 +677,11 @@ export default Vue.extend({
             api.application
               .update(this.application.clientId, {
                 /* eslint-disable @typescript-eslint/camelcase */
-                name: this.application.name,
-                description: this.application.description,
-                login_url: this.application.loginURL,
-                callback_url: this.application.callbackURL,
-                logout_url: this.application.logoutURL
+                name: this.application.name.trim(),
+                description: this.application.description.trim(),
+                login_url: this.application.loginURL.trim(),
+                callback_url: this.application.callbackURL.trim(),
+                logout_url: this.application.logoutURL.trim()
                 /* eslint-enable @typescript-eslint/camelcase */
               })
               .then(response => {

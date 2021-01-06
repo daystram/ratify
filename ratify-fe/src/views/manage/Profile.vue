@@ -335,9 +335,9 @@ export default Vue.extend({
             api.user
               .update({
                 /* eslint-disable @typescript-eslint/camelcase */
-                given_name: this.user.givenName,
-                family_name: this.user.familyName,
-                email: this.user.email
+                given_name: this.user.givenName.trim(),
+                family_name: this.user.familyName.trim(),
+                email: this.user.email.trim()
                 /* eslint-enable @typescript-eslint/camelcase */
               })
               .then(() => {
