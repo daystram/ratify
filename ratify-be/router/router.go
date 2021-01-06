@@ -21,7 +21,6 @@ func InitializeRouter() (router *gin.Engine) {
 	apiV1.Use(
 		middleware.CORSMiddleware,
 		middleware.AuthMiddleware,
-		utils.LogIP,
 	)
 	{
 		form := apiV1.Group("/form")
