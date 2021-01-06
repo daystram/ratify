@@ -114,7 +114,7 @@ func POSTLogout(c *gin.Context) {
 	// TODO: revoke access+refresh tokens
 	if logoutRequest.Global {
 		var sessionID string
-		if sessionID, err = c.Cookie(constants.SessionIDCookieKey); err != nil {
+		if sessionID, err = c.Cookie(constants.SessionIDCookieKey); err == nil {
 			if err = handlers.Handler.ClearSession(sessionID); err != nil {
 				log.Printf("failed clearing session. %v", err)
 			}
