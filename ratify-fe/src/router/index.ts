@@ -129,7 +129,12 @@ const routes: Array<RouteConfig> = [
   {
     path: "/logout",
     name: "logout",
-    component: logout
+    component: logout(false)
+  },
+  {
+    path: "/logout-global",
+    name: "logout:global",
+    component: logout(true)
   },
   {
     path: "/signup",

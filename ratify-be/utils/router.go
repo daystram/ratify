@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,4 +20,8 @@ func SuperuserOnly(c *gin.Context) {
 	if !c.GetBool(constants.IsSuperuserKey) {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "unauthorized", Error: "access unauthorized"})
 	}
+}
+
+func LogIP(c *gin.Context) {
+	log.Printf("[IP] Request IP: %s\n", c.ClientIP())
 }

@@ -54,6 +54,19 @@ export class AuthManager {
     this.storageManager.removeItem(KEY_STATE);
   }
 
+  logout(global?: boolean) {
+    return oauth
+      .logout({
+        /* eslint-disable @typescript-eslint/camelcase */
+        client_id: this.options.clientId,
+        global: global || false
+        /* eslint-enable @typescript-eslint/camelcase */
+      })
+      .then(() => {
+        this.reset();
+      });
+  }
+
   authorize(scopes?: string[]): void {
     window.location.href = `${this.options.issuer}/authorize?${qs.stringify({
       /* eslint-disable @typescript-eslint/camelcase */
@@ -83,15 +96,6 @@ export class AuthManager {
         this.storageManager.setItem(KEY_TOKEN, JSON.stringify(response.data));
         return response;
       });
-  }
-
-  revokeToken(): Promise<AxiosResponse> {
-    return oauth.revoke({
-      /* eslint-disable @typescript-eslint/camelcase */
-      client_id: this.options.clientId,
-      token: this.getToken(KEY_TOKEN)
-      /* eslint-enable @typescript-eslint/camelcase */
-    });
   }
 
   getState(): string {

@@ -84,3 +84,8 @@ type TokenIntrospection struct {
 	Subject  string `json:"sub,omitempty"`
 	Scope    string `json:"scope,omitempty"`
 }
+
+type LogoutRequest struct {
+	ClientID string `json:"client_id" binding:"required"`
+	Global   bool   `json:"global" binding:"-"`
+}

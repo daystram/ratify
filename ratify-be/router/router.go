@@ -7,6 +7,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/daystram/ratify/ratify-be/controllers/middleware"
+	"github.com/daystram/ratify/ratify-be/controllers/oauth"
 	"github.com/daystram/ratify/ratify-be/controllers/v1"
 	_ "github.com/daystram/ratify/ratify-be/docs"
 	"github.com/daystram/ratify/ratify-be/utils"
@@ -16,23 +17,23 @@ func InitializeRouter() (router *gin.Engine) {
 	router = gin.Default()
 	router.GET("/docs/*any", ginSwagger.WrapHandler(
 		swaggerFiles.Handler, ginSwagger.URL("/docs/doc.json")))
-	apiv1 := router.Group("/api/v1") // internal/dashboard APIs
-	apiv1.Use(
+	apiV1 := router.Group("/api/v1") // internal/dashboard APIs
+	apiV1.Use(
 		middleware.CORSMiddleware,
 		middleware.AuthMiddleware,
 	)
 	{
-		form := apiv1.Group("/form")
+		form := apiV1.Group("/form")
 		{
 			form.POST("/unique", v1.POSTUniqueCheck)
 		}
-		user := apiv1.Group("/user")
+		user := apiV1.Group("/user")
 		{
 			user.GET("/", utils.AuthOnly, v1.GETUser)
 			user.POST("/", v1.POSTRegister)
 			user.PUT("/", utils.AuthOnly, v1.PUTUser)
 		}
-		application := apiv1.Group("/application")
+		application := apiV1.Group("/application")
 		{
 			application.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETApplicationList)
 			application.GET("/:client_id", v1.GETOneApplicationDetail)
@@ -42,14 +43,15 @@ func InitializeRouter() (router *gin.Engine) {
 			application.DELETE("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.DELETEApplication)
 		}
 	}
-	oauth := router.Group("/oauth") // oauth
-	oauth.Use(
+	oauthV1 := router.Group("/oauth") // oauth
+	oauthV1.Use(
 		middleware.CORSMiddleware,
 	)
 	{
-		oauth.POST("/authorize", v1.POSTAuthorize)
-		oauth.POST("/token", v1.POSTToken)
-		oauth.POST("/introspect", v1.POSTIntrospect)
+		oauthV1.POST("/authorize", oauth.POSTAuthorize)
+		oauthV1.POST("/token", oauth.POSTToken)
+		oauthV1.POST("/introspect", oauth.POSTIntrospect)
+		oauthV1.POST("/logout", middleware.AuthMiddleware, utils.AuthOnly, oauth.POSTLogout)
 	}
 	return
 }

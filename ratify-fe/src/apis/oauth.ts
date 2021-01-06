@@ -1,8 +1,16 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import qs from "qs";
+import { authManager } from "@/auth";
+import { ACCESS_TOKEN } from "@/auth/AuthManager";
 
 const oauthClient: AxiosInstance = axios.create({
   baseURL: "/oauth/"
+});
+
+const withAuth = () => ({
+  headers: {
+    Authorization: `Bearer ${authManager.getToken(ACCESS_TOKEN)}`
+  }
 });
 
 export default {
@@ -16,7 +24,7 @@ export default {
       }
     });
   },
-  revoke: function(revokeRequest: object): Promise<AxiosResponse> {
-    return oauthClient.post(`revoke`, revokeRequest);
+  logout: function(logoutRequest: object): Promise<AxiosResponse> {
+    return oauthClient.post(`logout`, logoutRequest, withAuth());
   }
 };

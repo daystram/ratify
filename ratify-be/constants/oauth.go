@@ -12,6 +12,8 @@ const (
 	ResponseTypeCode  = "code"
 	ResponseTypeToken = "token"
 
+	SessionIDCookieKey = "__Secure-sessid"
+
 	PKCEChallengeMethodS256  = "S256"
 	PKCEChallengeMethodPlain = "plain"
 
@@ -20,8 +22,12 @@ const (
 	AuthorizationCodeLength = 20
 	AuthorizationCodeExpiry = time.Second * 300
 
-	AccessTokenLength  = 64
-	AccessTokenExpiry  = time.Hour * 10
+	AccessTokenLength = 64
+	AccessTokenExpiry = time.Hour * 10
+
 	RefreshTokenLength = 64
 	RefreshTokenExpiry = time.Hour * 24 * 14
+
+	SessionIDLength = 64
+	SessionIDExpiry = time.Hour
 )
