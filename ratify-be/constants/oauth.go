@@ -23,11 +23,11 @@ const (
 	AuthorizationCodeExpiry = time.Second * 300
 
 	AccessTokenLength = 64
-	AccessTokenExpiry = time.Hour * 10
+	AccessTokenExpiry = time.Hour * 2
 
 	RefreshTokenLength = 64
 	RefreshTokenExpiry = time.Hour * 24 * 14
 
 	SessionIDLength = 64
-	SessionIDExpiry = time.Hour
+	SessionIDExpiry = time.Hour * 10
 )
