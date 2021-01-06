@@ -50,6 +50,10 @@ func (m *module) CheckSession(sessionID string) (user models.User, newSessionID 
 	return user, sessionID, nil
 }
 
+func (m *module) ClearSession(sessionID string) (err error) {
+	return m.rd.Del(context.Background(), fmt.Sprintf(constants.RDKeySessionToken, sessionID)).Err()
+}
+
 func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject string, err error) {
 	var hashedPassword []byte
 	if hashedPassword, err = bcrypt.GenerateFromPassword([]byte(userSignup.Password), bcrypt.DefaultCost); err != nil {
