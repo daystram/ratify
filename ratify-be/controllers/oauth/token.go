@@ -44,7 +44,7 @@ func POSTToken(c *gin.Context) {
 			return
 		}
 		if flow == constants.FlowAuthorizationCode {
-			if tokenRequest.ClientSecret != application.ClientSecret {
+			if err = bcrypt.CompareHashAndPassword([]byte(application.ClientSecret), []byte(tokenRequest.ClientSecret)); err != nil {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid client_secret"})
 				return
 			}
@@ -107,7 +107,7 @@ func POSTIntrospect(c *gin.Context) {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
-	if err = bcrypt.CompareHashAndPassword([]byte(introspectRequest.ClientSecret), []byte(application.ClientSecret)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(application.ClientSecret), []byte(introspectRequest.ClientSecret)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "invalid client_secret"})
 		return
 	}
