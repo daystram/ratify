@@ -20,10 +20,11 @@ type UserUpdate struct {
 }
 
 type UserInfo struct {
-	GivenName  string `json:"given_name"`
-	FamilyName string `json:"family_name"`
-	Subject    string `json:"sub"`
-	Username   string `uri:"preferred_username" json:"preferred_username"`
-	Email      string `json:"email"`
-	CreatedAt  int64  `json:"created_at"`
+	GivenName     string `json:"given_name"`
+	FamilyName    string `json:"family_name"`
+	Subject       string `json:"sub"`
+	Username      string `uri:"preferred_username" json:"preferred_username"`
+	Email         string `json:"email"`
+	EmailVerified bool   `json:"email_verified"`
+	CreatedAt     int64  `json:"created_at"`
 }
