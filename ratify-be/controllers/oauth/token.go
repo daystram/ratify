@@ -114,3 +114,26 @@ func POSTIntrospect(c *gin.Context) {
 	c.JSON(http.StatusOK, tokenInfo)
 	return
 }
+
+// @Summary Get user info from access_token
+// @Tags oauth
+// @Security BearerAuth
+// @Success 200 "OK"
+// @Router /oauth/userinfo [GET]
+func GETUserInfo(c *gin.Context) {
+	var err error
+	var user models.User
+	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.UserInfo{
+		FamilyName:    user.FamilyName,
+		GivenName:     user.GivenName,
+		Subject:       user.Subject,
+		Username:      user.Username,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+	})
+	return
+}
