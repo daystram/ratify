@@ -44,7 +44,7 @@ func POSTToken(c *gin.Context) {
 			return
 		}
 		if flow == constants.FlowAuthorizationCode {
-			if tokenRequest.ClientSecret != application.ClientSecret {
+			if err = bcrypt.CompareHashAndPassword([]byte(application.ClientSecret), []byte(tokenRequest.ClientSecret)); err != nil {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid client_secret"})
 				return
 			}
@@ -107,10 +107,33 @@ func POSTIntrospect(c *gin.Context) {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
-	if err = bcrypt.CompareHashAndPassword([]byte(introspectRequest.ClientSecret), []byte(application.ClientSecret)); err != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(application.ClientSecret), []byte(introspectRequest.ClientSecret)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "invalid client_secret"})
 		return
 	}
 	c.JSON(http.StatusOK, tokenInfo)
+	return
+}
+
+// @Summary Get user info from access_token
+// @Tags oauth
+// @Security BearerAuth
+// @Success 200 "OK"
+// @Router /oauth/userinfo [GET]
+func GETUserInfo(c *gin.Context) {
+	var err error
+	var user models.User
+	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.UserInfo{
+		FamilyName:    user.FamilyName,
+		GivenName:     user.GivenName,
+		Subject:       user.Subject,
+		Username:      user.Username,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+	})
 	return
 }

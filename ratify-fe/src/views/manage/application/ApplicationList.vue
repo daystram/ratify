@@ -365,11 +365,11 @@ export default Vue.extend({
         api.application
           .register({
             /* eslint-disable @typescript-eslint/camelcase */
-            name: this.create.name,
-            description: this.create.description,
-            login_url: this.create.logoutURL,
-            callback_url: this.create.callbackURL,
-            logout_url: this.create.logoutURL
+            name: this.create.name.trim(),
+            description: this.create.description.trim(),
+            login_url: this.create.logoutURL.trim(),
+            callback_url: this.create.callbackURL.trim(),
+            logout_url: this.create.logoutURL.trim()
             /* eslint-enable @typescript-eslint/camelcase */
           })
           .then(response => {

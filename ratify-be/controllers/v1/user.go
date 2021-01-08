@@ -25,12 +25,13 @@ func GETUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.UserInfo{
-		FamilyName: user.FamilyName,
-		GivenName:  user.GivenName,
-		Subject:    user.Subject,
-		Username:   user.Username,
-		Email:      user.Email,
-		CreatedAt:  user.CreatedAt,
+		FamilyName:    user.FamilyName,
+		GivenName:     user.GivenName,
+		Subject:       user.Subject,
+		Username:      user.Username,
+		Email:         user.Email,
+		EmailVerified: user.EmailVerified,
+		CreatedAt: user.CreatedAt,
 	}})
 	return
 }
