@@ -169,7 +169,7 @@ export default Vue.extend({
       },
       username: "",
       password: "",
-      redirectCountdown: "",
+      redirectCountdown: "Redirecting now",
       redirectCounter: 0,
       apiResponseCode: ""
     };
