@@ -224,12 +224,10 @@
                         rounded
                         text
                         color="secondary lighten-1"
-                        @click="
-                          $router.push({
-                            name: 'manage:application-detail',
-                            params: { clientId: application.client_id }
-                          })
-                        "
+                        :to="{
+                          name: 'manage:application-detail',
+                          params: { clientId: application.client_id }
+                        }"
                       >
                         manage
                       </v-btn>

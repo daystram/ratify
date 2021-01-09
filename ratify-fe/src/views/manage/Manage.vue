@@ -5,12 +5,14 @@
         class="hidden-lg-and-up"
         @click.stop="drawer = !drawer"
       />
-      <h1
-        class="text-md-h4 text-h5 text-center"
-        @click="$router.push({ name: 'home' })"
-        style="cursor: pointer"
-      >
-        <Logo />
+      <h1>
+        <router-link
+          class="text-md-h4 text-h5 text-center"
+          style="text-decoration: none; color: inherit;"
+          :to="{ name: 'home' }"
+        >
+          <Logo />
+        </router-link>
       </h1>
       <v-spacer />
       <v-menu
