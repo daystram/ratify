@@ -13,7 +13,7 @@ apiClient.interceptors.response.use(
   },
   error => {
     if (error.response.status === 401) {
-      refreshAuth(router.currentRoute.path);
+      refreshAuth(router.currentRoute.fullPath);
     }
     return error;
   }

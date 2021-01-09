@@ -72,7 +72,7 @@ const authenticatedOnly = function(to: Route, from: Route, next: () => void) {
   if (authManager.getToken(ACCESS_TOKEN)) {
     next();
   } else {
-    refreshAuth(to.path);
+    refreshAuth(to.fullPath);
   }
 };
 
