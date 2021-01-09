@@ -1,5 +1,5 @@
 import router from "@/router";
-import { AuthManager, ACCESS_TOKEN } from "@/auth/AuthManager";
+import { AuthManager, ACCESS_TOKEN, MemoryStorage } from "@/auth/AuthManager";
 
 const CLIENT_ID = process.env.VUE_APP_CLIENT_ID;
 const ISSUER = process.env.VUE_APP_OAUTH_ISSUER;
@@ -8,7 +8,8 @@ const REDIRECT_URI = `${location.origin}/callback`;
 const authManager = new AuthManager({
   clientId: CLIENT_ID,
   redirectUri: REDIRECT_URI,
-  issuer: ISSUER
+  issuer: ISSUER,
+  storage: new MemoryStorage()
 });
 
 const login = function() {
@@ -45,8 +46,7 @@ const callback = function() {
     .then(() => {
       router.replace({ name: "manage:dashboard" });
     })
-    .catch(error => {
-      console.error(error.response.data);
+    .catch(() => {
       router.replace({ name: "home" });
     });
 };
@@ -56,8 +56,7 @@ const authenticatedOnly = function(to: object, from: object, next: () => void) {
     next();
   } else {
     authManager.reset();
-    // TODO: deauth link followup, store @ localStorage
-    router.push({ name: "login" });
+    authManager.authorize(true);
   }
 };
 
