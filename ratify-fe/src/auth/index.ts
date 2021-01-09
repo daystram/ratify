@@ -1,5 +1,6 @@
 import router from "@/router";
-import { AuthManager, ACCESS_TOKEN, MemoryStorage } from "@/auth/AuthManager";
+import { AuthManager, ACCESS_TOKEN } from "@/auth/AuthManager";
+import { Route } from "vue-router";
 
 const CLIENT_ID = process.env.VUE_APP_CLIENT_ID;
 const ISSUER = process.env.VUE_APP_OAUTH_ISSUER;
@@ -9,7 +10,7 @@ const authManager = new AuthManager({
   clientId: CLIENT_ID,
   redirectUri: REDIRECT_URI,
   issuer: ISSUER,
-  storage: new MemoryStorage()
+  storage: localStorage
 });
 
 const login = function() {
@@ -44,19 +45,34 @@ const callback = function() {
   authManager
     .redeemToken(code)
     .then(() => {
-      router.replace({ name: "manage:dashboard" });
+      const lastRoute = sessionStorage.getItem("last_route");
+      if (lastRoute) {
+        sessionStorage.removeItem("last_route");
+        router.replace({
+          path: lastRoute?.toString()
+        });
+      } else {
+        router.replace({
+          name: "manage:dashboard"
+        });
+      }
     })
     .catch(() => {
       router.replace({ name: "home" });
     });
 };
 
-const authenticatedOnly = function(to: object, from: object, next: () => void) {
+const refreshAuth = function(destinationPath: string) {
+  sessionStorage.setItem("last_route", destinationPath);
+  authManager.reset();
+  authManager.authorize(true);
+};
+
+const authenticatedOnly = function(to: Route, from: Route, next: () => void) {
   if (authManager.getToken(ACCESS_TOKEN)) {
     next();
   } else {
-    authManager.reset();
-    authManager.authorize(true);
+    refreshAuth(to.path);
   }
 };
 
@@ -77,6 +93,7 @@ export {
   login,
   logout,
   callback,
+  refreshAuth,
   authenticatedOnly,
   unAuthenticatedOnly
 };
