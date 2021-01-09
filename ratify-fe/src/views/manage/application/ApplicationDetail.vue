@@ -6,7 +6,7 @@
           plain
           :ripple="false"
           class="pa-0"
-          @click="() => $router.push({ name: 'manage:application' })"
+          :to="{ name: 'manage:application' }"
         >
           <v-icon v-text="'mdi-arrow-left'" class="mr-1" />
           Back

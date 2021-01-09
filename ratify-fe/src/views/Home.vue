@@ -46,6 +46,18 @@
           />
         </div>
       </v-row>
+      <v-row align="center" justify="center">
+        <v-btn
+          href="https://github.com/daystram/ratify"
+          x-large
+          class="mt-12"
+          text
+          plain
+          rounded
+        >
+          View on GitHub <v-icon class="ml-1" v-text="'mdi-github'" />
+        </v-btn>
+      </v-row>
     </v-col>
   </v-container>
 </template>
