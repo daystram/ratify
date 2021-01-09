@@ -43,11 +43,13 @@ func POSTAuthorize(c *gin.Context) {
 			// get session cookie
 			sessionID, err = c.Cookie(constants.SessionIDCookieKey)
 			if err != nil {
+				c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "invalid cookie"})
 				return
 			} else {
 				// verify user session
 				if user, sessionID, err = handlers.Handler.CheckSession(sessionID); err != nil {
+					c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "invalid session_id"})
 					return
 				}
