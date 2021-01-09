@@ -116,8 +116,7 @@ const routes: Array<RouteConfig> = [
         meta: {
           title: "WIP:Logs | Ratify"
         }
-      },
-      { path: "*", redirect: "/" }
+      }
     ]
   },
   {
@@ -150,7 +149,8 @@ const routes: Array<RouteConfig> = [
     name: "callback",
     beforeEnter: unAuthenticatedOnly,
     component: callback
-  }
+  },
+  { path: "*", redirect: "/" }
 ];
 
 const router = new VueRouter({
