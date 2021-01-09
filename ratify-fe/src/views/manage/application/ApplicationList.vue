@@ -110,7 +110,7 @@
                   <v-row>
                     <v-col cols="12">
                       <v-text-field
-                        v-model="create.name"
+                        v-model.trim="create.name"
                         :error-messages="nameErrors"
                         :counter="20"
                         label="Name"
@@ -121,7 +121,7 @@
                         :prepend-icon="'mdi-application'"
                       />
                       <v-text-field
-                        v-model="create.description"
+                        v-model.trim="create.description"
                         :error-messages="descriptionErrors"
                         :counter="50"
                         label="Description"
@@ -132,7 +132,7 @@
                         :prepend-icon="'mdi-text'"
                       />
                       <v-text-field
-                        v-model="create.loginURL"
+                        v-model.trim="create.loginURL"
                         :error-messages="loginURLErrors"
                         label="Login URL"
                         required
@@ -143,7 +143,7 @@
                         :prepend-icon="'mdi-login-variant'"
                       />
                       <v-text-field
-                        v-model="create.callbackURL"
+                        v-model.trim="create.callbackURL"
                         :error-messages="callbackURLErrors"
                         label="Callback URL"
                         required
@@ -154,7 +154,7 @@
                         :prepend-icon="'mdi-undo-variant'"
                       />
                       <v-text-field
-                        v-model="create.logoutURL"
+                        v-model.trim="create.logoutURL"
                         :error-messages="logoutURLErrors"
                         label="Logout URL"
                         required

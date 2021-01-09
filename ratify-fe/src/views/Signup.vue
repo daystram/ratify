@@ -45,7 +45,7 @@
                     <v-row dense>
                       <v-col cols="12" sm="6">
                         <v-text-field
-                          v-model="firstname"
+                          v-model.trim="firstname"
                           :error-messages="firstnameErrors"
                           :counter="20"
                           label="First name"
@@ -61,7 +61,7 @@
                       </v-col>
                       <v-col cols="12" sm="6">
                         <v-text-field
-                          v-model="lastname"
+                          v-model.trim="lastname"
                           :error-messages="lastnameErrors"
                           :counter="12"
                           label="Last name"
@@ -79,7 +79,7 @@
                       </v-col>
                     </v-row>
                     <v-text-field
-                      v-model="username"
+                      v-model.trim="username"
                       :error-messages="usernameErrors"
                       :counter="12"
                       label="Username"
@@ -99,7 +99,7 @@
                       :prepend-icon="'mdi-identifier'"
                     />
                     <v-text-field
-                      v-model="email"
+                      v-model.trim="email"
                       :error-messages="emailErrors"
                       :type="'email'"
                       label="Email"

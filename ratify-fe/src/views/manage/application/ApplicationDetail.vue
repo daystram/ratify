@@ -278,7 +278,7 @@
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model="application.name"
+                      v-model.trim="application.name"
                       :error-messages="nameErrors"
                       :counter="20"
                       label="Name"
@@ -301,7 +301,7 @@
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model="application.description"
+                      v-model.trim="application.description"
                       :error-messages="descriptionErrors"
                       :counter="50"
                       label="Description"
@@ -324,7 +324,7 @@
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model="application.loginURL"
+                      v-model.trim="application.loginURL"
                       :error-messages="loginURLErrors"
                       label="Login URL"
                       required
@@ -350,7 +350,7 @@
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model="application.callbackURL"
+                      v-model.trim="application.callbackURL"
                       :error-messages="callbackURLErrors"
                       label="Callback URL"
                       required
@@ -376,7 +376,7 @@
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model="application.logoutURL"
+                      v-model.trim="application.logoutURL"
                       :error-messages="logoutURLErrors"
                       label="Logout URL"
                       required
