@@ -99,7 +99,7 @@
                     <v-row dense>
                       <v-col cols="12" sm="6">
                         <v-text-field
-                          v-model="user.givenName"
+                          v-model.trim="user.givenName"
                           :error-messages="givenNameErrors"
                           :counter="20"
                           label="First name"
@@ -112,7 +112,7 @@
                       </v-col>
                       <v-col cols="12" sm="6">
                         <v-text-field
-                          v-model="user.familyName"
+                          v-model.trim="user.familyName"
                           :error-messages="familyNameErrors"
                           :counter="12"
                           label="Last name"
@@ -139,7 +139,7 @@
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model="user.email"
+                      v-model.trim="user.email"
                       :error-messages="emailErrors"
                       :type="'email'"
                       label="Email"
@@ -167,7 +167,7 @@
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model="user.username"
+                      v-model.trim="user.username"
                       label="Username"
                       required
                       :disabled="true"

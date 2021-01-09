@@ -15,6 +15,7 @@ interface AuthManagerOptions {
   clientId: string;
   redirectUri: string;
   issuer: string;
+  storage: TokenStorage;
 }
 
 interface User {
@@ -25,13 +26,40 @@ interface User {
   is_superuser: boolean;
 }
 
+interface TokenStorage {
+  getItem: (key: string) => string | null;
+  setItem: (key: string, value: string) => void;
+  removeItem: (key: string) => void;
+}
+
+export class MemoryStorage implements TokenStorage {
+  private tokens: { [key: string]: string };
+
+  constructor() {
+    this.tokens = {};
+  }
+
+  getItem(key: string): string | null {
+    return this.tokens[key];
+  }
+
+  setItem(key: string, value: string): void {
+    this.tokens[key] = value;
+  }
+
+  removeItem(key: string): void {
+    delete this.tokens[key];
+  }
+}
+
 export class AuthManager {
   private options: AuthManagerOptions;
-  private storageManager: Storage;
+  private storageManager: TokenStorage;
 
   constructor(opts: AuthManagerOptions) {
     this.options = opts;
-    this.storageManager = localStorage;
+    this.storageManager = opts.storage;
+    // code and state will still use sessionStorage (need to persist during page reloads)
   }
 
   isAuthenticated(): boolean {
@@ -50,8 +78,6 @@ export class AuthManager {
 
   reset() {
     this.storageManager.removeItem(KEY_TOKEN);
-    this.storageManager.removeItem(KEY_CODE);
-    this.storageManager.removeItem(KEY_STATE);
   }
 
   logout(global?: boolean) {
@@ -70,7 +96,7 @@ export class AuthManager {
       });
   }
 
-  authorize(scopes?: string[]): void {
+  authorize(immediate?: boolean, scopes?: string[]): void {
     window.location.href = `${this.options.issuer}/authorize?${qs.stringify({
       /* eslint-disable @typescript-eslint/camelcase */
       client_id: this.options.clientId,
@@ -80,7 +106,8 @@ export class AuthManager {
         "openid profile" + (scopes || []).map(scope => " " + scope).join(""),
       state: this.getState(),
       code_challenge: this.getCodeChallenge(),
-      code_challenge_method: "S256"
+      code_challenge_method: "S256",
+      immediate: immediate || false
       /* eslint-enable @typescript-eslint/camelcase */
     })}`;
   }
@@ -103,25 +130,25 @@ export class AuthManager {
 
   getState(): string {
     const state = uuidv4();
-    this.storageManager.setItem(KEY_STATE, state);
+    sessionStorage.setItem(KEY_STATE, state);
     return state;
   }
 
   checkState(state: string): boolean {
-    const temp = localStorage.getItem(KEY_STATE);
-    this.storageManager.removeItem(KEY_STATE);
+    const temp = sessionStorage.getItem(KEY_STATE);
+    sessionStorage.removeItem(KEY_STATE);
     return temp === state;
   }
 
   getCodeChallenge() {
     const pkce = pkceChallenge();
-    this.storageManager.setItem(KEY_CODE, JSON.stringify(pkce));
+    sessionStorage.setItem(KEY_CODE, JSON.stringify(pkce));
     return pkce.code_challenge;
   }
 
   getCodeVerifier() {
-    const pkce = JSON.parse(this.storageManager.getItem(KEY_CODE) || "");
-    this.storageManager.removeItem(KEY_CODE);
+    const pkce = JSON.parse(sessionStorage.getItem(KEY_CODE) || "");
+    sessionStorage.removeItem(KEY_CODE);
     return pkce.code_verifier;
   }
 }
