@@ -33,6 +33,7 @@
                         :ripple="false"
                         class="pa-0"
                         :to="{ name: 'login' }"
+                        replace
                       >
                         <v-icon v-text="'mdi-arrow-left'" class="mr-1" />
                         Back to Login
@@ -61,6 +62,7 @@
                           :ripple="false"
                           class="pa-0"
                           :to="{ name: 'login' }"
+                          replace
                         >
                           Continue to Login
                           <v-icon v-text="'mdi-arrow-right'" class="ml-1" />
@@ -85,6 +87,7 @@
                         Click
                         <router-link
                           :to="{ name: 'verify', query: {} }"
+                          replace
                           class="text-link"
                           v-text="'here'"
                         />
