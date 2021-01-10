@@ -23,8 +23,9 @@ func (m *module) SendVerificationEmail(user models.User) (err error) {
 	}
 	email := hermes.Email{
 		Body: hermes.Body{
-			Greeting: "Hi",
-			Name:     user.Username,
+			Greeting:  "Hi",
+			Signature: "Cheers!",
+			Name:      user.Username,
 			Intros: []string{
 				"Welcome to Ratify!",
 			},
@@ -34,7 +35,7 @@ func (m *module) SendVerificationEmail(user models.User) (err error) {
 					Button: hermes.Button{
 						Color: "#00c3c3",
 						Text:  "Confirm Email",
-						Link:  fmt.Sprintf("https://ratify.daystram.com/confirm?token=%s", token),
+						Link:  fmt.Sprintf("https://ratify.daystram.com/verify?token=%s", token),
 					},
 				},
 			},
