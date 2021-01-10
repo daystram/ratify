@@ -19,6 +19,10 @@ type UserUpdate struct {
 	Email      string `json:"email" binding:"required"`
 }
 
+type UserVerify struct {
+	Token string `json:"token" binding:"required"`
+}
+
 type UserInfo struct {
 	GivenName     string `json:"given_name"`
 	FamilyName    string `json:"family_name"`

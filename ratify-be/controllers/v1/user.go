@@ -102,3 +102,25 @@ func PUTUser(c *gin.Context) {
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
+
+// @Summary Verify user email
+// @Tags user
+// @Param user body datatransfers.UserVerify true "User verification info"
+// @Success 200 "OK"
+// @Router /api/v1/user/verify [POST]
+func POSTVerify(c *gin.Context) {
+	var err error
+	// fetch verification info
+	var verify datatransfers.UserVerify
+	if err = c.ShouldBindJSON(&verify); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
+		return
+	}
+	// verify user
+	if err := handlers.Handler.VerifyUser(verify.Token); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "failed verifying user"})
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
