@@ -47,8 +47,20 @@
                   </v-expand-transition>
                   <v-expand-transition>
                     <div v-show="!$v.username.correct">
-                      <v-alert type="error" text dense
-                        >Incorrect username or password!
+                      <v-alert type="error" text dense>
+                        Incorrect username or password!
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
+                  <v-expand-transition>
+                    <div v-show="apiResponseCode === 'email_unverified'">
+                      <v-alert type="warning" text dense>
+                        Email has not been verified! <br />
+                        Click
+                        <router-link to="/verify" class="text-link">
+                          here</router-link
+                        >
+                        to re-verify.
                       </v-alert>
                     </div>
                   </v-expand-transition>
