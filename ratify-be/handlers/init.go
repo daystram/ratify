@@ -22,6 +22,7 @@ type HandlerFunc interface {
 	CheckSession(sessionID string) (user models.User, newSessionID string, err error)
 	ClearSession(sessionID string) (err error)
 	RegisterUser(credentials datatransfers.UserSignup) (userSubject string, err error)
+	VerifyUser(token string) (err error)
 	RetrieveUserBySubject(subject string) (user models.User, err error)
 	RetrieveUserByUsername(username string) (user models.User, err error)
 	RetrieveUserByEmail(email string) (user models.User, err error)

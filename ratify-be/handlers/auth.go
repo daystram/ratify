@@ -74,3 +74,20 @@ func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject 
 	}
 	return
 }
+
+func (m *module) VerifyUser(token string) (err error) {
+	var result *redis.StringCmd
+	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token)); result.Err() != nil {
+		return errors.New(fmt.Sprintf("invalid verification_token. %v", result.Err()))
+	}
+	_ = m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token))
+	var user models.User
+	if user, err = m.db.userOrmer.GetOneBySubject(result.Val()); err != nil {
+		return errors.New(fmt.Sprintf("failed retrieving user. %v", result.Err()))
+	}
+	user.EmailVerified = true
+	if err = m.db.userOrmer.UpdateUser(user); err != nil {
+		return errors.New(fmt.Sprintf("failed activating user. %v", result.Err()))
+	}
+	return
+}
