@@ -24,7 +24,7 @@
                     text
                     rounded
                     color="error"
-                    @click="cancelUser"
+                    @click="cancelProfile"
                   >
                     Cancel
                   </v-btn>
@@ -33,10 +33,11 @@
                     rounded
                     class="ml-4"
                     :disabled="
-                      !userUpdated || profile.formLoadStatus === STATUS.LOADING
+                      !profileUpdated ||
+                        profile.formLoadStatus === STATUS.LOADING
                     "
                     :color="profile.editing ? 'success' : 'secondary lighten-1'"
-                    @click="saveUser"
+                    @click="saveProfile"
                   >
                     <div v-if="!profile.editing">Edit</div>
                     <div
@@ -147,7 +148,7 @@
                       @input="
                         () => {
                           $v.profile.email.$touch();
-                          this.apiResponseCode = '';
+                          this.profile.apiResponseCode = '';
                         }
                       "
                       @blur="$v.profile.email.$touch()"
@@ -180,6 +181,129 @@
         </v-col>
       </v-fade-transition>
     </v-row>
+    <v-row>
+      <v-fade-transition>
+        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+          <v-card :loading="password.formLoadStatus === STATUS.LOADING">
+            <v-card-title>
+              <v-row no-gutters align="center">
+                <v-col cols="auto">
+                  Update Password
+                </v-col>
+                <v-spacer />
+                <v-col cols="auto">
+                  <v-btn
+                    text
+                    rounded
+                    class="ml-4"
+                    :disabled="password.formLoadStatus === STATUS.LOADING"
+                    color="success"
+                    @click="savePassword"
+                  >
+                    <div v-if="password.formLoadStatus !== STATUS.LOADING">
+                      Update
+                    </div>
+                    <div v-else-if="password.formLoadStatus === STATUS.LOADING">
+                      Updating
+                    </div>
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-card-title>
+            <v-divider inset />
+            <div class="v-card__body">
+              <v-expand-transition>
+                <div v-show="password.formLoadStatus === STATUS.ERROR">
+                  <v-alert
+                    type="error"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    Failed changing password!
+                  </v-alert>
+                </div>
+              </v-expand-transition>
+              <v-expand-transition>
+                <div v-show="!$v.password.oldPassword.correct">
+                  <v-alert
+                    type="error"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    Incorrect old password!
+                  </v-alert>
+                </div>
+              </v-expand-transition>
+              <v-expand-transition>
+                <div v-show="password.successAlert">
+                  <v-alert
+                    type="success"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    Password updated!
+                  </v-alert>
+                </div>
+              </v-expand-transition>
+              <v-row dense>
+                <v-col cols="12" sm="4">
+                  <v-text-field
+                    v-model="password.oldPassword"
+                    :error-messages="oldPasswordErrors"
+                    :type="'password'"
+                    label="Old password"
+                    required
+                    :disabled="password.formLoadStatus === STATUS.LOADING"
+                    :prepend-icon="'mdi-lock'"
+                    @input="
+                      () => {
+                        $v.password.oldPassword.$touch();
+                        this.password.apiResponseCode = '';
+                      }
+                    "
+                    @blur="$v.password.oldPassword.$touch()"
+                  />
+                </v-col>
+                <v-col cols="12" sm="4">
+                  <v-text-field
+                    v-model="password.newPassword"
+                    :error-messages="newPasswordErrors"
+                    :type="'password'"
+                    label="New password"
+                    hint="At least 8 characters"
+                    required
+                    :disabled="password.formLoadStatus === STATUS.LOADING"
+                    :prepend-icon="
+                      $vuetify.breakpoint.smAndUp ? '' : 'mdi-blank'
+                    "
+                    @input="$v.password.newPassword.$touch()"
+                    @blur="$v.password.newPassword.$touch()"
+                  />
+                </v-col>
+                <v-col cols="12" sm="4">
+                  <v-text-field
+                    v-model="password.confirmNewPassword"
+                    :error-messages="confirmNewPasswordErrors"
+                    :type="'password'"
+                    label="Confirm new password"
+                    required
+                    :disabled="password.formLoadStatus === STATUS.LOADING"
+                    :prepend-icon="
+                      $vuetify.breakpoint.smAndUp ? '' : 'mdi-blank'
+                    "
+                    @input="$v.password.confirmNewPassword.$touch()"
+                    @blur="$v.password.confirmNewPassword.$touch()"
+                  />
+                </v-col>
+              </v-row>
+            </div>
+          </v-card>
+        </v-col>
+      </v-fade-transition>
+    </v-row>
     <v-fade-transition>
       <v-overlay
         v-show="pageLoadStatus !== STATUS.COMPLETE"
@@ -196,7 +320,13 @@
 import Vue from "vue";
 import api from "@/apis/api";
 import { STATUS } from "@/constants/status";
-import { email, maxLength, required } from "vuelidate/lib/validators";
+import {
+  email,
+  maxLength,
+  minLength,
+  required,
+  sameAs
+} from "vuelidate/lib/validators";
 
 export default Vue.extend({
   data: () => ({
@@ -218,12 +348,15 @@ export default Vue.extend({
     password: {
       oldPassword: "",
       newPassword: "",
-      confirmNewPassword: ""
+      confirmNewPassword: "",
+      formLoadStatus: STATUS.IDLE,
+      apiResponseCode: "",
+      successAlert: false
     }
   }),
 
   computed: {
-    userUpdated: {
+    profileUpdated: {
       cache: false,
       get: function() {
         return (
@@ -258,6 +391,34 @@ export default Vue.extend({
         !this.$v.profile.email.$pending &&
         errors.push("Email already used");
       return errors;
+    },
+    oldPasswordErrors() {
+      const errors: string[] = [];
+      if (!this.$v.password.oldPassword?.$dirty) return errors;
+      !this.$v.password.oldPassword.required &&
+        errors.push("Password required");
+      !this.$v.password.oldPassword.correct && errors.push("");
+      return errors;
+    },
+    newPasswordErrors() {
+      const errors: string[] = [];
+      if (!this.$v.password.newPassword?.$dirty) return errors;
+      !this.$v.password.newPassword?.required &&
+        errors.push("Password required");
+      !this.$v.password.newPassword?.minLength &&
+        errors.push("Password too short");
+      !this.$v.password.newPassword?.maxLength &&
+        errors.push("Password too long");
+      return errors;
+    },
+    confirmNewPasswordErrors() {
+      const errors: string[] = [];
+      if (!this.$v.password.confirmNewPassword?.$dirty) return errors;
+      !this.$v.password.confirmNewPassword?.required &&
+        errors.push("Re-enter password");
+      !this.$v.password.confirmNewPassword?.sameAsPassword &&
+        errors.push("Passwords do not match");
+      return errors;
     }
   },
 
@@ -283,6 +444,25 @@ export default Vue.extend({
             .catch(() => true);
         }
       }
+    },
+    password: {
+      oldPassword: {
+        required,
+        correct() {
+          return (
+            this.$data.password.apiResponseCode !== "incorrect_credentials"
+          );
+        }
+      },
+      newPassword: {
+        required,
+        minLength: minLength(8),
+        maxLength: maxLength(100)
+      },
+      confirmNewPassword: {
+        required,
+        sameAsPassword: sameAs("newPassword")
+      }
     }
   },
 
@@ -302,7 +482,7 @@ export default Vue.extend({
   },
 
   methods: {
-    cancelUser() {
+    cancelProfile() {
       this.profile.editing = false;
       this.profile.givenName = this.profile.before.givenName;
       this.profile.familyName = this.profile.before.familyName;
@@ -317,7 +497,7 @@ export default Vue.extend({
       };
       this.$v.$reset();
     },
-    saveUser() {
+    saveProfile() {
       if (!this.profile.editing) {
         this.profile.editing = true;
         this.profile.before.givenName = this.profile.givenName;
@@ -325,8 +505,8 @@ export default Vue.extend({
         this.profile.before.email = this.profile.email;
         return;
       }
-      this.$v.$touch();
-      if (!this.$v.$invalid) {
+      this.$v.profile.$touch();
+      if (!this.$v.profile.$invalid) {
         this.profile.formLoadStatus = STATUS.LOADING;
         setTimeout(
           () =>
@@ -346,6 +526,40 @@ export default Vue.extend({
                 this.profile.editing = true;
                 this.profile.apiResponseCode = error.response.data.code;
                 this.profile.formLoadStatus = !this.profile.apiResponseCode
+                  ? STATUS.ERROR
+                  : STATUS.IDLE;
+              }),
+          2000
+        );
+      }
+    },
+    savePassword() {
+      this.$v.password.$touch();
+      if (!this.$v.password.$invalid) {
+        this.password.formLoadStatus = STATUS.LOADING;
+        setTimeout(
+          () =>
+            api.user
+              .updatePassword({
+                /* eslint-disable @typescript-eslint/camelcase */
+                old_password: this.password.oldPassword,
+                new_password: this.password.newPassword
+                /* eslint-enable @typescript-eslint/camelcase */
+              })
+              .then(() => {
+                this.password.formLoadStatus = STATUS.COMPLETE;
+                this.password.oldPassword = "";
+                this.password.newPassword = "";
+                this.password.confirmNewPassword = "";
+                this.$v.$reset();
+                this.password.successAlert = true;
+                setTimeout(() => {
+                  this.password.successAlert = false;
+                }, 3000);
+              })
+              .catch(error => {
+                this.password.apiResponseCode = error.response.data.code;
+                this.password.formLoadStatus = !this.password.apiResponseCode
                   ? STATUS.ERROR
                   : STATUS.IDLE;
               }),
