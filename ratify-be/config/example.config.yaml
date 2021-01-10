@@ -14,5 +14,10 @@ redis_port: 6379
 redis_password: ratify-be
 redis_database: 0
 
+smtp_server: localhost
+smtp_port: 587
+smtp_username: no-reply@localhost
+smtp_password: ratify-be
+
 domain: ratify.daystram.com
 secret: secret1234
