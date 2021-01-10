@@ -67,6 +67,9 @@ export default {
     update: function(user: object): Promise<AxiosResponse> {
       return apiClient.put(`user`, user, withAuth());
     },
+    updatePassword: function(passwords: object): Promise<AxiosResponse> {
+      return apiClient.put("user/password", passwords, withAuth());
+    },
     signup: function(userSignup: object): Promise<AxiosResponse> {
       return apiClient.post("user", userSignup);
     },
