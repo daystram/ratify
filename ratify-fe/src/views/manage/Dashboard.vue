@@ -24,7 +24,7 @@ import { authManager } from "@/auth";
 export default Vue.extend({
   components: { Home },
   computed: {
-    profile: () => authManager.getUser()
+    user: () => authManager.getUser()
   }
 });
 </script>
