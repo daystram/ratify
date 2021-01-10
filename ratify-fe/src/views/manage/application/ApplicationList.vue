@@ -20,7 +20,7 @@
               New Application
             </v-btn>
           </template>
-          <v-card>
+          <v-card :loading="create.formLoadStatus === STATUS.LOADING">
             <v-card-title>
               <v-row no-gutters align="center">
                 <v-col cols="auto">
@@ -38,7 +38,7 @@
                     color="error"
                     @click="
                       () => {
-                        closePrompt();
+                        cancelCreate();
                       }
                     "
                   >
@@ -50,21 +50,14 @@
                     rounded
                     class="ml-4"
                     color="success"
-                    @click="createApplication"
+                    :disabled="create.formLoadStatus !== STATUS.LOADING"
+                    @click="confirmCreate"
                   >
                     <div v-if="create.formLoadStatus !== STATUS.LOADING">
                       Create
                     </div>
                     <div v-else>
-                      <v-progress-circular
-                        indeterminate
-                        color="success"
-                        size="16"
-                        class="mr-2"
-                      />
-                      <span>
-                        Creating
-                      </span>
+                      Creating
                     </div>
                   </v-btn>
                   <v-btn
@@ -72,7 +65,7 @@
                     text
                     rounded
                     color="success"
-                    @click="closePrompt"
+                    @click="cancelCreate"
                   >
                     Confirm
                   </v-btn>
@@ -207,10 +200,20 @@
                   <v-row justify="end" align="center" no-gutters>
                     <v-col cols="12" md="">
                       <v-list-item-title class="text-h5">
-                        {{ application.name }}
+                        <span
+                          class="d-inline-block text-truncate"
+                          style="max-width: 320px;"
+                        >
+                          {{ application.name }}
+                        </span>
                       </v-list-item-title>
                       <v-list-item-subtitle>
-                        {{ application.description }}
+                        <span
+                          class="d-inline-block text-truncate"
+                          style="max-width: 320px;"
+                        >
+                          {{ application.description }}
+                        </span>
                       </v-list-item-subtitle>
                     </v-col>
                     <v-col cols="12" md="">
@@ -341,8 +344,7 @@ export default Vue.extend({
           this.applications.sort((a, b) => b["created_at"] - a["created_at"]);
           this.pageLoadStatus = STATUS.COMPLETE;
         })
-        .catch(error => {
-          console.error(error);
+        .catch(() => {
           this.pageLoadStatus = STATUS.ERROR;
         });
     },
@@ -356,7 +358,7 @@ export default Vue.extend({
       this.create.formLoadStatus = STATUS.IDLE;
       this.$v.$reset();
     },
-    createApplication() {
+    confirmCreate() {
       this.$v.$touch();
       if (!this.$v.$invalid) {
         this.create.formLoadStatus = STATUS.LOADING;
@@ -383,7 +385,7 @@ export default Vue.extend({
           });
       }
     },
-    closePrompt() {
+    cancelCreate() {
       this.create.creating = false;
       this.create.clientSecret = "";
     }

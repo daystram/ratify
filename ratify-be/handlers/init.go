@@ -18,16 +18,21 @@ import (
 var Handler HandlerFunc
 
 type HandlerFunc interface {
+	// auth
 	AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, sessionID string, err error)
 	CheckSession(sessionID string) (user models.User, newSessionID string, err error)
 	ClearSession(sessionID string) (err error)
 	RegisterUser(credentials datatransfers.UserSignup) (userSubject string, err error)
 	VerifyUser(token string) (err error)
+
+	// user
 	RetrieveUserBySubject(subject string) (user models.User, err error)
 	RetrieveUserByUsername(username string) (user models.User, err error)
 	RetrieveUserByEmail(email string) (user models.User, err error)
-	UpdateUser(id string, user datatransfers.UserUpdate) (err error)
+	UpdateUser(subject string, user datatransfers.UserUpdate) (err error)
+	UpdateUserPassword(subject, oldPassword, newPassword string) (err error)
 
+	// application
 	RetrieveApplication(clientID string) (application models.Application, err error)
 	RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error)
 	RetrieveAllApplications() (applications []models.Application, err error)
@@ -36,6 +41,7 @@ type HandlerFunc interface {
 	RenewApplicationClientSecret(clientID string) (clientSecret string, err error)
 	DeleteApplication(clientID string) (err error)
 
+	// oauth
 	GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject string) (authorizationCode string, err error)
 	ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error)
 	GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, subject string, withRefresh bool) (accessToken, refreshToken string, err error)
@@ -45,6 +51,7 @@ type HandlerFunc interface {
 	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
 	RevokeTokens(userSubject, clientID string, global bool) (err error)
 
+	// mailer
 	SendVerificationEmail(user models.User) (err error)
 }
 

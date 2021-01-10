@@ -103,6 +103,32 @@ func PUTUser(c *gin.Context) {
 	return
 }
 
+// @Summary Update user password
+// @Tags user
+// @Param user body datatransfers.UserUpdatePassword true "User update password info"
+// @Success 200 "OK"
+// @Router /api/v1/user/password [POST]
+func PUTUserPassword(c *gin.Context) {
+	var err error
+	// fetch verification info
+	var password datatransfers.UserUpdatePassword
+	if err = c.ShouldBindJSON(&password); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
+		return
+	}
+	// update user password
+	if err := handlers.Handler.UpdateUserPassword(c.GetString(constants.UserSubjectKey), password.Old, password.New); err != nil {
+		if err == errors.ErrAuthIncorrectCredentials {
+			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect old_password"})
+		} else {
+			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "failed updating user password"})
+		}
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
+
 // @Summary Verify user email
 // @Tags user
 // @Param user body datatransfers.UserVerify true "User verification info"

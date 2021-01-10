@@ -162,9 +162,14 @@ import { authManager } from "@/auth";
 export default Vue.extend({
   components: { Logo },
 
-  data: () => ({
-    drawer: null,
-    user: authManager.getUser()
-  })
+  data() {
+    return {
+      drawer: null
+    };
+  },
+
+  computed: {
+    user: () => authManager.getUser()
+  }
 });
 </script>

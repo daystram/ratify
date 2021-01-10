@@ -43,7 +43,7 @@ func GETOneApplicationDetail(c *gin.Context) {
 		CallbackURL: application.CallbackURL,
 		LogoutURL:   application.LogoutURL,
 		Metadata:    application.Metadata,
-		Locked:      application.Locked,
+		Locked:      &application.Locked,
 		CreatedAt:   application.CreatedAt,
 	}})
 	return

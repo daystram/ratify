@@ -19,6 +19,11 @@ type UserUpdate struct {
 	Email      string `json:"email" binding:"required"`
 }
 
+type UserUpdatePassword struct {
+	Old string `json:"old_password" binding:"required"`
+	New string `json:"new_password" binding:"required"`
+}
+
 type UserVerify struct {
 	Token string `json:"token" binding:"required"`
 }

@@ -6,7 +6,7 @@
       </v-col>
     </v-row>
     <v-row>
-      <v-col cols="12">USER LISTpr</v-col>
+      <v-col cols="12">USER LIST</v-col>
     </v-row>
   </div>
 </template>

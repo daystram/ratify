@@ -32,6 +32,7 @@ func InitializeRouter() (router *gin.Engine) {
 			user.GET("/", utils.AuthOnly, v1.GETUser)
 			user.POST("/", v1.POSTRegister)
 			user.PUT("/", utils.AuthOnly, v1.PUTUser)
+			user.PUT("/password", utils.AuthOnly, v1.PUTUserPassword)
 			user.POST("/verify", v1.POSTVerify)
 			user.POST("/resend", v1.POSTResend)
 		}
@@ -45,7 +46,7 @@ func InitializeRouter() (router *gin.Engine) {
 			application.DELETE("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.DELETEApplication)
 		}
 	}
-	oauthV1 := router.Group("/oauth") // oauth
+	oauthV1 := router.Group("/oauth") // OAuth
 	oauthV1.Use(
 		middleware.CORSMiddleware,
 	)
