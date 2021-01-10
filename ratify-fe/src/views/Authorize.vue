@@ -6,7 +6,7 @@
           <v-fade-transition>
             <div>
               <h1 class="text-h2 mb-8 text-center">400 Bad Request</h1>
-              <p class="text-subtitle-1 text--secondary text-center">
+              <p class="text-button text--secondary text-center">
                 {{ redirectCountdown }}
               </p>
             </div>
@@ -39,7 +39,7 @@
                         Successfully signed in!
                       </v-alert>
                       <div
-                        class="text-subtitle-1 text--disabled text-center mt-4 mb-1"
+                        class="text-button text--disabled text-center mt-4 mb-1"
                       >
                         {{ redirectCountdown }}
                       </div>
@@ -57,9 +57,11 @@
                       <v-alert type="warning" text dense>
                         Email has not been verified! <br />
                         Click
-                        <router-link to="/verify" class="text-link">
-                          here</router-link
-                        >
+                        <router-link
+                          to="/verify"
+                          class="text-link"
+                          v-text="'here'"
+                        />
                         to re-verify.
                       </v-alert>
                     </div>
