@@ -65,6 +65,15 @@ func POSTRegister(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering user"})
 		return
 	}
+	// send verification email
+	if user, err = handlers.Handler.RetrieveUserBySubject(user.Subject); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed retrieving new user"})
+		return
+	}
+	if err = handlers.Handler.SendVerificationEmail(user); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed sending verification email"})
+		return
+	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
