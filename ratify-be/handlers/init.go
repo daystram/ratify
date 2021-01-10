@@ -43,6 +43,8 @@ type HandlerFunc interface {
 	StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
 	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
 	RevokeTokens(userSubject, clientID string, global bool) (err error)
+
+	SendVerificationEmail(user models.User) (err error)
 }
 
 type module struct {
