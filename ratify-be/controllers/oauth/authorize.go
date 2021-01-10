@@ -11,6 +11,7 @@ import (
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/errors"
 	"github.com/daystram/ratify/ratify-be/handlers"
 	"github.com/daystram/ratify/ratify-be/models"
 )
@@ -44,20 +45,26 @@ func POSTAuthorize(c *gin.Context) {
 			sessionID, err = c.Cookie(constants.SessionIDCookieKey)
 			if err != nil {
 				c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
-				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "invalid cookie"})
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid cookie"})
 				return
 			} else {
 				// verify user session
 				if user, sessionID, err = handlers.Handler.CheckSession(sessionID); err != nil {
 					c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "invalid session_id"})
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid session_id"})
 					return
 				}
 			}
 		} else {
 			// verify user login
 			if user, sessionID, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
-				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "incorrect_credentials", Error: "incorrect username or password"})
+				if err == errors.ErrAuthIncorrectCredentials {
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect username or password"})
+				} else if err == errors.ErrAuthEmailNotVerified {
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: err.Error(), Error: "email not verified"})
+				} else {
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed logging in user"})
+				}
 				return
 			}
 		}

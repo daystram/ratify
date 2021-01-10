@@ -7,6 +7,7 @@ import (
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
+	"github.com/daystram/ratify/ratify-be/errors"
 	"github.com/daystram/ratify/ratify-be/handlers"
 	"github.com/daystram/ratify/ratify-be/models"
 )
@@ -31,7 +32,7 @@ func GETUser(c *gin.Context) {
 		Username:      user.Username,
 		Email:         user.Email,
 		EmailVerified: user.EmailVerified,
-		CreatedAt: user.CreatedAt,
+		CreatedAt:     user.CreatedAt,
 	}})
 	return
 }
@@ -43,20 +44,24 @@ func GETUser(c *gin.Context) {
 // @Router /api/v1/user [POST]
 func POSTRegister(c *gin.Context) {
 	var err error
-	var user datatransfers.UserSignup
-	if err = c.ShouldBindJSON(&user); err != nil {
+	// fetch signup info
+	var signup datatransfers.UserSignup
+	if err = c.ShouldBindJSON(&signup); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
-	if user, _ := handlers.Handler.RetrieveUserByUsername(user.Username); user.Subject != "" {
-		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: "username_exists", Error: "username already used"})
+	// check email and username
+	if checkUser, _ := handlers.Handler.RetrieveUserByUsername(signup.Username); checkUser.Subject != "" {
+		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: errors.ErrUserUsernameExists.Error(), Error: "username already used"})
 		return
 	}
-	if user, _ := handlers.Handler.RetrieveUserByEmail(user.Email); user.Subject != "" {
-		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: "email_exists", Error: "email already used"})
+	if checkUser, _ := handlers.Handler.RetrieveUserByEmail(signup.Email); checkUser.Subject != "" {
+		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: errors.ErrUserEmailExists.Error(), Error: "email already used"})
 		return
 	}
-	if _, err = handlers.Handler.RegisterUser(user); err != nil {
+	// register user
+	var user models.User
+	if user.Subject, err = handlers.Handler.RegisterUser(signup); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering user"})
 		return
 	}
@@ -78,7 +83,7 @@ func PUTUser(c *gin.Context) {
 		return
 	}
 	if user, _ := handlers.Handler.RetrieveUserByEmail(user.Email); user.Subject != "" && user.Subject != c.GetString(constants.UserSubjectKey) {
-		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: "email_exists", Error: "email already used"})
+		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: errors.ErrUserEmailExists.Error(), Error: "email already used"})
 		return
 	}
 	if err = handlers.Handler.UpdateUser(c.GetString(constants.UserSubjectKey), user); err != nil {
