@@ -10,16 +10,20 @@ import (
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
+	errors2 "github.com/daystram/ratify/ratify-be/errors"
 	"github.com/daystram/ratify/ratify-be/models"
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
 func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, sessionID string, err error) {
 	if user, err = m.db.userOrmer.GetOneByUsername(credentials.Username); err != nil {
-		return models.User{}, "", errors.New("incorrect credentials")
+		return models.User{}, "", errors2.ErrAuthIncorrectCredentials
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
-		return models.User{}, "", errors.New("incorrect credentials")
+		return models.User{}, "", errors2.ErrAuthIncorrectCredentials
+	}
+	if !user.EmailVerified {
+		return models.User{}, "", errors2.ErrAuthEmailNotVerified
 	}
 	sessionID = utils.GenerateRandomString(constants.SessionIDLength)
 	sessionTokenKey := fmt.Sprintf(constants.RDTemSessionToken, sessionID)
@@ -67,6 +71,23 @@ func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject 
 		Password:   string(hashedPassword),
 	}); err != nil {
 		return "", errors.New(fmt.Sprintf("error inserting user. %v", err))
+	}
+	return
+}
+
+func (m *module) VerifyUser(token string) (err error) {
+	var result *redis.StringCmd
+	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token)); result.Err() != nil {
+		return errors.New(fmt.Sprintf("invalid verification_token. %v", result.Err()))
+	}
+	_ = m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token))
+	var user models.User
+	if user, err = m.db.userOrmer.GetOneBySubject(result.Val()); err != nil {
+		return errors.New(fmt.Sprintf("failed retrieving user. %v", result.Err()))
+	}
+	user.EmailVerified = true
+	if err = m.db.userOrmer.UpdateUser(user); err != nil {
+		return errors.New(fmt.Sprintf("failed activating user. %v", result.Err()))
 	}
 	return
 }

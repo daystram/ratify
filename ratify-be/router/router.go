@@ -32,6 +32,8 @@ func InitializeRouter() (router *gin.Engine) {
 			user.GET("/", utils.AuthOnly, v1.GETUser)
 			user.POST("/", v1.POSTRegister)
 			user.PUT("/", utils.AuthOnly, v1.PUTUser)
+			user.POST("/verify", v1.POSTVerify)
+			user.POST("/resend", v1.POSTResend)
 		}
 		application := apiV1.Group("/application")
 		{

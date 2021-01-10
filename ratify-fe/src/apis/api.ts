@@ -69,6 +69,12 @@ export default {
     },
     signup: function(userSignup: object): Promise<AxiosResponse> {
       return apiClient.post("user", userSignup);
+    },
+    verify: function(token: string): Promise<AxiosResponse> {
+      return apiClient.post("user/verify", { token });
+    },
+    resend: function(email: string): Promise<AxiosResponse> {
+      return apiClient.post("user/resend", { email });
     }
   }
 };

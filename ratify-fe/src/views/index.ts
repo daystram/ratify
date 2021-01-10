@@ -7,6 +7,7 @@ import Placeholder from "./Placeholder.vue";
 import Profile from "./manage/Profile.vue";
 import Signup from "./Signup.vue";
 import User from "./manage/User.vue";
+import Verify from "./Verify.vue";
 
 export {
   ApplicationList,
@@ -17,5 +18,6 @@ export {
   Placeholder,
   Profile,
   Signup,
-  User
+  User,
+  Verify
 };

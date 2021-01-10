@@ -22,8 +22,20 @@
                         dense
                         transition="scroll-y-transition"
                       >
-                        Account successfully created!
+                        Account successfully created! Check your email for a
+                        verification link.
                       </v-alert>
+                      <div class="text-end">
+                        <v-btn
+                          plain
+                          :ripple="false"
+                          class="pa-0"
+                          :to="{ name: 'login' }"
+                        >
+                          Continue to Login
+                          <v-icon v-text="'mdi-arrow-right'" class="ml-1" />
+                        </v-btn>
+                      </div>
                     </div>
                   </v-expand-transition>
                   <v-expand-transition>
