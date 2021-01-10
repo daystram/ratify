@@ -39,7 +39,7 @@
                     text
                     rounded
                     color="error"
-                    @click="cancelApplication"
+                    @click="cancelDetail"
                   >
                     Cancel
                   </v-btn>
@@ -48,11 +48,10 @@
                     rounded
                     class="ml-4"
                     :disabled="
-                      !applicationUpdated ||
-                        detail.formLoadStatus === STATUS.LOADING
+                      !detailUpdated || detail.formLoadStatus === STATUS.LOADING
                     "
                     :color="detail.editing ? 'success' : 'secondary lighten-1'"
-                    @click="saveApplication"
+                    @click="saveDetail"
                   >
                     <div v-if="!detail.editing">Edit</div>
                     <div
@@ -226,7 +225,7 @@
                                       :disabled="
                                         revoke.confirmName !== detail.name
                                       "
-                                      @click="revokeApplication"
+                                      @click="confirmRevoke"
                                     >
                                       Revoke
                                     </v-btn>
@@ -483,7 +482,7 @@
                               outlined
                               color="error"
                               :disabled="deleting.confirmName !== detail.name"
-                              @click="deleteApplication"
+                              @click="confirmDelete"
                             >
                               Delete
                             </v-btn>
@@ -564,7 +563,7 @@ export default Vue.extend({
   },
 
   computed: {
-    applicationUpdated: {
+    detailUpdated: {
       cache: false,
       get: function() {
         return (
@@ -637,7 +636,7 @@ export default Vue.extend({
   },
 
   methods: {
-    cancelApplication() {
+    cancelDetail() {
       this.detail.editing = false;
       this.detail.name = this.detail.before.name;
       this.detail.description = this.detail.before.description;
@@ -655,7 +654,7 @@ export default Vue.extend({
       };
       this.$v.$reset();
     },
-    saveApplication() {
+    saveDetail() {
       if (!this.detail.editing) {
         this.detail.editing = true;
         this.detail.before.name = this.detail.name;
@@ -699,7 +698,7 @@ export default Vue.extend({
         );
       }
     },
-    deleteApplication() {
+    confirmDelete() {
       this.deleting.formLoadStatus = STATUS.LOADING;
       api.application
         .delete(this.detail.clientId)
@@ -715,7 +714,7 @@ export default Vue.extend({
       this.deleting.confirmName = "";
       this.deleting.formLoadStatus = STATUS.IDLE;
     },
-    revokeApplication() {
+    confirmRevoke() {
       this.revoke.formLoadStatus = STATUS.LOADING;
       api.application
         .revoke(this.detail.clientId)

@@ -38,7 +38,7 @@
                     color="error"
                     @click="
                       () => {
-                        closePrompt();
+                        cancelCreate();
                       }
                     "
                   >
@@ -51,7 +51,7 @@
                     class="ml-4"
                     color="success"
                     :disabled="create.formLoadStatus !== STATUS.LOADING"
-                    @click="createApplication"
+                    @click="confirmCreate"
                   >
                     <div v-if="create.formLoadStatus !== STATUS.LOADING">
                       Create
@@ -65,7 +65,7 @@
                     text
                     rounded
                     color="success"
-                    @click="closePrompt"
+                    @click="cancelCreate"
                   >
                     Confirm
                   </v-btn>
@@ -348,7 +348,7 @@ export default Vue.extend({
       this.create.formLoadStatus = STATUS.IDLE;
       this.$v.$reset();
     },
-    createApplication() {
+    confirmCreate() {
       this.$v.$touch();
       if (!this.$v.$invalid) {
         this.create.formLoadStatus = STATUS.LOADING;
@@ -375,7 +375,7 @@ export default Vue.extend({
           });
       }
     },
-    closePrompt() {
+    cancelCreate() {
       this.create.creating = false;
       this.create.clientSecret = "";
     }
