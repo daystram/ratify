@@ -10,16 +10,20 @@ import (
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
+	errors2 "github.com/daystram/ratify/ratify-be/errors"
 	"github.com/daystram/ratify/ratify-be/models"
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
 func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, sessionID string, err error) {
 	if user, err = m.db.userOrmer.GetOneByUsername(credentials.Username); err != nil {
-		return models.User{}, "", errors.New("incorrect credentials")
+		return models.User{}, "", errors2.ErrAuthIncorrectCredentials
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
-		return models.User{}, "", errors.New("incorrect credentials")
+		return models.User{}, "", errors2.ErrAuthIncorrectCredentials
+	}
+	if !user.EmailVerified {
+		return models.User{}, "", errors2.ErrAuthEmailNotVerified
 	}
 	sessionID = utils.GenerateRandomString(constants.SessionIDLength)
 	sessionTokenKey := fmt.Sprintf(constants.RDTemSessionToken, sessionID)
