@@ -78,6 +78,18 @@
             <v-divider inset />
             <div class="v-card__body">
               <v-expand-transition>
+                <div v-show="detail.successAlert">
+                  <v-alert
+                    type="success"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    Application updated!
+                  </v-alert>
+                </div>
+              </v-expand-transition>
+              <v-expand-transition>
                 <div v-show="detail.formLoadStatus === STATUS.ERROR">
                   <v-alert
                     type="error"
@@ -524,7 +536,8 @@ export default Vue.extend({
         logoutURL: ""
       },
       formLoadStatus: STATUS.IDLE,
-      apiResponseCode: ""
+      apiResponseCode: "",
+      successAlert: false
     },
     revoke: {
       prompt: false,
@@ -670,6 +683,10 @@ export default Vue.extend({
               .then(() => {
                 this.detail.editing = false;
                 this.detail.formLoadStatus = STATUS.COMPLETE;
+                this.detail.successAlert = true;
+                setTimeout(() => {
+                  this.detail.successAlert = false;
+                }, 5000);
               })
               .catch(error => {
                 this.detail.editing = true;

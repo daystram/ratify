@@ -63,6 +63,18 @@
             <v-divider inset />
             <div class="v-card__body">
               <v-expand-transition>
+                <div v-show="profile.successAlert">
+                  <v-alert
+                    type="success"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    Profile updated!
+                  </v-alert>
+                </div>
+              </v-expand-transition>
+              <v-expand-transition>
                 <div v-show="profile.formLoadStatus === STATUS.ERROR">
                   <v-alert
                     type="error"
@@ -213,6 +225,18 @@
             <v-divider inset />
             <div class="v-card__body">
               <v-expand-transition>
+                <div v-show="password.successAlert">
+                  <v-alert
+                    type="success"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    Password updated!
+                  </v-alert>
+                </div>
+              </v-expand-transition>
+              <v-expand-transition>
                 <div v-show="password.formLoadStatus === STATUS.ERROR">
                   <v-alert
                     type="error"
@@ -233,18 +257,6 @@
                     transition="scroll-y-transition"
                   >
                     Incorrect old password!
-                  </v-alert>
-                </div>
-              </v-expand-transition>
-              <v-expand-transition>
-                <div v-show="password.successAlert">
-                  <v-alert
-                    type="success"
-                    text
-                    dense
-                    transition="scroll-y-transition"
-                  >
-                    Password updated!
                   </v-alert>
                 </div>
               </v-expand-transition>
@@ -343,7 +355,8 @@ export default Vue.extend({
         email: ""
       },
       formLoadStatus: STATUS.IDLE,
-      apiResponseCode: ""
+      apiResponseCode: "",
+      successAlert: false
     },
     password: {
       oldPassword: "",
@@ -521,6 +534,10 @@ export default Vue.extend({
               .then(() => {
                 this.profile.editing = false;
                 this.profile.formLoadStatus = STATUS.COMPLETE;
+                this.profile.successAlert = true;
+                setTimeout(() => {
+                  this.profile.successAlert = false;
+                }, 5000);
               })
               .catch(error => {
                 this.profile.editing = true;
@@ -555,7 +572,7 @@ export default Vue.extend({
                 this.password.successAlert = true;
                 setTimeout(() => {
                   this.password.successAlert = false;
-                }, 3000);
+                }, 5000);
               })
               .catch(error => {
                 this.password.apiResponseCode = error.response.data.code;
