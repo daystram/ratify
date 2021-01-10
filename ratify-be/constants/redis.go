@@ -9,9 +9,11 @@ const (
 	RDTemSessionToken      = RDKeySessionToken + defaultDelimiter
 	RDTemAccessToken       = RDKeyAccessToken + defaultDelimiter
 	RDTemRefreshToken      = RDKeyRefreshToken + defaultDelimiter
+	RDTemVerificationToken = RDKeyVerificationToken + defaultDelimiter
 
-	RDKeyCodeChallenge = "code_challenge"
-	RDKeySessionToken  = "session_token"
-	RDKeyAccessToken   = "access_token"
-	RDKeyRefreshToken  = "refresh_token"
+	RDKeyCodeChallenge     = "code_challenge"
+	RDKeySessionToken      = "session_token"
+	RDKeyAccessToken       = "access_token"
+	RDKeyRefreshToken      = "refresh_token"
+	RDKeyVerificationToken = "refresh_token"
 )
