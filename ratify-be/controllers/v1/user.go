@@ -124,3 +124,33 @@ func POSTVerify(c *gin.Context) {
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
+
+// @Summary Resend verification email
+// @Tags user
+// @Param user body datatransfers.UserResend true "User resend info"
+// @Success 200 "OK"
+// @Router /api/v1/user/resend [POST]
+func POSTResend(c *gin.Context) {
+	var err error
+	// fetch verification info
+	var resend datatransfers.UserResend
+	if err = c.ShouldBindJSON(&resend); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
+		return
+	}
+	// get user
+	var user models.User
+	if user, err = handlers.Handler.RetrieveUserByEmail(resend.Email); err != nil {
+		c.JSON(http.StatusOK, datatransfers.APIResponse{}) // silent request drop
+		return
+	}
+	// resend email
+	if !user.EmailVerified { // silent request drop
+		if err := handlers.Handler.SendVerificationEmail(user); err != nil {
+			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "failed verifying user"})
+			return
+		}
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
