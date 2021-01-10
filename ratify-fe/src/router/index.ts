@@ -9,7 +9,8 @@ import {
   Placeholder,
   Profile,
   Signup,
-  User
+  User,
+  Verify
 } from "@/views";
 import {
   authenticatedOnly,
@@ -145,12 +146,21 @@ const routes: Array<RouteConfig> = [
     }
   },
   {
+    path: "/verify",
+    name: "verify",
+    beforeEnter: unAuthenticatedOnly,
+    component: Verify,
+    meta: {
+      title: "Verify | Ratify"
+    }
+  },
+  {
     path: "/callback",
     name: "callback",
     beforeEnter: unAuthenticatedOnly,
     component: callback
   },
-  { path: "*", redirect: "/" }
+  { path: "*", redirect: { name: "home", query: {} } }
 ];
 
 const router = new VueRouter({
