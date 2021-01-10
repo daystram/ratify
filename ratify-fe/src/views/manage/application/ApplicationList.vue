@@ -20,7 +20,7 @@
               New Application
             </v-btn>
           </template>
-          <v-card>
+          <v-card :loading="create.formLoadStatus === STATUS.LOADING">
             <v-card-title>
               <v-row no-gutters align="center">
                 <v-col cols="auto">
@@ -50,21 +50,14 @@
                     rounded
                     class="ml-4"
                     color="success"
+                    :disabled="create.formLoadStatus !== STATUS.LOADING"
                     @click="createApplication"
                   >
                     <div v-if="create.formLoadStatus !== STATUS.LOADING">
                       Create
                     </div>
                     <div v-else>
-                      <v-progress-circular
-                        indeterminate
-                        color="success"
-                        size="16"
-                        class="mr-2"
-                      />
-                      <span>
-                        Creating
-                      </span>
+                      Creating
                     </div>
                   </v-btn>
                   <v-btn
@@ -341,8 +334,7 @@ export default Vue.extend({
           this.applications.sort((a, b) => b["created_at"] - a["created_at"]);
           this.pageLoadStatus = STATUS.COMPLETE;
         })
-        .catch(error => {
-          console.error(error);
+        .catch(() => {
           this.pageLoadStatus = STATUS.ERROR;
         });
     },

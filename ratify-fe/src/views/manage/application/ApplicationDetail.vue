@@ -15,16 +15,16 @@
     </v-row>
     <v-row class="mb-8" align="center">
       <v-col cols="12">
-        <h1 class="text-h2">{{ application.name }}</h1>
+        <h1 class="text-h2">{{ detail.name }}</h1>
         <div class="text-subtitle-1 text--secondary">
-          {{ application.description }}
+          {{ detail.description }}
         </div>
       </v-col>
     </v-row>
     <v-row>
       <v-fade-transition>
         <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
-          <v-card>
+          <v-card :loading="detail.formLoadStatus === STATUS.LOADING">
             <v-card-title>
               <v-row no-gutters align="center">
                 <v-col cols="auto">
@@ -34,8 +34,7 @@
                 <v-col cols="auto">
                   <v-btn
                     v-if="
-                      application.editing &&
-                        application.formLoadStatus !== STATUS.LOADING
+                      detail.editing && detail.formLoadStatus !== STATUS.LOADING
                     "
                     text
                     rounded
@@ -48,36 +47,29 @@
                     text
                     rounded
                     class="ml-4"
-                    :disabled="!applicationUpdated"
-                    :color="
-                      application.editing ? 'success' : 'secondary lighten-1'
+                    :disabled="
+                      !applicationUpdated ||
+                        detail.formLoadStatus === STATUS.LOADING
                     "
+                    :color="detail.editing ? 'success' : 'secondary lighten-1'"
                     @click="saveApplication"
                   >
-                    <div v-if="!application.editing">Edit</div>
+                    <div v-if="!detail.editing">Edit</div>
                     <div
                       v-else-if="
-                        application.editing &&
-                          application.formLoadStatus !== STATUS.LOADING
+                        detail.editing &&
+                          detail.formLoadStatus !== STATUS.LOADING
                       "
                     >
                       Save
                     </div>
                     <div
                       v-else-if="
-                        application.editing &&
-                          application.formLoadStatus === STATUS.LOADING
+                        detail.editing &&
+                          detail.formLoadStatus === STATUS.LOADING
                       "
                     >
-                      <v-progress-circular
-                        indeterminate
-                        color="success"
-                        size="16"
-                        class="mr-2"
-                      />
-                      <span>
-                        Saving
-                      </span>
+                      Saving
                     </div>
                   </v-btn>
                 </v-col>
@@ -86,7 +78,7 @@
             <v-divider inset />
             <div class="v-card__body">
               <v-expand-transition>
-                <div v-show="application.formLoadStatus === STATUS.ERROR">
+                <div v-show="detail.formLoadStatus === STATUS.ERROR">
                   <v-alert
                     type="error"
                     text
@@ -104,7 +96,7 @@
                       Client ID
                     </div>
                     <div>
-                      <code>{{ application.clientId }}</code>
+                      <code>{{ detail.clientId }}</code>
                     </div>
                   </div>
                 </v-col>
@@ -127,7 +119,7 @@
                             plain
                             color="error"
                             class="my-n4"
-                            :disabled="application.editing"
+                            :disabled="detail.editing"
                             v-bind="attrs"
                             v-on="on"
                             @click="() => (revoke.formLoadStatus = STATUS.IDLE)"
@@ -202,13 +194,12 @@
                                     <div>
                                       Are you sure you want to revoke the client
                                       secret for
-                                      <b>{{ this.application.name }}</b
+                                      <b>{{ detail.name }}</b
                                       >? This is action will render the
                                       previously issued client secret unusable.
                                     </div>
                                     <div class="mt-4">
-                                      Type <b>{{ this.application.name }}</b> to
-                                      confirm.
+                                      Type <b>{{ detail.name }}</b> to confirm.
                                     </div>
                                     <v-text-field
                                       v-model="revoke.confirmName"
@@ -221,8 +212,7 @@
                                       outlined
                                       color="error"
                                       :disabled="
-                                        revoke.confirmName !==
-                                          this.application.name
+                                        revoke.confirmName !== detail.name
                                       "
                                       @click="revokeApplication"
                                     >
@@ -253,7 +243,7 @@
                                       </div>
                                       <div>
                                         <code>
-                                          {{ this.revoke.clientSecret }}
+                                          {{ revoke.clientSecret }}
                                         </code>
                                       </div>
                                     </div>
@@ -268,125 +258,125 @@
                   </div>
                 </v-col>
                 <v-col cols="12" sm="6">
-                  <div v-if="!application.editing">
+                  <div v-if="!detail.editing">
                     <div class="mb-1 text-overline text--secondary">
                       Name
                     </div>
                     <div>
-                      {{ application.name }}
+                      {{ detail.name }}
                     </div>
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model.trim="application.name"
+                      v-model.trim="detail.name"
                       :error-messages="nameErrors"
                       :counter="20"
                       label="Name"
                       required
-                      :disabled="application.formLoadStatus === STATUS.LOADING"
-                      @input="$v.application.name.$touch()"
-                      @blur="$v.application.name.$touch()"
+                      :disabled="detail.formLoadStatus === STATUS.LOADING"
+                      @input="$v.detail.name.$touch()"
+                      @blur="$v.detail.name.$touch()"
                       :prepend-icon="'mdi-application'"
                     />
                   </div>
                 </v-col>
                 <v-col cols="12" sm="6">
-                  <div v-if="!application.editing">
+                  <div v-if="!detail.editing">
                     <div class="mb-1 text-overline text--secondary">
                       Description
                     </div>
                     <div>
-                      {{ application.description }}
+                      {{ detail.description }}
                     </div>
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model.trim="application.description"
+                      v-model.trim="detail.description"
                       :error-messages="descriptionErrors"
                       :counter="50"
                       label="Description"
                       required
-                      :disabled="application.formLoadStatus === STATUS.LOADING"
-                      @input="$v.application.description.$touch()"
-                      @blur="$v.application.description.$touch()"
+                      :disabled="detail.formLoadStatus === STATUS.LOADING"
+                      @input="$v.detail.description.$touch()"
+                      @blur="$v.detail.description.$touch()"
                       :prepend-icon="'mdi-text'"
                     />
                   </div>
                 </v-col>
                 <v-col cols="12" sm="6">
-                  <div v-if="!application.editing">
+                  <div v-if="!detail.editing">
                     <div class="mb-1 text-overline text--secondary">
                       Login URL
                     </div>
                     <div>
-                      {{ application.loginURL }}
+                      {{ detail.loginURL }}
                     </div>
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model.trim="application.loginURL"
+                      v-model.trim="detail.loginURL"
                       :error-messages="loginURLErrors"
                       label="Login URL"
                       required
                       hint="Ratify may require to redirect users back to your application's login page"
                       :disabled="
-                        application.formLoadStatus === STATUS.LOADING ||
-                          application.locked
+                        detail.formLoadStatus === STATUS.LOADING ||
+                          detail.locked
                       "
-                      @input="$v.application.loginURL.$touch()"
-                      @blur="$v.application.loginURL.$touch()"
+                      @input="$v.detail.loginURL.$touch()"
+                      @blur="$v.detail.loginURL.$touch()"
                       :prepend-icon="'mdi-login-variant'"
                     />
                   </div>
                 </v-col>
                 <v-col cols="12" sm="6">
-                  <div v-if="!application.editing">
+                  <div v-if="!detail.editing">
                     <div class="mb-1 text-overline text--secondary">
                       Callback URL
                     </div>
                     <div>
-                      {{ application.callbackURL }}
+                      {{ detail.callbackURL }}
                     </div>
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model.trim="application.callbackURL"
+                      v-model.trim="detail.callbackURL"
                       :error-messages="callbackURLErrors"
                       label="Callback URL"
                       required
                       hint="Use semicolon to separate multiple allowed callback URLs"
                       :disabled="
-                        application.formLoadStatus === STATUS.LOADING ||
-                          application.locked
+                        detail.formLoadStatus === STATUS.LOADING ||
+                          detail.locked
                       "
-                      @input="$v.application.callbackURL.$touch()"
-                      @blur="$v.application.callbackURL.$touch()"
+                      @input="$v.detail.callbackURL.$touch()"
+                      @blur="$v.detail.callbackURL.$touch()"
                       :prepend-icon="'mdi-undo-variant'"
                     />
                   </div>
                 </v-col>
                 <v-col cols="12" sm="6">
-                  <div v-if="!application.editing">
+                  <div v-if="!detail.editing">
                     <div class="mb-1 text-overline text--secondary">
                       Login URL
                     </div>
                     <div>
-                      {{ application.logoutURL }}
+                      {{ detail.logoutURL }}
                     </div>
                   </div>
                   <div v-else>
                     <v-text-field
-                      v-model.trim="application.logoutURL"
+                      v-model.trim="detail.logoutURL"
                       :error-messages="logoutURLErrors"
                       label="Logout URL"
                       required
                       hint="Your application's logout URL to trigger global logout"
                       :disabled="
-                        application.formLoadStatus === STATUS.LOADING ||
-                          application.locked
+                        detail.formLoadStatus === STATUS.LOADING ||
+                          detail.locked
                       "
-                      @input="$v.application.logoutURL.$touch()"
-                      @blur="$v.application.logoutURL.$touch()"
+                      @input="$v.detail.logoutURL.$touch()"
+                      @blur="$v.detail.logoutURL.$touch()"
                       :prepend-icon="'mdi-logout-variant'"
                     />
                   </div>
@@ -416,7 +406,7 @@
                     Delete application
                   </div>
                   <div class="text--secondary">
-                    You cannot un-delete an application. Take extreme caution.
+                    You cannot un-delete an detail. Take extreme caution.
                   </div>
                 </v-col>
                 <v-col cols="auto">
@@ -432,7 +422,7 @@
                         color="error"
                         v-bind="attrs"
                         v-on="on"
-                        :disabled="application.locked"
+                        :disabled="detail.locked"
                       >
                         Delete
                       </v-btn>
@@ -460,14 +450,13 @@
                           <v-col>
                             <div>
                               Are you sure you want to permanently delete
-                              <b>{{ this.application.name }}</b
+                              <b>{{ detail.name }}</b
                               >? This is action is <b>irreversible</b> and all
                               of this application's clients will not be able to
                               user Ratify authentication service.
                             </div>
                             <div class="mt-4">
-                              Type <b>{{ this.application.name }}</b> to
-                              confirm.
+                              Type <b>{{ detail.name }}</b> to confirm.
                             </div>
                             <div>
                               <v-text-field
@@ -481,9 +470,7 @@
                               block
                               outlined
                               color="error"
-                              :disabled="
-                                deleting.confirmName !== this.application.name
-                              "
+                              :disabled="deleting.confirmName !== detail.name"
                               @click="deleteApplication"
                             >
                               Delete
@@ -520,7 +507,7 @@ import { maxLength, required, url } from "vuelidate/lib/validators";
 
 export default Vue.extend({
   data: () => ({
-    application: {
+    detail: {
       name: "",
       clientId: "",
       description: "",
@@ -554,7 +541,7 @@ export default Vue.extend({
   }),
 
   validations: {
-    application: {
+    detail: {
       name: { required, maxLength: maxLength(20) },
       description: { required, maxLength: maxLength(50) },
       loginURL: { required, url },
@@ -568,54 +555,50 @@ export default Vue.extend({
       cache: false,
       get: function() {
         return (
-          this.application.name !== this.application.before.name ||
-          this.application.description !==
-            this.application.before.description ||
-          this.application.loginURL !== this.application.before.loginURL ||
-          this.application.callbackURL !==
-            this.application.before.callbackURL ||
-          this.application.logoutURL !== this.application.before.logoutURL
+          this.detail.name !== this.detail.before.name ||
+          this.detail.description !== this.detail.before.description ||
+          this.detail.loginURL !== this.detail.before.loginURL ||
+          this.detail.callbackURL !== this.detail.before.callbackURL ||
+          this.detail.logoutURL !== this.detail.before.logoutURL
         );
       }
     },
     nameErrors() {
       const errors: string[] = [];
-      if (!this.$v.application.name?.$dirty) return errors;
-      !this.$v.application.name.required && errors.push("Name required");
-      !this.$v.application.name.maxLength && errors.push("Name too long");
+      if (!this.$v.detail.name?.$dirty) return errors;
+      !this.$v.detail.name.required && errors.push("Name required");
+      !this.$v.detail.name.maxLength && errors.push("Name too long");
       return errors;
     },
     descriptionErrors() {
       const errors: string[] = [];
-      if (!this.$v.application.description?.$dirty) return errors;
-      !this.$v.application.description.required &&
+      if (!this.$v.detail.description?.$dirty) return errors;
+      !this.$v.detail.description.required &&
         errors.push("Description required");
-      !this.$v.application.description.maxLength &&
+      !this.$v.detail.description.maxLength &&
         errors.push("Description too long");
       return errors;
     },
     loginURLErrors() {
       const errors: string[] = [];
-      if (!this.$v.application.loginURL?.$dirty) return errors;
-      !this.$v.application.loginURL.required &&
-        errors.push("Login URL required");
-      !this.$v.application.loginURL.url && errors.push("Invalid URL");
+      if (!this.$v.detail.loginURL?.$dirty) return errors;
+      !this.$v.detail.loginURL.required && errors.push("Login URL required");
+      !this.$v.detail.loginURL.url && errors.push("Invalid URL");
       return errors;
     },
     callbackURLErrors() {
       const errors: string[] = [];
-      if (!this.$v.application.callbackURL?.$dirty) return errors;
-      !this.$v.application.callbackURL.required &&
+      if (!this.$v.detail.callbackURL?.$dirty) return errors;
+      !this.$v.detail.callbackURL.required &&
         errors.push("Callback URL required");
-      !this.$v.application.callbackURL.url && errors.push("Invalid URL");
+      !this.$v.detail.callbackURL.url && errors.push("Invalid URL");
       return errors;
     },
     logoutURLErrors() {
       const errors: string[] = [];
-      if (!this.$v.application.logoutURL?.$dirty) return errors;
-      !this.$v.application.logoutURL.required &&
-        errors.push("Logout URL required");
-      !this.$v.application.logoutURL.url && errors.push("Invalid URL");
+      if (!this.$v.detail.logoutURL?.$dirty) return errors;
+      !this.$v.detail.logoutURL.required && errors.push("Logout URL required");
+      !this.$v.detail.logoutURL.url && errors.push("Invalid URL");
       return errors;
     }
   },
@@ -624,13 +607,13 @@ export default Vue.extend({
     api.application
       .detail(this.$route.params.clientId, true)
       .then(response => {
-        this.application.name = response.data.data.name;
-        this.application.clientId = response.data.data.client_id;
-        this.application.description = response.data.data.description;
-        this.application.loginURL = response.data.data.login_url;
-        this.application.callbackURL = response.data.data.callback_url;
-        this.application.logoutURL = response.data.data.logout_url;
-        this.application.locked = response.data.data.locked;
+        this.detail.name = response.data.data.name;
+        this.detail.clientId = response.data.data.client_id;
+        this.detail.description = response.data.data.description;
+        this.detail.loginURL = response.data.data.login_url;
+        this.detail.callbackURL = response.data.data.callback_url;
+        this.detail.logoutURL = response.data.data.logout_url;
+        this.detail.locked = response.data.data.locked;
         this.pageLoadStatus = STATUS.COMPLETE;
       })
       .catch(error => {
@@ -642,15 +625,15 @@ export default Vue.extend({
 
   methods: {
     cancelApplication() {
-      this.application.editing = false;
-      this.application.name = this.application.before.name;
-      this.application.description = this.application.before.description;
-      this.application.loginURL = this.application.before.loginURL;
-      this.application.callbackURL = this.application.before.callbackURL;
-      this.application.logoutURL = this.application.before.logoutURL;
-      this.application.formLoadStatus = STATUS.IDLE;
-      this.application.apiResponseCode = "";
-      this.application.before = {
+      this.detail.editing = false;
+      this.detail.name = this.detail.before.name;
+      this.detail.description = this.detail.before.description;
+      this.detail.loginURL = this.detail.before.loginURL;
+      this.detail.callbackURL = this.detail.before.callbackURL;
+      this.detail.logoutURL = this.detail.before.logoutURL;
+      this.detail.formLoadStatus = STATUS.IDLE;
+      this.detail.apiResponseCode = "";
+      this.detail.before = {
         name: "",
         description: "",
         loginURL: "",
@@ -660,41 +643,38 @@ export default Vue.extend({
       this.$v.$reset();
     },
     saveApplication() {
-      if (!this.application.editing) {
-        this.application.editing = true;
-        this.application.before.name = this.application.name;
-        this.application.before.description = this.application.description;
-        this.application.before.loginURL = this.application.loginURL;
-        this.application.before.callbackURL = this.application.callbackURL;
-        this.application.before.logoutURL = this.application.logoutURL;
+      if (!this.detail.editing) {
+        this.detail.editing = true;
+        this.detail.before.name = this.detail.name;
+        this.detail.before.description = this.detail.description;
+        this.detail.before.loginURL = this.detail.loginURL;
+        this.detail.before.callbackURL = this.detail.callbackURL;
+        this.detail.before.logoutURL = this.detail.logoutURL;
         return;
       }
       this.$v.$touch();
       if (!this.$v.$invalid) {
-        this.application.formLoadStatus = STATUS.LOADING;
+        this.detail.formLoadStatus = STATUS.LOADING;
         setTimeout(
           () =>
             api.application
-              .update(this.application.clientId, {
+              .update(this.detail.clientId, {
                 /* eslint-disable @typescript-eslint/camelcase */
-                name: this.application.name.trim(),
-                description: this.application.description.trim(),
-                login_url: this.application.loginURL.trim(),
-                callback_url: this.application.callbackURL.trim(),
-                logout_url: this.application.logoutURL.trim()
+                name: this.detail.name.trim(),
+                description: this.detail.description.trim(),
+                login_url: this.detail.loginURL.trim(),
+                callback_url: this.detail.callbackURL.trim(),
+                logout_url: this.detail.logoutURL.trim()
                 /* eslint-enable @typescript-eslint/camelcase */
               })
-              .then(response => {
-                console.log(response.data);
-                this.application.editing = false;
-                this.application.formLoadStatus = STATUS.COMPLETE;
+              .then(() => {
+                this.detail.editing = false;
+                this.detail.formLoadStatus = STATUS.COMPLETE;
               })
               .catch(error => {
-                console.error(error.response.data);
-                this.application.editing = true;
-                this.application.apiResponseCode = error.response.data.code;
-                this.application.formLoadStatus = !this.application
-                  .apiResponseCode
+                this.detail.editing = true;
+                this.detail.apiResponseCode = error.response.data.code;
+                this.detail.formLoadStatus = !this.detail.apiResponseCode
                   ? STATUS.ERROR
                   : STATUS.IDLE;
               }),
@@ -705,12 +685,11 @@ export default Vue.extend({
     deleteApplication() {
       this.deleting.formLoadStatus = STATUS.LOADING;
       api.application
-        .delete(this.application.clientId)
+        .delete(this.detail.clientId)
         .then(() => {
           this.$router.push({ name: "manage:application" });
         })
-        .catch(error => {
-          console.error(error);
+        .catch(() => {
           this.deleting.formLoadStatus = STATUS.ERROR;
         });
     },
@@ -722,13 +701,12 @@ export default Vue.extend({
     revokeApplication() {
       this.revoke.formLoadStatus = STATUS.LOADING;
       api.application
-        .revoke(this.application.clientId)
+        .revoke(this.detail.clientId)
         .then(response => {
           this.revoke.clientSecret = response.data.data.client_secret;
           this.revoke.formLoadStatus = STATUS.COMPLETE;
         })
-        .catch(error => {
-          console.error(error);
+        .catch(() => {
           this.revoke.formLoadStatus = STATUS.ERROR;
         });
     },
