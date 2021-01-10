@@ -200,10 +200,20 @@
                   <v-row justify="end" align="center" no-gutters>
                     <v-col cols="12" md="">
                       <v-list-item-title class="text-h5">
-                        {{ application.name }}
+                        <span
+                          class="d-inline-block text-truncate"
+                          style="max-width: 320px;"
+                        >
+                          {{ application.name }}
+                        </span>
                       </v-list-item-title>
                       <v-list-item-subtitle>
-                        {{ application.description }}
+                        <span
+                          class="d-inline-block text-truncate"
+                          style="max-width: 320px;"
+                        >
+                          {{ application.description }}
+                        </span>
                       </v-list-item-subtitle>
                     </v-col>
                     <v-col cols="12" md="">
