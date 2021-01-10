@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/go-gomail/gomail"
 	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -45,8 +46,9 @@ type HandlerFunc interface {
 }
 
 type module struct {
-	db *dbEntity
-	rd *redis.Client
+	db     *dbEntity
+	rd     *redis.Client
+	mailer *gomail.Dialer
 }
 
 type dbEntity struct {
@@ -71,7 +73,7 @@ func InitializeHandler() {
 	}
 	log.Printf("[INIT] Successfully connected to PostgreSQL Database\n")
 
-	//Initialize Redis
+	// Initialize Redis
 	var rd *redis.Client
 	rd = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.AppConfig.RedisHostname, config.AppConfig.RedisPort),
@@ -84,6 +86,15 @@ func InitializeHandler() {
 	}
 	log.Printf("[INIT] Successfully connected to Redis\n")
 
+	// Initialize Mailer
+	var mailer *gomail.Dialer
+	mailer = gomail.NewDialer(config.AppConfig.SMTPServer, config.AppConfig.SMTPPort, config.AppConfig.SMTPUsername, config.AppConfig.SMTPPassword)
+	if _, err = mailer.Dial(); err != nil {
+		log.Fatalf("[INIT] Failed authenticating to SMTP Server at %s:%d. %v\n",
+			config.AppConfig.SMTPServer, config.AppConfig.SMTPPort, err)
+	}
+	log.Printf("[INIT] Successfully authenticathed to SMTP Server\n")
+
 	// Compose handler modules
 	Handler = &module{
 		db: &dbEntity{
@@ -91,6 +102,9 @@ func InitializeHandler() {
 			applicationOrmer: models.NewApplicationOrmer(db),
 			userOrmer:        models.NewUserOrmer(db),
 		},
-		rd: rd,
+		rd:     rd,
+		mailer: mailer,
 	}
+
+	log.Printf("[INIT] Initialization complete!\n")
 }
