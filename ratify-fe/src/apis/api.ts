@@ -89,9 +89,6 @@ export default {
     },
     disable: function(): Promise<AxiosResponse> {
       return apiClient.post(`mfa/disable`, {}, withAuth());
-    },
-    check: function(otp: string): Promise<AxiosResponse> {
-      return apiClient.post(`mfa/check`, { otp }, withAuth());
     }
   }
 };
