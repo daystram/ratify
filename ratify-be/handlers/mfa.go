@@ -30,14 +30,14 @@ func (m *module) ConfirmTOTP(otp string, user models.User) (err error) {
 	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDTemTOTPToken, user.Subject)); result.Err() != nil {
 		return errors2.ErrAuthIncorrectCredentials
 	}
-	secret := result.Val()
-	if !gotp.NewDefaultTOTP(secret).Verify(otp, int(time.Now().Unix())) {
+	user.TOTPSecret = result.Val()
+	if !m.CheckTOTP(otp, user) {
 		return errors2.ErrAuthIncorrectCredentials
 	}
 	_ = m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemTOTPToken, user.Subject))
 	if err = m.db.userOrmer.UpdateUser(models.User{
 		Subject:    user.Subject,
-		TOTPSecret: secret,
+		TOTPSecret: user.TOTPSecret,
 	}); err != nil {
 		return errors.New("failed storing totp_secret")
 	}
@@ -58,5 +58,9 @@ func (m *module) DisableTOTP(user models.User) (err error) {
 }
 
 func (m *module) CheckTOTP(otp string, user models.User) (valid bool) {
-	return user.EnabledTOTP() && gotp.NewDefaultTOTP(user.TOTPSecret).Verify(otp, int(time.Now().Unix()))
+	totp := gotp.NewDefaultTOTP(user.TOTPSecret)
+	now := time.Now()
+	return !totp.Verify(otp, int(now.Add(-30*time.Second).Unix())) ||
+		!totp.Verify(otp, int(now.Unix())) ||
+		!totp.Verify(otp, int(now.Add(30*time.Second).Unix()))
 }
