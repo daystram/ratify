@@ -40,7 +40,7 @@ func POSTAuthorize(c *gin.Context) {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		var sessionID string
 		var user models.User
-		if authRequest.Username == "" && authRequest.Password == "" {
+		if authRequest.UseSession {
 			// get session cookie
 			sessionID, err = c.Cookie(constants.SessionIDCookieKey)
 			if err != nil {
