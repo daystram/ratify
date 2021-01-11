@@ -39,5 +39,6 @@ type UserInfo struct {
 	Username      string `uri:"preferred_username" json:"preferred_username"`
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
+	MFAEnabled    bool   `json:"mfa_enabled"`
 	CreatedAt     int64  `json:"created_at"`
 }
