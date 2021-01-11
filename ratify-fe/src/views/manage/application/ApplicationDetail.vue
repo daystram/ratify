@@ -428,7 +428,7 @@
                     Delete application
                   </div>
                   <div class="text--secondary">
-                    You cannot un-delete an detail. Take extreme caution.
+                    You cannot un-delete an application. Take extreme caution.
                   </div>
                 </v-col>
                 <v-col cols="auto">
@@ -673,6 +673,7 @@ export default Vue.extend({
         this.detail.before.loginURL = this.detail.loginURL;
         this.detail.before.callbackURL = this.detail.callbackURL;
         this.detail.before.logoutURL = this.detail.logoutURL;
+        this.detail.successAlert = false;
         return;
       }
       this.$v.$touch();

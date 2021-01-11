@@ -516,6 +516,7 @@ export default Vue.extend({
         this.profile.before.givenName = this.profile.givenName;
         this.profile.before.familyName = this.profile.familyName;
         this.profile.before.email = this.profile.email;
+        this.profile.successAlert = false;
         return;
       }
       this.$v.profile.$touch();
@@ -551,6 +552,7 @@ export default Vue.extend({
       }
     },
     savePassword() {
+      this.password.successAlert = false;
       this.$v.password.$touch();
       if (!this.$v.password.$invalid) {
         this.password.formLoadStatus = STATUS.LOADING;
