@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/daystram/ratify/ratify-be/constants"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,7 @@ type User struct {
 	Email         string `gorm:"column:email;uniqueIndex;type:varchar(50);not null" json:"-"`
 	EmailVerified bool   `gorm:"column:email_verified;default:false" json:"-"`
 	Password      string `gorm:"column:password;type:varchar(100);not null" json:"-"`
+	TOTPSecret    string `gorm:"column:totp_secret;type:varchar(32);default:'-'" json:"-"`
 	Metadata      string `gorm:"column:metadata;type:text" json:"-"`
 	CreatedAt     int64  `gorm:"column:created_at;autoCreateTime" json:"-"`
 	UpdatedAt     int64  `gorm:"column:updated_at;autoUpdateTime" json:"-"`
@@ -60,4 +62,8 @@ func (o *userOrm) UpdateUser(user User) (err error) {
 	// By default, only non-empty fields are updated. See https://gorm.io/docs/update.html#Updates-multiple-columns
 	result := o.db.Model(&User{}).Where("sub = ?", user.Subject).Updates(&user)
 	return result.Error
+}
+
+func (user User) EnabledTOTP() (enabled bool) {
+	return user.TOTPSecret != constants.TOTPDisabledFlag
 }

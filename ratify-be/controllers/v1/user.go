@@ -32,6 +32,7 @@ func GETUser(c *gin.Context) {
 		Username:      user.Username,
 		Email:         user.Email,
 		EmailVerified: user.EmailVerified,
+		MFAEnabled:    user.EnabledTOTP(),
 		CreatedAt:     user.CreatedAt,
 	}})
 	return

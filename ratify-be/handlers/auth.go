@@ -17,7 +17,9 @@ import (
 
 func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, sessionID string, err error) {
 	if user, err = m.db.userOrmer.GetOneByUsername(credentials.Username); err != nil {
-		return models.User{}, "", errors2.ErrAuthIncorrectCredentials
+		if user, err = m.db.userOrmer.GetOneByEmail(credentials.Username); err != nil {
+			return models.User{}, "", errors2.ErrAuthIncorrectCredentials
+		}
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
 		return models.User{}, "", errors2.ErrAuthIncorrectCredentials

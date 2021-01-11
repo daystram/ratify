@@ -53,6 +53,12 @@ type HandlerFunc interface {
 
 	// mailer
 	SendVerificationEmail(user models.User) (err error)
+
+	// mfa
+	EnableTOTP(user models.User) (uri string, err error)
+	ConfirmTOTP(otp string, user models.User) (err error)
+	DisableTOTP(user models.User) (err error)
+	CheckTOTP(otp string, user models.User) (valid bool)
 }
 
 type module struct {

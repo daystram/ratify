@@ -90,7 +90,7 @@
               <v-expand-transition>
                 <div v-show="detail.successAlert">
                   <v-alert
-                    type="success"
+                    type="info"
                     text
                     dense
                     transition="scroll-y-transition"
@@ -225,7 +225,7 @@
                                     </div>
                                     <v-text-field
                                       v-model="revoke.confirmName"
-                                      class="pt-0"
+                                      class="py-2"
                                       :prepend-icon="'mdi-application'"
                                     />
                                     <v-btn
@@ -380,7 +380,7 @@
                 <v-col cols="12" sm="6">
                   <div v-if="!detail.editing">
                     <div class="mb-1 text-overline text--secondary">
-                      Login URL
+                      Logout URL
                     </div>
                     <div>
                       {{ detail.logoutURL }}
@@ -428,7 +428,7 @@
                     Delete application
                   </div>
                   <div class="text--secondary">
-                    You cannot un-delete an detail. Take extreme caution.
+                    You cannot un-delete an application. Take extreme caution.
                   </div>
                 </v-col>
                 <v-col cols="auto">
@@ -441,6 +441,7 @@
                       <v-btn
                         rounded
                         outlined
+                        text
                         color="error"
                         v-bind="attrs"
                         v-on="on"
@@ -483,7 +484,7 @@
                             <div>
                               <v-text-field
                                 v-model="deleting.confirmName"
-                                class="pt-0"
+                                class="py-2"
                                 :prepend-icon="'mdi-application'"
                               />
                             </div>
@@ -663,7 +664,7 @@ export default Vue.extend({
         callbackURL: "",
         logoutURL: ""
       };
-      this.$v.$reset();
+      this.$v.detail.$reset();
     },
     saveDetail() {
       if (!this.detail.editing) {
@@ -673,6 +674,7 @@ export default Vue.extend({
         this.detail.before.loginURL = this.detail.loginURL;
         this.detail.before.callbackURL = this.detail.callbackURL;
         this.detail.before.logoutURL = this.detail.logoutURL;
+        this.detail.successAlert = false;
         return;
       }
       this.$v.$touch();
@@ -740,6 +742,7 @@ export default Vue.extend({
     cancelRevoke() {
       this.revoke.prompt = false;
       this.revoke.confirmName = "";
+      this.revoke.formLoadStatus = STATUS.IDLE;
     }
   }
 });

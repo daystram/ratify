@@ -40,7 +40,7 @@ func POSTAuthorize(c *gin.Context) {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		var sessionID string
 		var user models.User
-		if authRequest.Username == "" && authRequest.Password == "" {
+		if authRequest.UseSession {
 			// get session cookie
 			sessionID, err = c.Cookie(constants.SessionIDCookieKey)
 			if err != nil {
@@ -66,6 +66,17 @@ func POSTAuthorize(c *gin.Context) {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed logging in user"})
 				}
 				return
+			}
+			// check if TOTP enabled
+			if user.EnabledTOTP() {
+				if authRequest.OTP == "" { // proceed to MFA prompt
+					c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: errors.ErrAuthMissingOTP.Error(), Error: "otp required"})
+					return
+				}
+				if !handlers.Handler.CheckTOTP(authRequest.OTP, user) {
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect otp"})
+					return
+				}
 			}
 		}
 		// verify request credentials

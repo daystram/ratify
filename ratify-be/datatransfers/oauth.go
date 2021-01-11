@@ -10,6 +10,7 @@ type AuthorizationRequest struct {
 	RedirectURI  string `json:"redirect_uri" binding:"-"`
 	Scope        string `json:"scope" binding:"-"`
 	State        string `json:"state" binding:"-"`
+	UseSession   bool   `json:"use_session" binding:"-"`
 	UserLogin
 	PKCEAuthFields
 }

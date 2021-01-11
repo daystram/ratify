@@ -46,9 +46,24 @@
                     </div>
                   </v-expand-transition>
                   <v-expand-transition>
-                    <div v-show="!$v.username.correct">
+                    <div
+                      v-show="requireOTP && formLoadStatus !== STATUS.COMPLETE"
+                    >
+                      <v-alert
+                        type="info"
+                        text
+                        dense
+                        transition="scroll-y-transition"
+                      >
+                        Please enter the code your authenticator app generated.
+                      </v-alert>
+                    </div>
+                  </v-expand-transition>
+                  <v-expand-transition>
+                    <div v-show="!$v.login.username.correct">
                       <v-alert type="error" text dense>
-                        Incorrect username or password!
+                        Incorrect
+                        {{ this.requireOTP ? "code" : "credentials" }}!
                       </v-alert>
                     </div>
                   </v-expand-transition>
@@ -78,45 +93,72 @@
                     </div>
                   </v-expand-transition>
                   <v-expand-transition>
-                    <div v-show="formLoadStatus !== STATUS.COMPLETE">
-                      <v-form @submit="login">
-                        <v-text-field
-                          v-model="username"
-                          :error-messages="usernameErrors"
-                          label="Username"
-                          required
-                          :disabled="
-                            formLoadStatus === STATUS.LOADING ||
-                              formLoadStatus === STATUS.COMPLETE
-                          "
-                          @input="
-                            () => {
-                              $v.username.$touch();
-                              this.apiResponseCode = '';
-                            }
-                          "
-                          @blur="$v.username.$touch()"
-                          :prepend-icon="'mdi-identifier'"
-                        ></v-text-field>
-                        <v-text-field
-                          v-model="password"
-                          :error-messages="passwordErrors"
-                          :type="'password'"
-                          label="Password"
-                          required
-                          :disabled="
-                            formLoadStatus === STATUS.LOADING ||
-                              formLoadStatus === STATUS.COMPLETE
-                          "
-                          @input="
-                            () => {
-                              $v.password.$touch();
-                              this.apiResponseCode = '';
-                            }
-                          "
-                          @blur="$v.password.$touch()"
-                          :prepend-icon="'mdi-lock'"
-                        ></v-text-field>
+                    <div v-if="formLoadStatus !== STATUS.COMPLETE">
+                      <v-form @submit="loginUser">
+                        <v-expand-transition>
+                          <div v-if="!requireOTP">
+                            <v-text-field
+                              v-model="login.username"
+                              :error-messages="usernameErrors"
+                              label="Username or email"
+                              required
+                              :disabled="
+                                formLoadStatus === STATUS.LOADING ||
+                                  formLoadStatus === STATUS.COMPLETE
+                              "
+                              @input="
+                                () => {
+                                  $v.login.username.$touch();
+                                  this.apiResponseCode = '';
+                                }
+                              "
+                              @blur="$v.login.username.$touch()"
+                              :prepend-icon="'mdi-identifier'"
+                            />
+                            <v-text-field
+                              v-model="login.password"
+                              :error-messages="passwordErrors"
+                              :type="'password'"
+                              label="Password"
+                              required
+                              :disabled="
+                                formLoadStatus === STATUS.LOADING ||
+                                  formLoadStatus === STATUS.COMPLETE
+                              "
+                              @input="
+                                () => {
+                                  $v.login.password.$touch();
+                                  this.apiResponseCode = '';
+                                }
+                              "
+                              @blur="$v.login.password.$touch()"
+                              :prepend-icon="'mdi-lock'"
+                            />
+                          </div>
+                        </v-expand-transition>
+                        <v-expand-transition>
+                          <div v-if="requireOTP">
+                            <v-text-field
+                              v-model="mfa.otp"
+                              :error-messages="otpErrors"
+                              label="Code"
+                              autofocus
+                              required
+                              :disabled="
+                                formLoadStatus === STATUS.LOADING ||
+                                  formLoadStatus === STATUS.COMPLETE
+                              "
+                              @input="
+                                () => {
+                                  $v.mfa.otp.$touch();
+                                  this.apiResponseCode = '';
+                                }
+                              "
+                              @blur="$v.mfa.otp.$touch()"
+                              :prepend-icon="'mdi-two-factor-authentication'"
+                            />
+                          </div>
+                        </v-expand-transition>
                         <v-btn
                           type="submit"
                           block
@@ -165,7 +207,13 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { alphaNum, required } from "vuelidate/lib/validators";
+import {
+  and,
+  maxLength,
+  minLength,
+  numeric,
+  required
+} from "vuelidate/lib/validators";
 import api from "@/apis/api";
 import oauth from "@/apis/oauth";
 import { STATUS } from "@/constants/status";
@@ -181,8 +229,14 @@ export default Vue.extend({
         name: "",
         metadata: ""
       },
-      username: "",
-      password: "",
+      login: {
+        username: "",
+        password: ""
+      },
+      mfa: {
+        otp: ""
+      },
+      requireOTP: false,
       redirectCountdown: "Redirecting now",
       redirectCounter: 0,
       apiResponseCode: ""
@@ -204,33 +258,53 @@ export default Vue.extend({
     },
     usernameErrors() {
       const errors: string[] = [];
-      if (!this.$v.username.$dirty) return errors;
-      !this.$v.username.alphaNum && errors.push("Invalid username");
-      !this.$v.username.required && errors.push("Username required");
-      !this.$v.username.correct && errors.push("");
+      if (!this.$v.login.username?.$dirty) return errors;
+      !this.$v.login.username?.required &&
+        errors.push("Username or email required");
+      !this.$v.login.username?.correct && errors.push("");
       return errors;
     },
     passwordErrors() {
       const errors: string[] = [];
-      if (!this.$v.password.$dirty) return errors;
-      !this.$v.password.required && errors.push("Password required");
-      !this.$v.password.correct && errors.push("");
+      if (!this.$v.login.password?.$dirty) return errors;
+      !this.$v.login.password?.required && errors.push("Password required");
+      !this.$v.login.password?.correct && errors.push("");
+      return errors;
+    },
+    otpErrors() {
+      const errors: string[] = [];
+      if (!this.$v.mfa.otp?.$dirty) return errors;
+      !this.$v.mfa.otp?.required && errors.push("Code required");
+      !this.$v.mfa.otp?.length && errors.push("Invalid code");
+      !this.$v.mfa.otp?.numeric && errors.push("Invalid code");
+      !this.$v.mfa.otp?.correct && errors.push("");
       return errors;
     }
   },
 
   validations: {
-    username: {
-      required,
-      alphaNum,
-      correct() {
-        return this.$data.apiResponseCode !== "incorrect_credentials";
+    login: {
+      username: {
+        required,
+        correct() {
+          return this.$data.apiResponseCode !== "incorrect_credentials";
+        }
+      },
+      password: {
+        required,
+        correct() {
+          return this.$data.apiResponseCode !== "incorrect_credentials";
+        }
       }
     },
-    password: {
-      required,
-      correct() {
-        return this.$data.apiResponseCode !== "incorrect_credentials";
+    mfa: {
+      otp: {
+        required,
+        numeric,
+        length: and(minLength(6), maxLength(6)),
+        correct() {
+          return this.$data.apiResponseCode !== "incorrect_credentials";
+        }
       }
     }
   },
@@ -249,7 +323,7 @@ export default Vue.extend({
       .then(response => {
         this.application = response.data.data;
         // attempt authorization via session_id cookie
-        this.authorizeUser()
+        this.authorizeUser(true)
           .then(() => {
             this.pageLoadStatus = STATUS.COMPLETE;
           })
@@ -264,20 +338,25 @@ export default Vue.extend({
   },
 
   methods: {
-    login(e: Event) {
+    loginUser(e: Event) {
       e.preventDefault();
-      this.$v.$touch();
-      if (!this.$v.$invalid) {
+      this.$v.login.$touch();
+      this.requireOTP && this.$v.mfa.$touch();
+      if (
+        !(this.$v.login.$invalid || (this.requireOTP && this.$v.mfa.$invalid))
+      ) {
         this.formLoadStatus = STATUS.LOADING;
-        this.authorizeUser().catch(error => {
+        this.authorizeUser(false).catch(error => {
           this.apiResponseCode = error.response.data.code;
           this.formLoadStatus = !this.apiResponseCode
             ? STATUS.ERROR
             : STATUS.IDLE;
+          this.requireOTP =
+            this.requireOTP || this.apiResponseCode === "missing_otp";
         });
       }
     },
-    authorizeUser() {
+    authorizeUser(useSession: boolean) {
       return oauth
         .authorize({
           /* eslint-disable @typescript-eslint/camelcase */
@@ -288,8 +367,10 @@ export default Vue.extend({
           state: this.authRequest.state,
           code_challenge: this.authRequest.codeChallenge,
           code_challenge_method: this.authRequest.codeChallengeMethod,
-          preferred_username: this.username,
-          password: this.password
+          preferred_username: this.login.username,
+          password: this.login.password,
+          otp: this.requireOTP ? this.mfa.otp : "",
+          use_session: useSession
           /* eslint-enable @typescript-eslint/camelcase */
         })
         .then(response => {

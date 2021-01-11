@@ -79,5 +79,16 @@ export default {
     resend: function(email: string): Promise<AxiosResponse> {
       return apiClient.post("user/resend", { email });
     }
+  },
+  mfa: {
+    enable: function(): Promise<AxiosResponse> {
+      return apiClient.post(`mfa/enable`, {}, withAuth());
+    },
+    confirm: function(otp: string): Promise<AxiosResponse> {
+      return apiClient.post(`mfa/confirm`, { otp }, withAuth());
+    },
+    disable: function(): Promise<AxiosResponse> {
+      return apiClient.post(`mfa/disable`, {}, withAuth());
+    }
   }
 };
