@@ -67,6 +67,17 @@ func POSTAuthorize(c *gin.Context) {
 				}
 				return
 			}
+			// check if TOTP enabled
+			if user.EnabledTOTP() {
+				if authRequest.OTP == "" { // proceed to MFA prompt
+					c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: errors.ErrAuthMissingOTP.Error(), Error: "otp required"})
+					return
+				}
+				if !handlers.Handler.CheckTOTP(authRequest.OTP, user) {
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect otp"})
+					return
+				}
+			}
 		}
 		// verify request credentials
 		// TODO: support comma-separated callback URLs

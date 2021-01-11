@@ -57,7 +57,7 @@ func POSTConfirmTOTP(c *gin.Context) {
 	// confirm TOTP
 	if err = handlers.Handler.ConfirmTOTP(totp.OTP, user); err != nil {
 		if err == errors.ErrAuthIncorrectCredentials {
-			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: err.Error()})
+			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect otp"})
 		} else {
 			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: fmt.Sprintf("failed confirming totp. %v", err)})
 		}

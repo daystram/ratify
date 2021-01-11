@@ -3,6 +3,7 @@ package datatransfers
 type UserLogin struct {
 	Username string `json:"preferred_username" binding:"-"`
 	Password string `json:"password" binding:"-"`
+	OTP      string `json:"otp" binding:"-"`
 }
 
 type UserSignup struct {
