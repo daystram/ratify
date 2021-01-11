@@ -90,7 +90,7 @@
               <v-expand-transition>
                 <div v-show="detail.successAlert">
                   <v-alert
-                    type="success"
+                    type="info"
                     text
                     dense
                     transition="scroll-y-transition"
@@ -380,7 +380,7 @@
                 <v-col cols="12" sm="6">
                   <div v-if="!detail.editing">
                     <div class="mb-1 text-overline text--secondary">
-                      Login URL
+                      Logout URL
                     </div>
                     <div>
                       {{ detail.logoutURL }}
@@ -441,6 +441,7 @@
                       <v-btn
                         rounded
                         outlined
+                        text
                         color="error"
                         v-bind="attrs"
                         v-on="on"
