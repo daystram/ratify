@@ -18,6 +18,7 @@ type User struct {
 	Email         string `gorm:"column:email;uniqueIndex;type:varchar(50);not null" json:"-"`
 	EmailVerified bool   `gorm:"column:email_verified;default:false" json:"-"`
 	Password      string `gorm:"column:password;type:varchar(100);not null" json:"-"`
+	TOTPSecret    string `gorm:"column:totp_secret;type:char(16)" json:"-"`
 	Metadata      string `gorm:"column:metadata;type:text" json:"-"`
 	CreatedAt     int64  `gorm:"column:created_at;autoCreateTime" json:"-"`
 	UpdatedAt     int64  `gorm:"column:updated_at;autoUpdateTime" json:"-"`
