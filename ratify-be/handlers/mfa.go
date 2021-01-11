@@ -11,6 +11,9 @@ import (
 )
 
 func (m *module) EnableTOTP(user models.User) (uri string, err error) {
+	if user.EnabledTOTP() {
+		return "", errors.New("totp already enabled")
+	}
 	secret := gotp.RandomSecret(constants.TOTPSecretLength)
 	if err = m.db.userOrmer.UpdateUser(models.User{
 		Subject:    user.Subject,
@@ -22,5 +25,5 @@ func (m *module) EnableTOTP(user models.User) (uri string, err error) {
 }
 
 func (m *module) CheckTOTP(otp string, user models.User) (valid bool) {
-	return gotp.NewDefaultTOTP(user.TOTPSecret).Verify(otp, int(time.Now().Unix()))
+	return user.EnabledTOTP() && gotp.NewDefaultTOTP(user.TOTPSecret).Verify(otp, int(time.Now().Unix()))
 }
