@@ -48,7 +48,7 @@
                   <v-expand-transition>
                     <div v-show="!$v.username.correct">
                       <v-alert type="error" text dense>
-                        Incorrect username or password!
+                        Incorrect credentials!
                       </v-alert>
                     </div>
                   </v-expand-transition>
@@ -83,7 +83,7 @@
                         <v-text-field
                           v-model="username"
                           :error-messages="usernameErrors"
-                          label="Username"
+                          label="Username or email"
                           required
                           :disabled="
                             formLoadStatus === STATUS.LOADING ||
@@ -205,8 +205,7 @@ export default Vue.extend({
     usernameErrors() {
       const errors: string[] = [];
       if (!this.$v.username.$dirty) return errors;
-      !this.$v.username.alphaNum && errors.push("Invalid username");
-      !this.$v.username.required && errors.push("Username required");
+      !this.$v.username.required && errors.push("Username or email required");
       !this.$v.username.correct && errors.push("");
       return errors;
     },
@@ -222,7 +221,6 @@ export default Vue.extend({
   validations: {
     username: {
       required,
-      alphaNum,
       correct() {
         return this.$data.apiResponseCode !== "incorrect_credentials";
       }
