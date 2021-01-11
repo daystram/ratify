@@ -664,7 +664,7 @@ export default Vue.extend({
         callbackURL: "",
         logoutURL: ""
       };
-      this.$v.$reset();
+      this.$v.detail.$reset();
     },
     saveDetail() {
       if (!this.detail.editing) {

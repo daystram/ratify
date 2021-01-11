@@ -356,7 +356,7 @@ export default Vue.extend({
       this.create.logoutURL = "";
       this.create.clientSecret = "";
       this.create.formLoadStatus = STATUS.IDLE;
-      this.$v.$reset();
+      this.$v.create.$reset();
     },
     confirmCreate() {
       this.$v.$touch();
