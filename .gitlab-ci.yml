@@ -31,7 +31,7 @@ deploy dev ratify-be:
   image: docker:19.03.12
   needs: ["test ratify-be"]
   environment:
-    name: development
+    name: development-be
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   services:
@@ -53,7 +53,7 @@ deploy prod ratify-be:
   image: docker:19.03.12
   needs: ["test ratify-be"]
   environment:
-    name: production
+    name: production-be
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   services:
@@ -87,7 +87,7 @@ deploy dev ratify-fe:
   image: docker:19.03.12
   needs: ["build ratify-fe"]
   environment:
-    name: development
+    name: development-fe
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   services:
@@ -110,7 +110,7 @@ deploy prod ratify-fe:
   image: docker:19.03.12
   needs: ["build ratify-fe"]
   environment:
-    name: production
+    name: production-fe
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   services:
