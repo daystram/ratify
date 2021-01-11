@@ -2,7 +2,6 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
@@ -44,6 +43,12 @@ func InitializeRouter() (router *gin.Engine) {
 			application.PUT("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplication)
 			application.PUT("/:client_id/revoke", utils.AuthOnly, utils.SuperuserOnly, v1.PUTApplicationRevokeSecret)
 			application.DELETE("/:client_id", utils.AuthOnly, utils.SuperuserOnly, v1.DELETEApplication)
+		}
+		mfa := apiV1.Group("/mfa")
+		{
+			mfa.POST("/enable", utils.AuthOnly, v1.POSTEnableTOTP)
+			mfa.POST("/confirm", utils.AuthOnly, v1.POSTConfirmTOTP)
+			mfa.POST("/disable", utils.AuthOnly, v1.POSTDisableTOTP)
 		}
 	}
 	oauthV1 := router.Group("/oauth") // OAuth
