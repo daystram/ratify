@@ -319,7 +319,7 @@
     <v-row>
       <v-fade-transition>
         <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
-          <v-card :loading="mfa.formLoadStatus === STATUS.LOADING">
+          <v-card>
             <v-card-title>
               <v-row no-gutters align="center">
                 <v-col cols="auto">
@@ -411,6 +411,7 @@
                               block
                               outlined
                               color="error"
+                              :disabled="mfa.formLoadStatus === STATUS.LOADING"
                               @click="disableMFA"
                             >
                               Disable
@@ -504,8 +505,8 @@
                             <div>
                               <v-text-field
                                 v-model="mfa.otp"
-                                class="pt-0"
-                                placeholder="OTP"
+                                class="py-2"
+                                label="Code"
                                 :disabled="
                                   mfa.formLoadStatus === STATUS.LOADING
                                 "
@@ -525,6 +526,7 @@
                               block
                               outlined
                               color="success"
+                              :disabled="mfa.formLoadStatus === STATUS.LOADING"
                               @click="confirmMFA"
                             >
                               Enable
@@ -677,9 +679,9 @@ export default Vue.extend({
     otpErrors() {
       const errors: string[] = [];
       if (!this.$v.mfa.otp?.$dirty) return errors;
-      !this.$v.mfa.otp?.required && errors.push("OTP Required");
-      !this.$v.mfa.otp?.length && errors.push("Invalid OTP");
-      !this.$v.mfa.otp?.numeric && errors.push("Invalid OTP");
+      !this.$v.mfa.otp?.required && errors.push("Code required");
+      !this.$v.mfa.otp?.length && errors.push("Invalid code");
+      !this.$v.mfa.otp?.numeric && errors.push("Invalid code");
       return errors;
     }
   },
@@ -907,6 +909,7 @@ export default Vue.extend({
       this.mfa.prompt = false;
       this.mfa.otp = "";
       this.mfa.uri = "";
+      this.mfa.apiResponseCode = "";
       this.mfa.formLoadStatus = STATUS.IDLE;
       this.$v.mfa.$reset();
     }

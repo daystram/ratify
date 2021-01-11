@@ -225,7 +225,7 @@
                                     </div>
                                     <v-text-field
                                       v-model="revoke.confirmName"
-                                      class="pt-0"
+                                      class="py-2"
                                       :prepend-icon="'mdi-application'"
                                     />
                                     <v-btn
@@ -484,7 +484,7 @@
                             <div>
                               <v-text-field
                                 v-model="deleting.confirmName"
-                                class="pt-0"
+                                class="py-2"
                                 :prepend-icon="'mdi-application'"
                               />
                             </div>
@@ -742,6 +742,7 @@ export default Vue.extend({
     cancelRevoke() {
       this.revoke.prompt = false;
       this.revoke.confirmName = "";
+      this.revoke.formLoadStatus = STATUS.IDLE;
     }
   }
 });
