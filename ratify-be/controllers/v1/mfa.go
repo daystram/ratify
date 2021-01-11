@@ -37,7 +37,7 @@ func POSTEnableTOTP(c *gin.Context) {
 // @Summary Confirm TOTP
 // @Tags mfa
 // @Security BearerAuth
-// @Param user body datatransfers.UserSignup true "User signup info"
+// @Param user body datatransfers.TOTPRequest true "User otp info"
 // @Success 200 "OK"
 // @Router /api/v1/mfa/confirm [POST]
 func POSTConfirmTOTP(c *gin.Context) {
@@ -61,6 +61,28 @@ func POSTConfirmTOTP(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: fmt.Sprintf("failed confirming totp. %v", err)})
 		}
+		return
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
+
+// @Summary Disable TOTP
+// @Tags mfa
+// @Security BearerAuth
+// @Success 200 "OK"
+// @Router /api/v1/mfa/disable [POST]
+func POSTDisableTOTP(c *gin.Context) {
+	var err error
+	// get user
+	var user models.User
+	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed retrieving user"})
+		return
+	}
+	// disable TOTP
+	if err = handlers.Handler.DisableTOTP(user); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: fmt.Sprintf("failed disabling totp. %v", err)})
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
