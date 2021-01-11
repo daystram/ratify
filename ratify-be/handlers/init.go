@@ -56,6 +56,7 @@ type HandlerFunc interface {
 
 	// mfa
 	EnableTOTP(user models.User) (uri string, err error)
+	DisableTOTP(user models.User) (err error)
 	CheckTOTP(otp string, user models.User) (valid bool)
 }
 
