@@ -65,7 +65,7 @@
               <v-expand-transition>
                 <div v-show="profile.successAlert">
                   <v-alert
-                    type="success"
+                    type="info"
                     text
                     dense
                     transition="scroll-y-transition"
@@ -227,7 +227,7 @@
               <v-expand-transition>
                 <div v-show="password.successAlert">
                   <v-alert
-                    type="success"
+                    type="info"
                     text
                     dense
                     transition="scroll-y-transition"
@@ -316,6 +316,231 @@
         </v-col>
       </v-fade-transition>
     </v-row>
+    <v-row>
+      <v-fade-transition>
+        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+          <v-card :loading="mfa.formLoadStatus === STATUS.LOADING">
+            <v-card-title>
+              <v-row no-gutters align="center">
+                <v-col cols="auto">
+                  Multi-Factor Authentication
+                </v-col>
+              </v-row>
+            </v-card-title>
+            <v-divider inset />
+            <div class="v-card__body">
+              <v-expand-transition>
+                <div v-show="mfa.successAlert">
+                  <v-alert
+                    type="info"
+                    text
+                    dense
+                    transition="scroll-y-transition"
+                  >
+                    MFA {{ mfa.enabled ? "enabled" : "disabled" }}!
+                  </v-alert>
+                </div>
+              </v-expand-transition>
+              <v-row justify="end" align="center">
+                <v-col cols="">
+                  <div>
+                    TOTP
+                  </div>
+                  <div class="text--secondary">
+                    Time-based one-time password
+                  </div>
+                </v-col>
+                <v-col cols="auto">
+                  <v-dialog
+                    v-model="mfa.prompt"
+                    width="500"
+                    :persistent="mfa.formLoadStatus === STATUS.LOADING"
+                    @input="v => v || cancelMFA()"
+                  >
+                    <template v-slot:activator="{ on, attrs }">
+                      <v-btn
+                        rounded
+                        text
+                        outlined
+                        :color="mfa.enabled ? 'error' : 'success'"
+                        v-bind="attrs"
+                        v-on="on"
+                        @click="enableMFA"
+                      >
+                        {{ mfa.enabled ? "Disable" : "Enable" }}
+                      </v-btn>
+                    </template>
+                    <v-card
+                      v-if="mfa.modeEnable"
+                      :loading="mfa.formLoadStatus === STATUS.LOADING"
+                    >
+                      <v-card-title>
+                        <v-row no-gutters align="center">
+                          <v-col cols="auto">
+                            Disable TOTP
+                          </v-col>
+                          <v-spacer />
+                          <v-col cols="auto">
+                            <v-btn text icon color="grey" @click="cancelMFA">
+                              <v-icon v-text="'mdi-close'" />
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                      </v-card-title>
+                      <v-divider inset />
+                      <div class="v-card__body">
+                        <v-expand-transition>
+                          <div v-show="mfa.formLoadStatus === STATUS.ERROR">
+                            <v-alert
+                              type="error"
+                              text
+                              dense
+                              transition="scroll-y-transition"
+                            >
+                              Failed disabling MFA!
+                            </v-alert>
+                          </div>
+                        </v-expand-transition>
+                        <v-row align="center">
+                          <v-col>
+                            <div class="mb-4">
+                              Are you sure you want to disable TOTP?
+                            </div>
+                            <v-btn
+                              rounded
+                              block
+                              outlined
+                              color="error"
+                              @click="disableMFA"
+                            >
+                              Disable
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                      </div>
+                    </v-card>
+                    <v-card
+                      v-else
+                      :loading="mfa.formLoadStatus === STATUS.LOADING"
+                    >
+                      <v-card-title>
+                        <v-row no-gutters align="center">
+                          <v-col cols="auto">
+                            Enable TOTP
+                          </v-col>
+                          <v-spacer />
+                          <v-col cols="auto">
+                            <v-btn
+                              text
+                              icon
+                              color="grey"
+                              @click="cancelMFA"
+                              :disabled="mfa.formLoadStatus === STATUS.LOADING"
+                            >
+                              <v-icon v-text="'mdi-close'" />
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                      </v-card-title>
+                      <v-divider inset />
+                      <div class="v-card__body">
+                        <v-expand-transition>
+                          <div v-show="mfa.formLoadStatus === STATUS.ERROR">
+                            <v-alert
+                              type="error"
+                              text
+                              dense
+                              transition="scroll-y-transition"
+                            >
+                              Failed enabling MFA!
+                            </v-alert>
+                          </div>
+                        </v-expand-transition>
+                        <v-expand-transition>
+                          <div v-show="!$v.mfa.otp.correct">
+                            <v-alert
+                              type="error"
+                              text
+                              dense
+                              transition="scroll-y-transition"
+                            >
+                              Incorrect OTP code!
+                            </v-alert>
+                          </div>
+                        </v-expand-transition>
+                        <v-row align="center">
+                          <v-col>
+                            <div class="mb-4">
+                              Scan the following QR code on your authenticator
+                              app. You can use apps like Google Authenticator or
+                              Authy.
+                            </div>
+                            <div class="text-center">
+                              <v-expand-transition>
+                                <div v-if="mfa.uri">
+                                  <qrcode-vue
+                                    :value="mfa.uri"
+                                    :size="280"
+                                    :margin="2"
+                                    renderAs="svg"
+                                    foreground="#121212"
+                                    level="L"
+                                  />
+                                </div>
+                              </v-expand-transition>
+                              <v-expand-transition>
+                                <div v-if="!mfa.uri">
+                                  <v-progress-circular
+                                    indeterminate
+                                    size="48"
+                                    class="ma-4"
+                                  />
+                                </div>
+                              </v-expand-transition>
+                            </div>
+                            <div class="mt-4">
+                              Enter the generated code below.
+                            </div>
+                            <div>
+                              <v-text-field
+                                v-model="mfa.otp"
+                                class="pt-0"
+                                placeholder="OTP"
+                                :disabled="
+                                  mfa.formLoadStatus === STATUS.LOADING
+                                "
+                                :prepend-icon="'mdi-two-factor-authentication'"
+                                :error-messages="otpErrors"
+                                @input="
+                                  () => {
+                                    $v.mfa.otp.$touch();
+                                    this.mfa.apiResponseCode = '';
+                                  }
+                                "
+                                @blur="$v.mfa.otp.$touch()"
+                              />
+                            </div>
+                            <v-btn
+                              rounded
+                              block
+                              outlined
+                              color="success"
+                              @click="confirmMFA"
+                            >
+                              Enable
+                            </v-btn>
+                          </v-col>
+                        </v-row>
+                      </div>
+                    </v-card>
+                  </v-dialog>
+                </v-col>
+              </v-row>
+            </div>
+          </v-card>
+        </v-col>
+      </v-fade-transition>
+    </v-row>
     <v-fade-transition>
       <v-overlay
         v-show="pageLoadStatus !== STATUS.COMPLETE"
@@ -330,17 +555,23 @@
 
 <script lang="ts">
 import Vue from "vue";
+import QrcodeVue from "qrcode.vue";
 import api from "@/apis/api";
 import { STATUS } from "@/constants/status";
 import {
+  and,
   email,
   maxLength,
   minLength,
+  numeric,
   required,
   sameAs
 } from "vuelidate/lib/validators";
 
 export default Vue.extend({
+  components: {
+    QrcodeVue
+  },
   data: () => ({
     pageLoadStatus: STATUS.PRE_LOADING,
     profile: {
@@ -362,6 +593,16 @@ export default Vue.extend({
       oldPassword: "",
       newPassword: "",
       confirmNewPassword: "",
+      formLoadStatus: STATUS.IDLE,
+      apiResponseCode: "",
+      successAlert: false
+    },
+    mfa: {
+      prompt: false,
+      modeEnable: false,
+      enabled: false,
+      uri: "",
+      otp: "",
       formLoadStatus: STATUS.IDLE,
       apiResponseCode: "",
       successAlert: false
@@ -432,6 +673,14 @@ export default Vue.extend({
       !this.$v.password.confirmNewPassword?.sameAsPassword &&
         errors.push("Passwords do not match");
       return errors;
+    },
+    otpErrors() {
+      const errors: string[] = [];
+      if (!this.$v.mfa.otp?.$dirty) return errors;
+      !this.$v.mfa.otp?.required && errors.push("OTP Required");
+      !this.$v.mfa.otp?.length && errors.push("Invalid OTP");
+      !this.$v.mfa.otp?.numeric && errors.push("Invalid OTP");
+      return errors;
     }
   },
 
@@ -476,6 +725,16 @@ export default Vue.extend({
         required,
         sameAsPassword: sameAs("newPassword")
       }
+    },
+    mfa: {
+      otp: {
+        required,
+        numeric,
+        length: and(minLength(6), maxLength(6)),
+        correct() {
+          return this.$data.mfa.apiResponseCode !== "incorrect_credentials";
+        }
+      }
     }
   },
 
@@ -487,6 +746,7 @@ export default Vue.extend({
         this.profile.familyName = response.data.data.family_name;
         this.profile.username = response.data.data.preferred_username;
         this.profile.email = response.data.data.email;
+        this.mfa.enabled = response.data.data.mfa_enabled;
         this.pageLoadStatus = STATUS.COMPLETE;
       })
       .catch(() => {
@@ -508,7 +768,7 @@ export default Vue.extend({
         familyName: "",
         email: ""
       };
-      this.$v.$reset();
+      this.$v.profile.$reset();
     },
     saveProfile() {
       if (!this.profile.editing) {
@@ -570,7 +830,7 @@ export default Vue.extend({
                 this.password.oldPassword = "";
                 this.password.newPassword = "";
                 this.password.confirmNewPassword = "";
-                this.$v.$reset();
+                this.$v.password.$reset();
                 this.password.successAlert = true;
                 setTimeout(() => {
                   this.password.successAlert = false;
@@ -585,6 +845,70 @@ export default Vue.extend({
           2000
         );
       }
+    },
+    enableMFA() {
+      this.mfa.successAlert = false;
+      this.mfa.modeEnable = this.mfa.enabled;
+      if (!this.mfa.enabled) {
+        api.mfa
+          .enable()
+          .then(response => {
+            this.mfa.uri = response.data.data;
+          })
+          .catch(() => {
+            this.mfa.formLoadStatus = STATUS.ERROR;
+          });
+      }
+    },
+    confirmMFA() {
+      this.$v.mfa.$touch();
+      if (!this.$v.mfa.$invalid) {
+        this.mfa.formLoadStatus = STATUS.LOADING;
+        api.mfa
+          .confirm(this.mfa.otp)
+          .then(() => {
+            this.mfa.formLoadStatus = STATUS.COMPLETE;
+            this.mfa.enabled = true;
+            this.mfa.successAlert = true;
+            setTimeout(() => {
+              this.mfa.successAlert = false;
+            }, 5000);
+            this.cancelMFA();
+          })
+          .catch(error => {
+            this.mfa.apiResponseCode = error.response.data.code;
+            this.mfa.formLoadStatus = !this.mfa.apiResponseCode
+              ? STATUS.ERROR
+              : STATUS.IDLE;
+          });
+      }
+    },
+    disableMFA() {
+      this.mfa.formLoadStatus = STATUS.LOADING;
+      api.mfa
+        .disable()
+        .then(() => {
+          this.mfa.formLoadStatus = STATUS.COMPLETE;
+          this.mfa.enabled = false;
+          this.mfa.successAlert = true;
+          setTimeout(() => {
+            this.mfa.successAlert = false;
+          }, 5000);
+          this.cancelMFA();
+        })
+        .catch(error => {
+          this.mfa.apiResponseCode = error.response.data.code;
+          this.mfa.formLoadStatus = !this.mfa.apiResponseCode
+            ? STATUS.ERROR
+            : STATUS.IDLE;
+        });
+    },
+    cancelMFA() {
+      this.mfa.prompt = false;
+      this.mfa.otp = "";
+      this.mfa.uri = "";
+      this.mfa.formLoadStatus = STATUS.IDLE;
+      this.$v.mfa.$reset();
     }
   }
 });
