@@ -14,23 +14,25 @@
       </v-col>
     </v-row>
     <v-row class="mb-8" align="center">
-      <v-col cols="12">
-        <h1
-          :class="
-            'text-h2 text-truncate ' + (detail.name ? '' : 'text--disabled')
-          "
-        >
-          {{ detail.name || "Application Name" }}
-        </h1>
-        <div
-          :class="
-            'text-subtitle-1 text-truncate ' +
-              (detail.description ? 'text--secondary' : 'text--disabled')
-          "
-        >
-          {{ detail.description || "Application description" }}
-        </div>
-      </v-col>
+      <v-fade-transition>
+        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+          <h1
+            :class="
+              'text-h2 text-truncate ' + (detail.name ? '' : 'text--disabled')
+            "
+          >
+            {{ detail.name || "Application Name" }}
+          </h1>
+          <div
+            :class="
+              'text-subtitle-1 text-truncate ' +
+                (detail.description ? 'text--secondary' : 'text--disabled')
+            "
+          >
+            {{ detail.description || "Application description" }}
+          </div>
+        </v-col>
+      </v-fade-transition>
     </v-row>
     <v-row>
       <v-fade-transition>
