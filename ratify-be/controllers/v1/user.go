@@ -101,7 +101,7 @@ func PUTUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating user"})
 		return
 	}
-	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{Scope: "update_profile"})
+	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserProfile})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
@@ -129,7 +129,7 @@ func PUTUserPassword(c *gin.Context) {
 	if err := handlers.Handler.UpdateUserPassword(c.GetString(constants.UserSubjectKey), password.Old, password.New); err != nil {
 		if err == errors.ErrAuthIncorrectCredentials {
 			handlers.Handler.LogUser(user, false, datatransfers.LogDetail{
-				Scope:  "update_password",
+				Scope:  constants.LogScopeUserPassword,
 				Detail: errors.ErrAuthIncorrectCredentials.Error(),
 			})
 			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect old_password"})
@@ -138,7 +138,7 @@ func PUTUserPassword(c *gin.Context) {
 		}
 		return
 	}
-	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{Scope: "update_password"})
+	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserPassword})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }

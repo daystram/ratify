@@ -14,6 +14,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/errors"
 	"github.com/daystram/ratify/ratify-be/handlers"
 	"github.com/daystram/ratify/ratify-be/models"
+	"github.com/daystram/ratify/ratify-be/utils"
 )
 
 // @Summary Request authorization
@@ -62,7 +63,7 @@ func POSTAuthorize(c *gin.Context) {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
 				} else if err == errors.ErrAuthIncorrectCredentials {
 					handlers.Handler.LogLogin(user, application, false, datatransfers.LogDetail{
-						Scope:  "authorize",
+						Scope:  constants.LogScopeOAuthAuthorize,
 						Detail: errors.ErrAuthIncorrectCredentials.Error(),
 					})
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
@@ -95,11 +96,9 @@ func POSTAuthorize(c *gin.Context) {
 				return
 			}
 		}
-		ip, browser, os := handlers.Handler.ParseUserAgent(c)
-		log.Printf(`{"source_ip": "%s", "browser": "%s", "os": "%s"}\n`, ip, browser, os)
 		handlers.Handler.LogLogin(user, application, true, datatransfers.LogDetail{
-			Scope:  "authorize",
-			Detail: fmt.Sprintf(`{"source_ip": "%s", "browser": "%s", "os": "%s"}`, ip, browser, os),
+			Scope:  constants.LogScopeOAuthAuthorize,
+			Detail: utils.ParseUserAgent(c),
 		})
 		param, _ := query.Values(datatransfers.AuthorizationResponse{
 			AuthorizationCode: authorizationCode,
