@@ -2,6 +2,8 @@ package models
 
 import (
 	"gorm.io/gorm"
+
+	"github.com/daystram/ratify/ratify-be/constants"
 )
 
 type logOrm struct {
@@ -33,12 +35,20 @@ func NewLogOrmer(db *gorm.DB) LogOrmer {
 }
 
 func (o *logOrm) GetAllLoginByUserSubject(userSubject string) (logs []Log, err error) {
-	result := o.db.Model(&Log{}).Where("user_subject = ? AND type = ?", userSubject, "").Preload("User").Preload("Application").First(&logs)
+	result := o.db.Model(&Log{}).
+		Where("user_subject = ? AND type = ?", userSubject, constants.LogTypeLogin).
+		Preload("User").Preload("Application").
+		Order("created_at DESC").
+		Find(&logs)
 	return logs, result.Error
 }
 
 func (o *logOrm) GetAllActivityByApplicationClientID(applicationClientID string) (logs []Log, err error) {
-	result := o.db.Model(&Log{}).Where("application_client_id = ? AND type = ?", applicationClientID, "").Preload("User").Preload("Application").Find(&logs)
+	result := o.db.Model(&Log{}).
+		Where("application_client_id = ? AND type = ?", applicationClientID, constants.LogTypeApplication).
+		Preload("User").Preload("Application").
+		Order("created_at DESC").
+		Find(&logs)
 	return logs, result.Error
 }
 
