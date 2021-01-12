@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-gomail/gomail"
 	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/postgres"
@@ -64,7 +63,6 @@ type HandlerFunc interface {
 	// log
 	LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
 	LogUser(user models.User, success bool, detail datatransfers.LogDetail)
-	ParseUserAgent(c *gin.Context) (ip, browser, os string)
 }
 
 type module struct {
