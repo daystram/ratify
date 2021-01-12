@@ -60,7 +60,7 @@ func (m *module) DisableTOTP(user models.User) (err error) {
 func (m *module) CheckTOTP(otp string, user models.User) (valid bool) {
 	totp := gotp.NewDefaultTOTP(user.TOTPSecret)
 	now := time.Now()
-	return !totp.Verify(otp, int(now.Add(-30*time.Second).Unix())) ||
-		!totp.Verify(otp, int(now.Unix())) ||
-		!totp.Verify(otp, int(now.Add(30*time.Second).Unix()))
+	return totp.Verify(otp, int(now.Add(-30*time.Second).Unix())) ||
+		totp.Verify(otp, int(now.Unix())) ||
+		totp.Verify(otp, int(now.Add(30*time.Second).Unix()))
 }
