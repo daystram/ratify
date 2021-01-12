@@ -71,6 +71,7 @@ type dbEntity struct {
 	conn             *gorm.DB
 	applicationOrmer models.ApplicationOrmer
 	userOrmer        models.UserOrmer
+	logOrmer         models.LogOrmer
 }
 
 func InitializeHandler() {
@@ -117,6 +118,7 @@ func InitializeHandler() {
 			conn:             db,
 			applicationOrmer: models.NewApplicationOrmer(db),
 			userOrmer:        models.NewUserOrmer(db),
+			logOrmer:         models.NewLogOrmer(db),
 		},
 		rd:     rd,
 		mailer: mailer,

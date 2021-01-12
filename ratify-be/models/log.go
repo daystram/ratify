@@ -1,0 +1,48 @@
+package models
+
+import (
+	"gorm.io/gorm"
+)
+
+type logOrm struct {
+	db *gorm.DB
+}
+
+// CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+type Log struct {
+	ID                  string `gorm:"column:id;primaryKey;type:uuid;default:uuid_generate_v4()" json:"-"`
+	User                User   `gorm:"foreignKey:UserSubject;references:Subject;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	UserSubject         string
+	Application         Application `gorm:"foreignKey:ApplicationClientID;references:ClientID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ApplicationClientID string
+	Type                string `gorm:"column:type;type:char(4);index:idx_type;not null" json:"-"`
+	Severity            string `gorm:"column:severity;type:char(1);not null" json:"-"`
+	Description         string `gorm:"column:description;type:text" json:"-"`
+	CreatedAt           int64  `gorm:"column:created_at;autoCreateTime" json:"-"`
+}
+
+type LogOrmer interface {
+	GetAllLoginByUserSubject(userSubject string) (logs []Log, err error)
+	GetAllActivityByApplicationClientID(applicationClientID string) (logs []Log, err error)
+	InsertLog(log Log) (err error)
+}
+
+func NewLogOrmer(db *gorm.DB) LogOrmer {
+	_ = db.AutoMigrate(&Log{}) // builds table when enabled
+	return &logOrm{db}
+}
+
+func (o *logOrm) GetAllLoginByUserSubject(userSubject string) (logs []Log, err error) {
+	result := o.db.Model(&Log{}).Where("user_subject = ? AND type = ?", userSubject, "").Preload("User").Preload("Application").First(&logs)
+	return logs, result.Error
+}
+
+func (o *logOrm) GetAllActivityByApplicationClientID(applicationClientID string) (logs []Log, err error) {
+	result := o.db.Model(&Log{}).Where("application_client_id = ? AND type = ?", applicationClientID, "").Preload("User").Preload("Application").Find(&logs)
+	return logs, result.Error
+}
+
+func (o *logOrm) InsertLog(log Log) (err error) {
+	result := o.db.Model(&Log{}).Create(&log)
+	return result.Error
+}
