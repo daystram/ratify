@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-gomail/gomail"
 	"github.com/go-redis/redis/v8"
 	"gorm.io/driver/postgres"
@@ -59,6 +60,10 @@ type HandlerFunc interface {
 	ConfirmTOTP(otp string, user models.User) (err error)
 	DisableTOTP(user models.User) (err error)
 	CheckTOTP(otp string, user models.User) (valid bool)
+
+	// log
+	LogLogin(user models.User, application models.Application, success bool, description ...string)
+	ParseUserAgent(c *gin.Context) (ip, browser, os string)
 }
 
 type module struct {
