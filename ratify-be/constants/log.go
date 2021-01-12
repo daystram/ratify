@@ -2,6 +2,7 @@ package constants
 
 const (
 	LogTypeLogin       = "LOGN"
+	LogTypeUser        = "USER"
 	LogTypeApplication = "APPN"
 
 	LogSeverityFatal = "F"

@@ -62,7 +62,8 @@ type HandlerFunc interface {
 	CheckTOTP(otp string, user models.User) (valid bool)
 
 	// log
-	LogLogin(user models.User, application models.Application, success bool, description ...string)
+	LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
+	LogUser(user models.User, success bool, detail datatransfers.LogDetail)
 	ParseUserAgent(c *gin.Context) (ip, browser, os string)
 }
 
