@@ -61,7 +61,10 @@ func POSTAuthorize(c *gin.Context) {
 				if err == errors.ErrAuthIncorrectIdentifier {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
 				} else if err == errors.ErrAuthIncorrectCredentials {
-					handlers.Handler.LogLogin(user, application, false, errors.ErrAuthIncorrectCredentials.Error())
+					handlers.Handler.LogLogin(user, application, false, datatransfers.LogDetail{
+						Scope:  "authorize",
+						Detail: errors.ErrAuthIncorrectCredentials.Error(),
+					})
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
 				} else if err == errors.ErrAuthEmailNotVerified {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthEmailNotVerified.Error(), Error: "email not verified"})
@@ -92,6 +95,12 @@ func POSTAuthorize(c *gin.Context) {
 				return
 			}
 		}
+		ip, browser, os := handlers.Handler.ParseUserAgent(c)
+		log.Printf(`{"source_ip": "%s", "browser": "%s", "os": "%s"}\n`, ip, browser, os)
+		handlers.Handler.LogLogin(user, application, true, datatransfers.LogDetail{
+			Scope:  "authorize",
+			Detail: fmt.Sprintf(`{"source_ip": "%s", "browser": "%s", "os": "%s"}`, ip, browser, os),
+		})
 		param, _ := query.Values(datatransfers.AuthorizationResponse{
 			AuthorizationCode: authorizationCode,
 			State:             authRequest.State,
@@ -101,9 +110,6 @@ func POSTAuthorize(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
 		})
-		ip, browser, os := handlers.Handler.ParseUserAgent(c)
-		log.Printf(`{"source_ip": "%s", "browser": "%s", "os": "%s"}\n`, ip, browser, os)
-		handlers.Handler.LogLogin(user, application, true, fmt.Sprintf(`{"source_ip": "%s", "browser": "%s", "os": "%s"}`, ip, browser, os))
 		return
 	default:
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "unsupported authorization flow"})
