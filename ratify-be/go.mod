@@ -12,6 +12,7 @@ require (
 	github.com/go-redis/redis/v8 v8.4.4
 	github.com/google/go-querystring v1.0.0
 	github.com/matcornic/hermes/v2 v2.1.0
+	github.com/mssola/user_agent v0.5.2
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/spf13/viper v1.7.1
