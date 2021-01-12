@@ -58,25 +58,19 @@ func POSTAuthorize(c *gin.Context) {
 		} else {
 			// verify user login
 			if user, sessionID, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
-				if err == errors.ErrAuthIncorrectCredentials {
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect username or password"})
+				if err == errors.ErrAuthIncorrectIdentifier {
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
+				} else if err == errors.ErrAuthIncorrectCredentials {
+					handlers.Handler.LogLogin(user, application, false, errors.ErrAuthIncorrectCredentials.Error())
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
 				} else if err == errors.ErrAuthEmailNotVerified {
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: err.Error(), Error: "email not verified"})
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthEmailNotVerified.Error(), Error: "email not verified"})
+				} else if err == errors.ErrAuthMissingOTP { // proceed to MFA prompt
+					c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: errors.ErrAuthMissingOTP.Error(), Error: "otp required"})
 				} else {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed logging in user"})
 				}
 				return
-			}
-			// check if TOTP enabled
-			if user.EnabledTOTP() {
-				if authRequest.OTP == "" { // proceed to MFA prompt
-					c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: errors.ErrAuthMissingOTP.Error(), Error: "otp required"})
-					return
-				}
-				if !handlers.Handler.CheckTOTP(authRequest.OTP, user) {
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect otp"})
-					return
-				}
 			}
 		}
 		// verify request credentials
@@ -107,6 +101,10 @@ func POSTAuthorize(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
 		})
+		ip, browser, os := handlers.Handler.ParseUserAgent(c)
+		log.Printf(`{"source_ip": "%s", "browser": "%s", "os": "%s"}\n`, ip, browser, os)
+		handlers.Handler.LogLogin(user, application, true, fmt.Sprintf(`{"source_ip": "%s", "browser": "%s", "os": "%s"}`, ip, browser, os))
+		return
 	default:
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "unsupported authorization flow"})
 		return
