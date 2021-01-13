@@ -110,6 +110,7 @@ func (m *module) GenerateIDToken(clientID, subject string, scope []string) (idTo
 			claims.GivenName = &user.GivenName
 			claims.FamilyName = &user.FamilyName
 			claims.UpdatedAt = &user.UpdatedAt
+			claims.CreatedAt = &user.CreatedAt
 		case "email":
 			claims.Email = &user.Email
 			claims.EmailVerified = &user.EmailVerified
