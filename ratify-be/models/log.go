@@ -27,6 +27,7 @@ type Log struct {
 type LogOrmer interface {
 	GetAllByUserSubject(userSubject string) (logs []Log, err error)
 	GetAllActivityByApplicationClientID(applicationClientID string) (logs []Log, err error)
+	GetAllAdmin() (logs []Log, err error)
 	InsertLog(log Log) (err error)
 }
 
@@ -37,7 +38,7 @@ func NewLogOrmer(db *gorm.DB) LogOrmer {
 
 func (o *logOrm) GetAllByUserSubject(userSubject string) (logs []Log, err error) {
 	result := o.db.Model(&Log{}).
-		Where("user_subject = ?", userSubject).
+		Where("user_subject = ? AND (type = ? OR type = ?)", userSubject, constants.LogTypeLogin, constants.LogTypeUser).
 		Preload("User").Preload("Application").
 		Order("created_at DESC").
 		Find(&logs)
@@ -47,6 +48,15 @@ func (o *logOrm) GetAllByUserSubject(userSubject string) (logs []Log, err error)
 func (o *logOrm) GetAllActivityByApplicationClientID(applicationClientID string) (logs []Log, err error) {
 	result := o.db.Model(&Log{}).
 		Where("application_client_id = ? AND type = ?", applicationClientID, constants.LogTypeApplication).
+		Preload("User").Preload("Application").
+		Order("created_at DESC").
+		Find(&logs)
+	return logs, result.Error
+}
+
+func (o *logOrm) GetAllAdmin() (logs []Log, err error) {
+	result := o.db.Model(&Log{}).
+		Where("type = ?", constants.LogTypeApplication).
 		Preload("User").Preload("Application").
 		Order("created_at DESC").
 		Find(&logs)
