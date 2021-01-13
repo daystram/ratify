@@ -64,7 +64,7 @@ func POSTAuthorize(c *gin.Context) {
 				} else if err == errors.ErrAuthIncorrectCredentials {
 					handlers.Handler.LogLogin(user, application, false, datatransfers.LogDetail{
 						Scope:  constants.LogScopeOAuthAuthorize,
-						Detail: errors.ErrAuthIncorrectCredentials.Error(),
+						Detail: utils.ParseUserAgent(c),
 					})
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
 				} else if err == errors.ErrAuthEmailNotVerified {

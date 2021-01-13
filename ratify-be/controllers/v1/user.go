@@ -93,7 +93,7 @@ func PUTUser(c *gin.Context) {
 		return
 	}
 	var user models.User
-	if user, _ := handlers.Handler.RetrieveUserByEmail(update.Email); user.Subject != "" && user.Subject != c.GetString(constants.UserSubjectKey) {
+	if user, _ = handlers.Handler.RetrieveUserByEmail(update.Email); user.Subject != "" && user.Subject != c.GetString(constants.UserSubjectKey) {
 		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: errors.ErrUserEmailExists.Error(), Error: "email already used"})
 		return
 	}
