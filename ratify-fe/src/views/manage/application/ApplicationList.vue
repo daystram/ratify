@@ -246,13 +246,29 @@
     </v-row>
     <v-fade-transition>
       <v-overlay
-        v-show="pageLoadStatus !== STATUS.COMPLETE"
+        v-show="
+          pageLoadStatus === STATUS.PRE_LOADING ||
+            pageLoadStatus === STATUS.LOADING
+        "
         opacity="0"
         absolute
       >
         <v-progress-circular indeterminate size="64" />
       </v-overlay>
     </v-fade-transition>
+    <v-expand-transition>
+      <div v-show="pageLoadStatus === STATUS.ERROR">
+        <v-alert
+          type="error"
+          text
+          dense
+          transition="scroll-y-transition"
+          class="mt-3"
+        >
+          Failed retrieving application list!
+        </v-alert>
+      </div>
+    </v-expand-transition>
   </div>
 </template>
 

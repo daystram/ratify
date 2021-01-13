@@ -50,14 +50,29 @@
     </v-row>
     <v-fade-transition>
       <v-overlay
+        v-show="
+          pageLoadStatus === STATUS.PRE_LOADING ||
+            pageLoadStatus === STATUS.LOADING
+        "
         opacity="0"
         absolute
-        style="height: calc(100vh - 64px)"
-        v-show="pageLoadStatus !== STATUS.COMPLETE"
       >
         <v-progress-circular indeterminate size="64" />
       </v-overlay>
     </v-fade-transition>
+    <v-expand-transition>
+      <div v-show="pageLoadStatus === STATUS.ERROR">
+        <v-alert
+          type="error"
+          text
+          dense
+          transition="scroll-y-transition"
+          class="mt-3"
+        >
+          Failed retrieving activity log!
+        </v-alert>
+      </div>
+    </v-expand-transition>
   </div>
 </template>
 
@@ -74,14 +89,59 @@ export default Vue.extend({
   }),
 
   created() {
-    api.log.userActivity().then(response => {
-      /* eslint-disable @typescript-eslint/camelcase */
-      const logs = response.data.data;
-      for (let i = 0; i < logs.length; i++) {
-        const desc = JSON.parse(logs[i].description);
-        const date = new Date(logs[i].created_at * 1000);
+    api.log
+      .userActivity()
+      .then(response => {
+        /* eslint-disable @typescript-eslint/camelcase */
+        const logs = response.data.data;
+        for (let i = 0; i < logs.length; i++) {
+          const desc = JSON.parse(logs[i].description);
+          const date = new Date(logs[i].created_at * 1000);
+          if (
+            i &&
+            new Date(date.toDateString()) <
+              new Date(
+                this.activities[this.activities.length - 1].date.toDateString()
+              )
+          ) {
+            this.activities.push({
+              separator: true,
+              date: date
+            });
+          }
+          switch (desc.scope) {
+            case "oauth::authorize":
+              this.activities.push({
+                color: {
+                  I: "success",
+                  W: "error"
+                }[logs[i].severity],
+                icon: "mdi-lock",
+                title: {
+                  I: "Successful Sign In",
+                  W: "Failed Sign In Attempt"
+                }[logs[i].severity],
+                subtitle: {
+                  I: `Signed in from ${desc.detail.ip} via ${desc.detail.browser} at ${desc.detail.os}`,
+                  W: `Incorrect credentials. Attempted from ${desc.detail.ip} via ${desc.detail.browser} at ${desc.detail.os}.`
+                }[logs[i].severity],
+                date: date
+              });
+              break;
+            case "user::profile":
+              this.activities.push({
+                color: { I: "info", W: "error" }[logs[i].severity],
+                icon: "mdi-account",
+                title: "Profile Updated",
+                subtitle: "",
+                date: date
+              });
+              break;
+          }
+        }
+        const date = new Date(authManager.getUser().created_at * 1000);
         if (
-          i &&
+          this.activities.length &&
           new Date(date.toDateString()) <
             new Date(
               this.activities[this.activities.length - 1].date.toDateString()
@@ -92,59 +152,19 @@ export default Vue.extend({
             date: date
           });
         }
-        switch (desc.scope) {
-          case "oauth::authorize":
-            this.activities.push({
-              color: {
-                I: "success",
-                W: "error"
-              }[logs[i].severity],
-              icon: "mdi-lock",
-              title: {
-                I: "Successful Sign In",
-                W: "Failed Sign In Attempt"
-              }[logs[i].severity],
-              subtitle: {
-                I: `Signed in from ${desc.detail.ip} via ${desc.detail.browser} at ${desc.detail.os}`,
-                W: `Incorrect credentials. Attempted from ${desc.detail.ip} via ${desc.detail.browser} at ${desc.detail.os}.`
-              }[logs[i].severity],
-              date: date
-            });
-            break;
-          case "user::profile":
-            this.activities.push({
-              color: { I: "info", W: "error" }[logs[i].severity],
-              icon: "mdi-account",
-              title: "Profile Updated",
-              subtitle: "",
-              date: date
-            });
-            break;
-        }
-      }
-      const date = new Date(authManager.getUser().created_at * 1000);
-      if (
-        this.activities.length &&
-        new Date(date.toDateString()) <
-          new Date(
-            this.activities[this.activities.length - 1].date.toDateString()
-          )
-      ) {
         this.activities.push({
-          separator: true,
+          color: "info",
+          icon: "mdi-account",
+          title: "Account Created",
+          end: true,
           date: date
         });
-      }
-      this.activities.push({
-        color: "info",
-        icon: "mdi-account",
-        title: "Account Created",
-        end: true,
-        date: date
+        /* eslint-enable @typescript-eslint/camelcase */
+        this.pageLoadStatus = STATUS.COMPLETE;
+      })
+      .catch(() => {
+        this.pageLoadStatus = STATUS.ERROR;
       });
-      /* eslint-enable @typescript-eslint/camelcase */
-      this.pageLoadStatus = STATUS.COMPLETE;
-    });
   }
 });
 </script>
