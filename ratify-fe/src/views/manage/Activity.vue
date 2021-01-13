@@ -5,9 +5,9 @@
         <h1 class="text-h2">Activities</h1>
       </v-col>
     </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-timeline align-top dense>
             <v-timeline-item class="pb-10" hide-dot>
               <span class="text-h5">Today</span>
@@ -46,8 +46,8 @@
             </div>
           </v-timeline>
         </v-col>
-      </v-fade-transition>
-    </v-row>
+      </v-row>
+    </v-fade-transition>
     <v-fade-transition>
       <v-overlay
         v-show="

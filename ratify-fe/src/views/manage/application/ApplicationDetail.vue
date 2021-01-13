@@ -13,9 +13,13 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-row class="mb-8" align="center">
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+    <v-fade-transition>
+      <v-row
+        v-show="pageLoadStatus === STATUS.COMPLETE"
+        class="mb-8"
+        align="center"
+      >
+        <v-col cols="12">
           <h1
             :class="
               'text-h2 text-truncate ' + (detail.name ? '' : 'text--disabled')
@@ -32,11 +36,11 @@
             {{ detail.description || "Application description" }}
           </div>
         </v-col>
-      </v-fade-transition>
-    </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+      </v-row>
+    </v-fade-transition>
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-card :loading="detail.formLoadStatus === STATUS.LOADING">
             <v-card-title>
               <v-row no-gutters align="center">
@@ -409,11 +413,11 @@
             </div>
           </v-card>
         </v-col>
-      </v-fade-transition>
-    </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+      </v-row>
+    </v-fade-transition>
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-card class="danger-border">
             <v-card-title>
               <v-row no-gutters align="center">
@@ -510,8 +514,8 @@
             </div>
           </v-card>
         </v-col>
-      </v-fade-transition>
-    </v-row>
+      </v-row>
+    </v-fade-transition>
     <v-fade-transition>
       <v-overlay
         v-show="

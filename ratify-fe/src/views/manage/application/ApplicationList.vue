@@ -189,9 +189,9 @@
         </v-dialog>
       </v-col>
     </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-divider :inset="false" />
           <div v-for="application in applications" :key="application.client_id">
             <v-list-item>
@@ -242,8 +242,8 @@
             <v-divider :inset="false" />
           </div>
         </v-col>
-      </v-fade-transition>
-    </v-row>
+      </v-row>
+    </v-fade-transition>
     <v-fade-transition>
       <v-overlay
         v-show="

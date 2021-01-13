@@ -5,9 +5,9 @@
         <h1 class="text-h2">Your Profile</h1>
       </v-col>
     </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-card :loading="profile.formLoadStatus === STATUS.LOADING">
             <v-card-title>
               <v-row no-gutters align="center">
@@ -191,11 +191,11 @@
             </div>
           </v-card>
         </v-col>
-      </v-fade-transition>
-    </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+      </v-row>
+    </v-fade-transition>
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-card :loading="password.formLoadStatus === STATUS.LOADING">
             <v-card-title>
               <v-row no-gutters align="center">
@@ -314,11 +314,11 @@
             </div>
           </v-card>
         </v-col>
-      </v-fade-transition>
-    </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+      </v-row>
+    </v-fade-transition>
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-card>
             <v-card-title>
               <v-row no-gutters align="center">
@@ -541,8 +541,8 @@
             </div>
           </v-card>
         </v-col>
-      </v-fade-transition>
-    </v-row>
+      </v-row>
+    </v-fade-transition>
     <v-fade-transition>
       <v-overlay
         v-show="
