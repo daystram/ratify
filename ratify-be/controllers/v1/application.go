@@ -92,9 +92,12 @@ func POSTApplication(c *gin.Context) {
 	// register application
 	var clientSecret string
 	if applicationInfo.ClientID, clientSecret, err = handlers.Handler.RegisterApplication(applicationInfo, c.GetString(constants.UserSubjectKey)); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering application"})
 		return
 	}
+	handlers.Handler.LogApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: applicationInfo.ClientID}, true, datatransfers.LogDetail{
+		Scope: constants.LogScopeApplicationCreate,
+	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_id": applicationInfo.ClientID, "client_secret": clientSecret}})
 	return
 }
@@ -134,6 +137,9 @@ func PUTApplication(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
 	}
+	handlers.Handler.LogApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: application.ClientID}, true, datatransfers.LogDetail{
+		Scope: constants.LogScopeApplicationDetail,
+	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
@@ -163,6 +169,10 @@ func DELETEApplication(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed deleting application"})
 		return
 	}
+	handlers.Handler.LogApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{}, false, datatransfers.LogDetail{
+		Scope:  constants.LogScopeApplicationCreate,
+		Detail: datatransfers.ApplicationInfo{Name: application.Name},
+	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
@@ -187,6 +197,9 @@ func PUTApplicationRevokeSecret(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed renewing application client_secret"})
 		return
 	}
+	handlers.Handler.LogApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: clientID}, true, datatransfers.LogDetail{
+		Scope: constants.LogScopeApplicationSecret,
+	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_secret": clientSecret}})
 	return
 }
