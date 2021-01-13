@@ -5,6 +5,7 @@ export const ApplicationList = () =>
   import("./manage/application/ApplicationList.vue");
 export const Authorize = () => import("./Authorize.vue");
 export const Home = () => import("./Home.vue");
+export const Log = () => import("./manage/Log.vue");
 export const Manage = () => import("./manage/Manage.vue");
 export const Placeholder = () => import("./Placeholder.vue");
 export const Profile = () => import("./manage/Profile.vue");
