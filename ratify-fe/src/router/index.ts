@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueRouter, { RouteConfig } from "vue-router";
 import {
+  Activity,
   ApplicationList,
   ApplicationDetail,
   Authorize,
@@ -63,11 +64,11 @@ const routes: Array<RouteConfig> = [
         }
       },
       {
-        path: "incident",
-        name: "manage:incident",
-        component: Placeholder,
+        path: "activity",
+        name: "manage:activity",
+        component: Activity,
         meta: {
-          title: "WIP:Incidents | Ratify"
+          title: "Activity | Ratify"
         }
       },
       {
