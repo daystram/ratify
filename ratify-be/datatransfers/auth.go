@@ -18,6 +18,7 @@ type OpenIDClaims struct {
 	GivenName  *string `json:"given_name,omitempty"`
 	FamilyName *string `json:"family_name,omitempty"`
 	UpdatedAt  *int64  `json:"updated_at,omitempty"`
+	CreatedAt  *int64  `json:"created_at,omitempty"`
 
 	// scope: email
 	Email         *string `json:"email,omitempty"`

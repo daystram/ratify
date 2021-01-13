@@ -5,9 +5,9 @@
         <h1 class="text-h2">Your Profile</h1>
       </v-col>
     </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-card :loading="profile.formLoadStatus === STATUS.LOADING">
             <v-card-title>
               <v-row no-gutters align="center">
@@ -191,11 +191,11 @@
             </div>
           </v-card>
         </v-col>
-      </v-fade-transition>
-    </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+      </v-row>
+    </v-fade-transition>
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-card :loading="password.formLoadStatus === STATUS.LOADING">
             <v-card-title>
               <v-row no-gutters align="center">
@@ -314,11 +314,11 @@
             </div>
           </v-card>
         </v-col>
-      </v-fade-transition>
-    </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+      </v-row>
+    </v-fade-transition>
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-card>
             <v-card-title>
               <v-row no-gutters align="center">
@@ -541,17 +541,33 @@
             </div>
           </v-card>
         </v-col>
-      </v-fade-transition>
-    </v-row>
+      </v-row>
+    </v-fade-transition>
     <v-fade-transition>
       <v-overlay
-        v-show="pageLoadStatus !== STATUS.COMPLETE"
+        v-show="
+          pageLoadStatus === STATUS.PRE_LOADING ||
+            pageLoadStatus === STATUS.LOADING
+        "
         opacity="0"
         absolute
       >
         <v-progress-circular indeterminate size="64" />
       </v-overlay>
     </v-fade-transition>
+    <v-expand-transition>
+      <div v-show="pageLoadStatus === STATUS.ERROR">
+        <v-alert
+          type="error"
+          text
+          dense
+          transition="scroll-y-transition"
+          class="mt-3"
+        >
+          Failed retrieving user profile!
+        </v-alert>
+      </div>
+    </v-expand-transition>
   </div>
 </template>
 

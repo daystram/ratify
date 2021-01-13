@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/daystram/ratify/ratify-be/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -87,19 +88,21 @@ func POSTRegister(c *gin.Context) {
 // @Router /api/v1/user [PUT]
 func PUTUser(c *gin.Context) {
 	var err error
-	var user datatransfers.UserUpdate
-	if err = c.ShouldBindJSON(&user); err != nil {
+	var update datatransfers.UserUpdate
+	if err = c.ShouldBindJSON(&update); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
-	if user, _ := handlers.Handler.RetrieveUserByEmail(user.Email); user.Subject != "" && user.Subject != c.GetString(constants.UserSubjectKey) {
+	var user models.User
+	if user, _ = handlers.Handler.RetrieveUserByEmail(update.Email); user.Subject != "" && user.Subject != c.GetString(constants.UserSubjectKey) {
 		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: errors.ErrUserEmailExists.Error(), Error: "email already used"})
 		return
 	}
-	if err = handlers.Handler.UpdateUser(c.GetString(constants.UserSubjectKey), user); err != nil {
+	if err = handlers.Handler.UpdateUser(c.GetString(constants.UserSubjectKey), update); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating user"})
 		return
 	}
+	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserProfile})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
@@ -117,15 +120,26 @@ func PUTUserPassword(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
+	// retrieve user
+	var user models.User
+	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
+		return
+	}
 	// update user password
 	if err := handlers.Handler.UpdateUserPassword(c.GetString(constants.UserSubjectKey), password.Old, password.New); err != nil {
 		if err == errors.ErrAuthIncorrectCredentials {
+			handlers.Handler.LogUser(user, false, datatransfers.LogDetail{
+				Scope:  constants.LogScopeUserPassword,
+				Detail: utils.ParseUserAgent(c),
+			})
 			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect old_password"})
 		} else {
 			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "failed updating user password"})
 		}
 		return
 	}
+	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserPassword})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }

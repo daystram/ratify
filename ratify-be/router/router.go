@@ -50,6 +50,10 @@ func InitializeRouter() (router *gin.Engine) {
 			mfa.POST("/confirm", utils.AuthOnly, v1.POSTConfirmTOTP)
 			mfa.POST("/disable", utils.AuthOnly, v1.POSTDisableTOTP)
 		}
+		log := apiV1.Group("/log")
+		{
+			log.GET("/user_activity", utils.AuthOnly, v1.GETActivityLog)
+		}
 	}
 	oauthV1 := router.Group("/oauth") // OAuth
 	oauthV1.Use(

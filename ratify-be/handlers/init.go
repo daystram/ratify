@@ -59,6 +59,11 @@ type HandlerFunc interface {
 	ConfirmTOTP(otp string, user models.User) (err error)
 	DisableTOTP(user models.User) (err error)
 	CheckTOTP(otp string, user models.User) (valid bool)
+
+	// log
+	RetrieveActivityLogs(subject string) (logs [] models.Log, err error)
+	LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
+	LogUser(user models.User, success bool, detail datatransfers.LogDetail)
 }
 
 type module struct {
@@ -71,6 +76,7 @@ type dbEntity struct {
 	conn             *gorm.DB
 	applicationOrmer models.ApplicationOrmer
 	userOrmer        models.UserOrmer
+	logOrmer         models.LogOrmer
 }
 
 func InitializeHandler() {
@@ -117,6 +123,7 @@ func InitializeHandler() {
 			conn:             db,
 			applicationOrmer: models.NewApplicationOrmer(db),
 			userOrmer:        models.NewUserOrmer(db),
+			logOrmer:         models.NewLogOrmer(db),
 		},
 		rd:     rd,
 		mailer: mailer,

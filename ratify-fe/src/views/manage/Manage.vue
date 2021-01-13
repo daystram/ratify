@@ -127,11 +127,11 @@
             </v-list-item-icon>
             <v-list-item-title v-text="'Sessions'" />
           </v-list-item>
-          <v-list-item :to="{ name: 'manage:incident' }">
+          <v-list-item :to="{ name: 'manage:activity' }">
             <v-list-item-icon>
               <v-icon v-text="'mdi-timeline-alert'" />
             </v-list-item-icon>
-            <v-list-item-title v-text="'Incidents'" />
+            <v-list-item-title v-text="'Activities'" />
           </v-list-item>
           <v-list-item :to="{ name: 'manage:setting' }">
             <v-list-item-icon>

@@ -16,16 +16,28 @@ import (
 )
 
 func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, sessionID string, err error) {
+	// check username/email
 	if user, err = m.db.userOrmer.GetOneByUsername(credentials.Username); err != nil {
 		if user, err = m.db.userOrmer.GetOneByEmail(credentials.Username); err != nil {
 			return models.User{}, "", errors2.ErrAuthIncorrectCredentials
 		}
 	}
+	// check password
 	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
-		return models.User{}, "", errors2.ErrAuthIncorrectCredentials
+		return user, "", errors2.ErrAuthIncorrectCredentials
 	}
+	// check email verification
 	if !user.EmailVerified {
-		return models.User{}, "", errors2.ErrAuthEmailNotVerified
+		return user, "", errors2.ErrAuthEmailNotVerified
+	}
+	// check if TOTP
+	if user.EnabledTOTP() {
+		if credentials.OTP == "" {
+			return user, "", errors2.ErrAuthMissingOTP
+		}
+		if !m.CheckTOTP(credentials.OTP, user) {
+			return user, "", errors2.ErrAuthIncorrectCredentials
+		}
 	}
 	sessionID = utils.GenerateRandomString(constants.SessionIDLength)
 	sessionTokenKey := fmt.Sprintf(constants.RDTemSessionToken, sessionID)
@@ -33,11 +45,11 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user mod
 		"subject": user.Subject,
 	}
 	if err = m.rd.HSet(context.Background(), sessionTokenKey, sessionTokenValue).Err(); err != nil {
-		return models.User{}, "", errors.New(fmt.Sprintf("failed storing session_id. %v", err))
+		return user, "", errors.New(fmt.Sprintf("failed storing session_id. %v", err))
 	}
 	if err = m.rd.Expire(context.Background(), sessionTokenKey, constants.SessionIDExpiry).Err(); err != nil {
 		m.rd.Del(context.Background(), sessionTokenKey)
-		return models.User{}, "", errors.New(fmt.Sprintf("failed setting session_id expiry. %v", err))
+		return user, "", errors.New(fmt.Sprintf("failed setting session_id expiry. %v", err))
 	}
 	return user, sessionID, nil
 }

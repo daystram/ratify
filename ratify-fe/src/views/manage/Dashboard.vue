@@ -18,7 +18,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { Home } from "../index";
+import { Home } from "@/views";
 import { authManager } from "@/auth";
 
 export default Vue.extend({

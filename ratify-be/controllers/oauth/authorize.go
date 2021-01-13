@@ -14,6 +14,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/errors"
 	"github.com/daystram/ratify/ratify-be/handlers"
 	"github.com/daystram/ratify/ratify-be/models"
+	"github.com/daystram/ratify/ratify-be/utils"
 )
 
 // @Summary Request authorization
@@ -58,25 +59,22 @@ func POSTAuthorize(c *gin.Context) {
 		} else {
 			// verify user login
 			if user, sessionID, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
-				if err == errors.ErrAuthIncorrectCredentials {
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect username or password"})
+				if err == errors.ErrAuthIncorrectIdentifier {
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
+				} else if err == errors.ErrAuthIncorrectCredentials {
+					handlers.Handler.LogLogin(user, application, false, datatransfers.LogDetail{
+						Scope:  constants.LogScopeOAuthAuthorize,
+						Detail: utils.ParseUserAgent(c),
+					})
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
 				} else if err == errors.ErrAuthEmailNotVerified {
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: err.Error(), Error: "email not verified"})
+					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthEmailNotVerified.Error(), Error: "email not verified"})
+				} else if err == errors.ErrAuthMissingOTP { // proceed to MFA prompt
+					c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: errors.ErrAuthMissingOTP.Error(), Error: "otp required"})
 				} else {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed logging in user"})
 				}
 				return
-			}
-			// check if TOTP enabled
-			if user.EnabledTOTP() {
-				if authRequest.OTP == "" { // proceed to MFA prompt
-					c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: errors.ErrAuthMissingOTP.Error(), Error: "otp required"})
-					return
-				}
-				if !handlers.Handler.CheckTOTP(authRequest.OTP, user) {
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect otp"})
-					return
-				}
 			}
 		}
 		// verify request credentials
@@ -98,6 +96,10 @@ func POSTAuthorize(c *gin.Context) {
 				return
 			}
 		}
+		handlers.Handler.LogLogin(user, application, true, datatransfers.LogDetail{
+			Scope:  constants.LogScopeOAuthAuthorize,
+			Detail: utils.ParseUserAgent(c),
+		})
 		param, _ := query.Values(datatransfers.AuthorizationResponse{
 			AuthorizationCode: authorizationCode,
 			State:             authRequest.State,
@@ -107,6 +109,7 @@ func POSTAuthorize(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
 		})
+		return
 	default:
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "unsupported authorization flow"})
 		return

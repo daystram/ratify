@@ -1,3 +1,4 @@
+export const Activity = () => import("./manage/Activity.vue");
 export const ApplicationDetail = () =>
   import("./manage/application/ApplicationDetail.vue");
 export const ApplicationList = () =>

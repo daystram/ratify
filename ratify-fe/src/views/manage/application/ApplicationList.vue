@@ -189,9 +189,9 @@
         </v-dialog>
       </v-col>
     </v-row>
-    <v-row>
-      <v-fade-transition>
-        <v-col v-show="pageLoadStatus === STATUS.COMPLETE" cols="12">
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
           <v-divider :inset="false" />
           <div v-for="application in applications" :key="application.client_id">
             <v-list-item>
@@ -242,17 +242,33 @@
             <v-divider :inset="false" />
           </div>
         </v-col>
-      </v-fade-transition>
-    </v-row>
+      </v-row>
+    </v-fade-transition>
     <v-fade-transition>
       <v-overlay
-        v-show="pageLoadStatus !== STATUS.COMPLETE"
+        v-show="
+          pageLoadStatus === STATUS.PRE_LOADING ||
+            pageLoadStatus === STATUS.LOADING
+        "
         opacity="0"
         absolute
       >
         <v-progress-circular indeterminate size="64" />
       </v-overlay>
     </v-fade-transition>
+    <v-expand-transition>
+      <div v-show="pageLoadStatus === STATUS.ERROR">
+        <v-alert
+          type="error"
+          text
+          dense
+          transition="scroll-y-transition"
+          class="mt-3"
+        >
+          Failed retrieving application list!
+        </v-alert>
+      </div>
+    </v-expand-transition>
   </div>
 </template>
 
