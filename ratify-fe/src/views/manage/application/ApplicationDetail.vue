@@ -535,7 +535,7 @@
           text
           dense
           transition="scroll-y-transition"
-          class="mt-3"
+          class="mt-0"
         >
           Failed retrieving application detail!
         </v-alert>

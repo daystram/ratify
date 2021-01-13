@@ -6,6 +6,7 @@ import {
   ApplicationDetail,
   Authorize,
   Home,
+  Log,
   Manage,
   Placeholder,
   Profile,
@@ -114,9 +115,9 @@ const routes: Array<RouteConfig> = [
       {
         path: "log",
         name: "manage:log",
-        component: Placeholder,
+        component: Log,
         meta: {
-          title: "WIP:Logs | Ratify"
+          title: "Logs | Ratify"
         }
       }
     ]

@@ -50,7 +50,7 @@
                     rounded
                     class="ml-4"
                     color="success"
-                    :disabled="create.formLoadStatus !== STATUS.LOADING"
+                    :disabled="create.formLoadStatus === STATUS.LOADING"
                     @click="confirmCreate"
                   >
                     <div v-if="create.formLoadStatus !== STATUS.LOADING">
@@ -263,7 +263,7 @@
           text
           dense
           transition="scroll-y-transition"
-          class="mt-3"
+          class="mt-0"
         >
           Failed retrieving application list!
         </v-alert>

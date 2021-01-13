@@ -1,8 +1,8 @@
 <template>
-  <div class="activity">
+  <div class="log">
     <v-row class="mb-8" align="center">
       <v-col cols="12" sm="">
-        <h1 class="text-h2">Activities</h1>
+        <h1 class="text-h2">Logs</h1>
       </v-col>
     </v-row>
     <v-fade-transition>
@@ -77,10 +77,9 @@
 
 <script>
 import Vue from "vue";
-import { STATUS } from "@/constants/status.ts";
+import { STATUS } from "@/constants/status";
 import api from "@/apis/api";
-import { authManager } from "@/auth/index.ts";
-import { addDateSeparator } from "@/utils/log.ts";
+import { addDateSeparator } from "@/utils/log";
 
 export default Vue.extend({
   data: () => ({
@@ -90,7 +89,7 @@ export default Vue.extend({
 
   created() {
     api.log
-      .userActivity()
+      .adminActivity()
       .then(response => {
         /* eslint-disable @typescript-eslint/camelcase */
         const logs = response.data.data;
@@ -99,67 +98,42 @@ export default Vue.extend({
           const date = new Date(logs[i].created_at * 1000);
           addDateSeparator(date, this.activities);
           switch (desc.scope) {
-            case "oauth::authorize":
+            case "application::detail":
               this.activities.push({
-                color: {
-                  I: "success",
-                  W: "error"
-                }[logs[i].severity],
-                icon: "mdi-lock",
+                color: "info",
+                icon: "mdi-application",
+                title: "Application Detail Updated",
+                subtitle: `${logs[i].application_name} updated by ${logs[i].preferred_username}`,
+                date: date
+              });
+              break;
+            case "application::create":
+              console.log(logs[i]);
+              this.activities.push({
+                color: { I: "success", W: "error" }[logs[i].severity],
+                icon: "mdi-application",
                 title: {
-                  I: "Successful Sign In",
-                  W: "Failed Sign In Attempt"
+                  I: "Added New Application",
+                  W: "Removed Application"
                 }[logs[i].severity],
                 subtitle: {
-                  I: `Signed in from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`,
-                  W: `Incorrect credentials, attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`
+                  I: `${logs[i]?.application_name} created by ${logs[i].preferred_username}`,
+                  W: `${desc?.detail?.name} deleted by ${logs[i].preferred_username}`
                 }[logs[i].severity],
                 date: date
               });
               break;
-            case "user::profile":
+            case "application::secret":
               this.activities.push({
-                color: { I: "info", W: "error" }[logs[i].severity],
-                icon: "mdi-account",
-                title: "Profile Updated",
-                subtitle: "",
-                date: date
-              });
-              break;
-            case "user::password":
-              this.activities.push({
-                color: { I: "info", W: "error" }[logs[i].severity],
+                color: "warning",
                 icon: "mdi-key",
-                title: {
-                  I: "Password Updated",
-                  W: "Failed Password Update Attempt"
-                }[logs[i].severity],
-                subtitle: {
-                  I: ``,
-                  W: `Incorrect old password, attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`
-                }[logs[i].severity],
-                date: date
-              });
-              break;
-            case "user::mfa":
-              this.activities.push({
-                color: desc.detail ? "primary" : "warning",
-                icon: "mdi-two-factor-authentication",
-                title: desc.detail ? "TOTP MFA Enabled" : "TOTP MFA Disabled",
+                title: "Application Secret Key Revoked",
+                subtitle: `Secret key for ${logs[i].application_name} revoked by ${logs[i].preferred_username}`,
                 date: date
               });
               break;
           }
         }
-        const date = new Date(authManager.getUser().created_at * 1000);
-        addDateSeparator(date, this.activities);
-        this.activities.push({
-          color: "success",
-          icon: "mdi-account",
-          title: "Account Created",
-          end: true,
-          date: date
-        });
         /* eslint-enable @typescript-eslint/camelcase */
         this.pageLoadStatus = STATUS.COMPLETE;
       })

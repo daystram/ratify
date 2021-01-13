@@ -62,8 +62,10 @@ type HandlerFunc interface {
 
 	// log
 	RetrieveActivityLogs(subject string) (logs [] models.Log, err error)
+	RetrieveAdminLogs() (logs [] models.Log, err error)
 	LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
 	LogUser(user models.User, success bool, detail datatransfers.LogDetail)
+	LogApplication(user models.User, application models.Application, action bool, detail datatransfers.LogDetail)
 }
 
 type module struct {

@@ -2,7 +2,9 @@
   <div class="profile">
     <v-row class="mb-8" align="center">
       <v-col cols="12" sm="">
-        <h1 class="text-h2">Your Profile</h1>
+        <h1 class="text-h2">
+          Your Profile
+        </h1>
       </v-col>
     </v-row>
     <v-fade-transition>
@@ -13,6 +15,16 @@
               <v-row no-gutters align="center">
                 <v-col cols="auto">
                   Profile
+                  <v-chip
+                    color="orange"
+                    outlined
+                    pill
+                    small
+                    class="ml-4"
+                    v-if="user.is_superuser"
+                  >
+                    Admin
+                  </v-chip>
                 </v-col>
                 <v-spacer />
                 <v-col cols="auto">
@@ -562,7 +574,7 @@
           text
           dense
           transition="scroll-y-transition"
-          class="mt-3"
+          class="mt-0"
         >
           Failed retrieving user profile!
         </v-alert>
@@ -585,6 +597,7 @@ import {
   required,
   sameAs
 } from "vuelidate/lib/validators";
+import { authManager } from "@/auth";
 
 export default Vue.extend({
   components: {
@@ -628,6 +641,9 @@ export default Vue.extend({
   }),
 
   computed: {
+    user() {
+      return authManager.getUser();
+    },
     profileUpdated: {
       cache: false,
       get: function() {
