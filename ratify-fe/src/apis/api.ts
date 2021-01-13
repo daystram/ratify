@@ -94,6 +94,9 @@ export default {
   log: {
     userActivity: function(): Promise<AxiosResponse> {
       return apiClient.get(`log/user_activity`, withAuth());
+    },
+    adminActivity: function(): Promise<AxiosResponse> {
+      return apiClient.get(`log/admin_activity`, withAuth());
     }
   }
 };
