@@ -10,8 +10,11 @@ const (
 	LogSeverityWarn  = "W"
 	LogSeverityInfo  = "I"
 
-	LogScopeOAuthAuthorize = "oauth::authorize"
-	LogScopeUserProfile    = "user::profile"
-	LogScopeUserPassword   = "user::password"
-	LogScopeUserMFA        = "user::mfa"
+	LogScopeOAuthAuthorize    = "oauth::authorize"
+	LogScopeUserProfile       = "user::profile"
+	LogScopeUserPassword      = "user::password"
+	LogScopeUserMFA           = "user::mfa"
+	LogScopeApplicationDetail = "application::detail"
+	LogScopeApplicationCreate = "application::create"
+	LogScopeApplicationSecret = "application::secret"
 )
