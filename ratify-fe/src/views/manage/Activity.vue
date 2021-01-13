@@ -122,8 +122,8 @@ export default Vue.extend({
                   W: "Failed Sign In Attempt"
                 }[logs[i].severity],
                 subtitle: {
-                  I: `Signed in from ${desc.detail.ip} via ${desc.detail.browser} at ${desc.detail.os}`,
-                  W: `Incorrect credentials. Attempted from ${desc.detail.ip} via ${desc.detail.browser} at ${desc.detail.os}.`
+                  I: `Signed in from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`,
+                  W: `Incorrect credentials. Attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}.`
                 }[logs[i].severity],
                 date: date
               });
@@ -134,6 +134,31 @@ export default Vue.extend({
                 icon: "mdi-account",
                 title: "Profile Updated",
                 subtitle: "",
+                date: date
+              });
+              break;
+            case "user::password":
+              this.activities.push({
+                color: { I: "info", W: "error" }[logs[i].severity],
+                icon: "mdi-key",
+                title: {
+                  I: "Password Updated",
+                  W: "Failed Password Update Attempt"
+                }[logs[i].severity],
+                subtitle: {
+                  I: ``,
+                  W: `Incorrect old password. Attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}.`
+                }[logs[i].severity],
+                date: date
+              });
+              break;
+            case "user::mfa":
+              this.activities.push({
+                color: { I: "info", W: "error" }[logs[i].severity],
+                icon: "mdi-two-factor-authentication",
+                title: logs[i].detail
+                  ? "TOTP MFA Enabled"
+                  : "TOTP MFA Disabled",
                 date: date
               });
               break;
@@ -162,7 +187,8 @@ export default Vue.extend({
         /* eslint-enable @typescript-eslint/camelcase */
         this.pageLoadStatus = STATUS.COMPLETE;
       })
-      .catch(() => {
+      .catch(error => {
+        console.log(error);
         this.pageLoadStatus = STATUS.ERROR;
       });
   }

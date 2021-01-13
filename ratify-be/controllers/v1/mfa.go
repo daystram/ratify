@@ -63,6 +63,10 @@ func POSTConfirmTOTP(c *gin.Context) {
 		}
 		return
 	}
+	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{
+		Scope:  constants.LogScopeUserMFA,
+		Detail: true,
+	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
@@ -85,6 +89,10 @@ func POSTDisableTOTP(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: fmt.Sprintf("failed disabling totp. %v", err)})
 		return
 	}
+	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{
+		Scope:  constants.LogScopeUserMFA,
+		Detail: false,
+	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }

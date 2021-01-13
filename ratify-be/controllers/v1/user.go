@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/daystram/ratify/ratify-be/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -130,7 +131,7 @@ func PUTUserPassword(c *gin.Context) {
 		if err == errors.ErrAuthIncorrectCredentials {
 			handlers.Handler.LogUser(user, false, datatransfers.LogDetail{
 				Scope:  constants.LogScopeUserPassword,
-				Detail: errors.ErrAuthIncorrectCredentials.Error(),
+				Detail: utils.ParseUserAgent(c),
 			})
 			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect old_password"})
 		} else {
