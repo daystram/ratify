@@ -9,16 +9,15 @@
       <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
         <v-col cols="12">
           <v-timeline align-top dense>
-            <v-timeline-item class="pb-10" hide-dot>
-              <span class="text-h5">Today</span>
-            </v-timeline-item>
             <div v-for="(activity, index) in activities" :key="index">
               <v-timeline-item v-if="activity.separator" class="pb-10" hide-dot>
                 <span class="text-h5">
                   {{
-                    Intl.DateTimeFormat("default", {
-                      dateStyle: "full"
-                    }).format(activity.date)
+                    activity.today
+                      ? "Today"
+                      : Intl.DateTimeFormat("default", {
+                          dateStyle: "full"
+                        }).format(activity.date)
                   }}
                 </span>
               </v-timeline-item>
@@ -67,7 +66,7 @@
           text
           dense
           transition="scroll-y-transition"
-          class="mt-3"
+          class="mt-0"
         >
           Failed retrieving activity log!
         </v-alert>
@@ -81,6 +80,7 @@ import Vue from "vue";
 import { STATUS } from "@/constants/status.ts";
 import api from "@/apis/api";
 import { authManager } from "@/auth/index.ts";
+import { addDateSeparator } from "@/utils/log.ts";
 
 export default Vue.extend({
   data: () => ({
@@ -97,18 +97,7 @@ export default Vue.extend({
         for (let i = 0; i < logs.length; i++) {
           const desc = JSON.parse(logs[i].description);
           const date = new Date(logs[i].created_at * 1000);
-          if (
-            i &&
-            new Date(date.toDateString()) <
-              new Date(
-                this.activities[this.activities.length - 1].date.toDateString()
-              )
-          ) {
-            this.activities.push({
-              separator: true,
-              date: date
-            });
-          }
+          addDateSeparator(date, this.activities);
           switch (desc.scope) {
             case "oauth::authorize":
               this.activities.push({
@@ -123,7 +112,7 @@ export default Vue.extend({
                 }[logs[i].severity],
                 subtitle: {
                   I: `Signed in from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`,
-                  W: `Incorrect credentials. Attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}.`
+                  W: `Incorrect credentials, attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`
                 }[logs[i].severity],
                 date: date
               });
@@ -147,38 +136,25 @@ export default Vue.extend({
                 }[logs[i].severity],
                 subtitle: {
                   I: ``,
-                  W: `Incorrect old password. Attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}.`
+                  W: `Incorrect old password, attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`
                 }[logs[i].severity],
                 date: date
               });
               break;
             case "user::mfa":
               this.activities.push({
-                color: { I: "info", W: "error" }[logs[i].severity],
+                color: desc.detail ? "primary" : "warning",
                 icon: "mdi-two-factor-authentication",
-                title: logs[i].detail
-                  ? "TOTP MFA Enabled"
-                  : "TOTP MFA Disabled",
+                title: desc.detail ? "TOTP MFA Enabled" : "TOTP MFA Disabled",
                 date: date
               });
               break;
           }
         }
         const date = new Date(authManager.getUser().created_at * 1000);
-        if (
-          this.activities.length &&
-          new Date(date.toDateString()) <
-            new Date(
-              this.activities[this.activities.length - 1].date.toDateString()
-            )
-        ) {
-          this.activities.push({
-            separator: true,
-            date: date
-          });
-        }
+        addDateSeparator(date, this.activities);
         this.activities.push({
-          color: "info",
+          color: "success",
           icon: "mdi-account",
           title: "Account Created",
           end: true,
