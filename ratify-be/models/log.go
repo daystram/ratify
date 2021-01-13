@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"gorm.io/gorm"
 
 	"github.com/daystram/ratify/ratify-be/constants"
@@ -14,9 +15,9 @@ type logOrm struct {
 type Log struct {
 	ID                  string `gorm:"column:id;primaryKey;type:uuid;default:uuid_generate_v4()" json:"-"`
 	User                User   `gorm:"foreignKey:UserSubject;references:Subject;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	UserSubject         string
-	Application         Application `gorm:"foreignKey:ApplicationClientID;references:ClientID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	ApplicationClientID string
+	UserSubject         sql.NullString
+	Application         Application `gorm:"foreignKey:ApplicationClientID;default:null;references:ClientID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	ApplicationClientID sql.NullString
 	Type                string `gorm:"column:type;type:char(4);index:idx_type;not null" json:"-"`
 	Severity            string `gorm:"column:severity;type:char(1);not null" json:"-"`
 	Description         string `gorm:"column:description;type:text" json:"-"`
@@ -24,7 +25,7 @@ type Log struct {
 }
 
 type LogOrmer interface {
-	GetAllLoginByUserSubject(userSubject string) (logs []Log, err error)
+	GetAllByUserSubject(userSubject string) (logs []Log, err error)
 	GetAllActivityByApplicationClientID(applicationClientID string) (logs []Log, err error)
 	InsertLog(log Log) (err error)
 }
@@ -34,9 +35,9 @@ func NewLogOrmer(db *gorm.DB) LogOrmer {
 	return &logOrm{db}
 }
 
-func (o *logOrm) GetAllLoginByUserSubject(userSubject string) (logs []Log, err error) {
+func (o *logOrm) GetAllByUserSubject(userSubject string) (logs []Log, err error) {
 	result := o.db.Model(&Log{}).
-		Where("user_subject = ? AND type = ?", userSubject, constants.LogTypeLogin).
+		Where("user_subject = ?", userSubject).
 		Preload("User").Preload("Application").
 		Order("created_at DESC").
 		Find(&logs)

@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 
 	"encoding/json"
@@ -12,8 +15,8 @@ import (
 func (m *module) LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail) {
 	description, _ := json.Marshal(detail)
 	m.logEntry(models.Log{
-		UserSubject:         user.Subject,
-		ApplicationClientID: application.ClientID,
+		UserSubject:         sql.NullString{String: user.Subject, Valid: true},
+		ApplicationClientID: sql.NullString{String: application.ClientID, Valid: true},
 		Type:                constants.LogTypeLogin,
 		Severity:            map[bool]string{true: constants.LogSeverityInfo, false: constants.LogSeverityWarn}[success],
 		Description:         string(description),
@@ -23,7 +26,7 @@ func (m *module) LogLogin(user models.User, application models.Application, succ
 func (m *module) LogUser(user models.User, success bool, detail datatransfers.LogDetail) {
 	description, _ := json.Marshal(detail)
 	m.logEntry(models.Log{
-		UserSubject: user.Subject,
+		UserSubject: sql.NullString{String: user.Subject, Valid: true},
 		Type:        constants.LogTypeUser,
 		Severity:    map[bool]string{true: constants.LogSeverityInfo, false: constants.LogSeverityWarn}[success],
 		Description: string(description),
