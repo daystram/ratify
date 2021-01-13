@@ -53,6 +53,7 @@ func InitializeRouter() (router *gin.Engine) {
 		log := apiV1.Group("/log")
 		{
 			log.GET("/user_activity", utils.AuthOnly, v1.GETActivityLog)
+			log.GET("/admin_activity", utils.AuthOnly, utils.SuperuserOnly, v1.GETAdminLog)
 		}
 	}
 	oauthV1 := router.Group("/oauth") // OAuth
