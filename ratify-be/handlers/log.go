@@ -12,6 +12,13 @@ import (
 	"github.com/daystram/ratify/ratify-be/models"
 )
 
+func (m *module) RetrieveActivityLogs(subject string) (logs []models.Log, err error) {
+	if logs, err = m.db.logOrmer.GetAllByUserSubject(subject); err != nil {
+		return nil, errors.New(fmt.Sprintf("cannot retrieve logs. %+v", err))
+	}
+	return
+}
+
 func (m *module) LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail) {
 	description, _ := json.Marshal(detail)
 	m.logEntry(models.Log{

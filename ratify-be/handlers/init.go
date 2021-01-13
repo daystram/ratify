@@ -61,6 +61,7 @@ type HandlerFunc interface {
 	CheckTOTP(otp string, user models.User) (valid bool)
 
 	// log
+	RetrieveActivityLogs(subject string) (logs [] models.Log, err error)
 	LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
 	LogUser(user models.User, success bool, detail datatransfers.LogDetail)
 }
