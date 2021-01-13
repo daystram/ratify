@@ -90,5 +90,10 @@ export default {
     disable: function(): Promise<AxiosResponse> {
       return apiClient.post(`mfa/disable`, {}, withAuth());
     }
+  },
+  log: {
+    userActivity: function(): Promise<AxiosResponse> {
+      return apiClient.get(`log/user_activity`, withAuth());
+    }
   }
 };
