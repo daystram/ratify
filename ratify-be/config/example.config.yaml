@@ -1,5 +1,5 @@
 hostname: localhost
-port: 9000
+port: 8080
 environment: dev
 debug: true
 
