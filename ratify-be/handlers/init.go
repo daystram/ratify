@@ -15,9 +15,10 @@ import (
 	"github.com/daystram/ratify/ratify-be/models"
 )
 
-var Handler HandlerFunc
+// Handler is the global singleton to reference the handler.
+var Handler handlerFunc
 
-type HandlerFunc interface {
+type handlerFunc interface {
 	// auth
 	AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, sessionID string, err error)
 	CheckSession(sessionID string) (user models.User, newSessionID string, err error)
@@ -61,8 +62,8 @@ type HandlerFunc interface {
 	CheckTOTP(otp string, user models.User) (valid bool)
 
 	// log
-	RetrieveActivityLogs(subject string) (logs [] models.Log, err error)
-	RetrieveAdminLogs() (logs [] models.Log, err error)
+	RetrieveActivityLogs(subject string) (logs []models.Log, err error)
+	RetrieveAdminLogs() (logs []models.Log, err error)
 	LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
 	LogUser(user models.User, success bool, detail datatransfers.LogDetail)
 	LogApplication(user models.User, application models.Application, action bool, detail datatransfers.LogDetail)
@@ -81,6 +82,7 @@ type dbEntity struct {
 	logOrmer         models.LogOrmer
 }
 
+// InitializeHandler initializes application components and handler bundle.
 func InitializeHandler() {
 	var err error
 

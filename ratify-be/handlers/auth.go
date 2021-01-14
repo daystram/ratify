@@ -45,11 +45,11 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user mod
 		"subject": user.Subject,
 	}
 	if err = m.rd.HSet(context.Background(), sessionTokenKey, sessionTokenValue).Err(); err != nil {
-		return user, "", errors.New(fmt.Sprintf("failed storing session_id. %v", err))
+		return user, "", fmt.Errorf("failed storing session_id. %v", err)
 	}
 	if err = m.rd.Expire(context.Background(), sessionTokenKey, constants.SessionIDExpiry).Err(); err != nil {
 		m.rd.Del(context.Background(), sessionTokenKey)
-		return user, "", errors.New(fmt.Sprintf("failed setting session_id expiry. %v", err))
+		return user, "", fmt.Errorf("failed setting session_id expiry. %v", err)
 	}
 	return user, sessionID, nil
 }
@@ -57,13 +57,13 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user mod
 func (m *module) CheckSession(sessionID string) (user models.User, newSessionID string, err error) {
 	var result *redis.StringStringMapCmd
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemSessionToken, sessionID)); result.Err() != nil {
-		return models.User{}, "", errors.New(fmt.Sprintf("failed retrieving authorization_code. %v", result.Err()))
+		return models.User{}, "", fmt.Errorf("failed retrieving authorization_code. %v", result.Err())
 	}
 	// TODO: rotate/refresh sessionID?
 	var userSubject string
 	userSubject = result.Val()["subject"]
 	if user, err = m.db.userOrmer.GetOneBySubject(userSubject); err != nil {
-		return models.User{}, "", errors.New(fmt.Sprintf("failed retrieving user. %v", result.Err()))
+		return models.User{}, "", fmt.Errorf("failed retrieving user. %v", result.Err())
 	}
 	return user, sessionID, nil
 }
@@ -84,7 +84,7 @@ func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject 
 		Email:      userSignup.Email,
 		Password:   string(hashedPassword),
 	}); err != nil {
-		return "", errors.New(fmt.Sprintf("error inserting user. %v", err))
+		return "", fmt.Errorf("error inserting user. %v", err)
 	}
 	return
 }
@@ -92,16 +92,16 @@ func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject 
 func (m *module) VerifyUser(token string) (err error) {
 	var result *redis.StringCmd
 	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token)); result.Err() != nil {
-		return errors.New(fmt.Sprintf("invalid verification_token. %v", result.Err()))
+		return fmt.Errorf("invalid verification_token. %v", result.Err())
 	}
 	_ = m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token))
 	var user models.User
 	if user, err = m.db.userOrmer.GetOneBySubject(result.Val()); err != nil {
-		return errors.New(fmt.Sprintf("failed retrieving user. %v", result.Err()))
+		return fmt.Errorf("failed retrieving user. %v", result.Err())
 	}
 	user.EmailVerified = true
 	if err = m.db.userOrmer.UpdateUser(user); err != nil {
-		return errors.New(fmt.Sprintf("failed activating user. %v", result.Err()))
+		return fmt.Errorf("failed activating user. %v", result.Err())
 	}
 	return
 }

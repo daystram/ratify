@@ -27,11 +27,11 @@ func (m *module) GenerateAuthorizationCode(authRequest datatransfers.Authorizati
 		"scope":     authRequest.Scope,
 	}
 	if err = m.rd.HSet(context.Background(), key, value).Err(); err != nil {
-		return "", errors.New(fmt.Sprintf("failed storing authorization_code. %v", err))
+		return "", fmt.Errorf("failed storing authorization_code. %v", err)
 	}
 	if err = m.rd.Expire(context.Background(), key, constants.AuthorizationCodeExpiry).Err(); err != nil {
 		m.rd.Del(context.Background(), key)
-		return "", errors.New(fmt.Sprintf("failed setting authorization_code expiry. %v", err))
+		return "", fmt.Errorf("failed setting authorization_code expiry. %v", err)
 	}
 	return
 }
@@ -39,7 +39,7 @@ func (m *module) GenerateAuthorizationCode(authRequest datatransfers.Authorizati
 func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error) {
 	var result *redis.StringStringMapCmd
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemAuthorizationCode, authorizationCode)); result.Err() != nil {
-		return "", "", errors.New(fmt.Sprintf("failed retrieving authorization_code. %v", result.Err()))
+		return "", "", fmt.Errorf("failed retrieving authorization_code. %v", result.Err())
 	}
 	m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemAuthorizationCode, authorizationCode)) // immediate invalidation
 	var clientID string
@@ -58,11 +58,11 @@ func (m *module) GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequ
 		"client_id": tokenRequest.ClientID,
 	}
 	if err = m.rd.HSet(context.Background(), accessTokenKey, accessTokenValue).Err(); err != nil {
-		return "", "", errors.New(fmt.Sprintf("failed storing access_token. %v", err))
+		return "", "", fmt.Errorf("failed storing access_token. %v", err)
 	}
 	if err = m.rd.Expire(context.Background(), accessTokenKey, constants.AccessTokenExpiry).Err(); err != nil {
 		m.rd.Del(context.Background(), accessTokenKey)
-		return "", "", errors.New(fmt.Sprintf("failed setting access_token expiry. %v", err))
+		return "", "", fmt.Errorf("failed setting access_token expiry. %v", err)
 	}
 	if withRefresh {
 		refreshTokenKey := fmt.Sprintf(constants.RDTemAccessToken, accessToken)
@@ -73,12 +73,12 @@ func (m *module) GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequ
 		}
 		refreshToken = utils.GenerateRandomString(constants.RefreshTokenLength)
 		if err = m.rd.HSet(context.Background(), refreshTokenKey, refreshTokenValue).Err(); err != nil {
-			return "", "", errors.New(fmt.Sprintf("failed storing refresh_token. %v", err))
+			return "", "", fmt.Errorf("failed storing refresh_token. %v", err)
 		}
 		if err = m.rd.Expire(context.Background(), refreshTokenKey, constants.RefreshTokenExpiry).Err(); err != nil {
 			m.rd.Del(context.Background(), accessTokenKey)
 			m.rd.Del(context.Background(), refreshTokenKey)
-			return "", "", errors.New(fmt.Sprintf("failed setting refresh_token expiry. %v", err))
+			return "", "", fmt.Errorf("failed setting refresh_token expiry. %v", err)
 		}
 	}
 	return
@@ -123,7 +123,7 @@ func (m *module) StoreCodeChallenge(authorizationCode string, pkce datatransfers
 	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDTemCodeChallenge, authorizationCode),
 		pkce.CodeChallengeMethod+constants.RDDelimiter+pkce.CodeChallenge,
 		constants.AuthorizationCodeExpiry).Err(); err != nil {
-		return errors.New(fmt.Sprintf("failed storing code challenge. %v", err))
+		return fmt.Errorf("failed storing code challenge. %v", err)
 	}
 	return
 }
@@ -131,7 +131,7 @@ func (m *module) StoreCodeChallenge(authorizationCode string, pkce datatransfers
 func (m *module) ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error) {
 	var result *redis.StringCmd
 	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDTemCodeChallenge, authorizationCode)); result.Err() != nil {
-		return errors.New(fmt.Sprintf("failed retrieving code challenge. %v", err))
+		return fmt.Errorf("failed retrieving code challenge. %v", err)
 	}
 	m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemCodeChallenge, authorizationCode))
 	splitVal := strings.Split(result.Val(), constants.RDDelimiter)
@@ -140,7 +140,7 @@ func (m *module) ValidateCodeVerifier(authorizationCode string, pkce datatransfe
 	case constants.PKCEChallengeMethodS256:
 		hash := sha256.New()
 		if _, err := hash.Write([]byte(pkce.CodeVerifier)); err != nil {
-			return errors.New(fmt.Sprintf("failed hashing verifier. %v", err))
+			return fmt.Errorf("failed hashing verifier. %v", err)
 		}
 		if codeChallenge != base64.RawURLEncoding.EncodeToString(hash.Sum([]byte{})) {
 			return errors.New("failed verifying code challenge")
@@ -150,7 +150,7 @@ func (m *module) ValidateCodeVerifier(authorizationCode string, pkce datatransfe
 			return errors.New("failed verifying code challenge")
 		}
 	default:
-		return errors.New(fmt.Sprintf("unsupported code challenge method %s", codeChallengeMethod))
+		return fmt.Errorf("unsupported code challenge method %s", codeChallengeMethod)
 	}
 	return
 }
@@ -158,7 +158,7 @@ func (m *module) ValidateCodeVerifier(authorizationCode string, pkce datatransfe
 func (m *module) IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error) {
 	var result *redis.StringStringMapCmd
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemAccessToken, accessToken)); result.Err() != nil {
-		return datatransfers.TokenIntrospection{Active: false}, errors.New(fmt.Sprintf("failed retrieving access_token. %v", result.Err()))
+		return datatransfers.TokenIntrospection{Active: false}, fmt.Errorf("failed retrieving access_token. %v", result.Err())
 	}
 	if result.Val()["client_id"] == "" {
 		return datatransfers.TokenIntrospection{Active: false}, nil
@@ -167,7 +167,7 @@ func (m *module) IntrospectAccessToken(accessToken string) (tokenInfo datatransf
 		Active:   true,
 		ClientID: result.Val()["client_id"],
 		Subject:  result.Val()["subject"],
-		Scope:  result.Val()["scope"],
+		Scope:    result.Val()["scope"],
 	}, nil
 }
 
@@ -175,7 +175,7 @@ func (m *module) RevokeTokens(subject, clientID string, global bool) (err error)
 	var matches *redis.StringSliceCmd
 	// revoke access_token
 	if matches = m.rd.Keys(context.Background(), constants.RDKeyAccessToken+"*"); matches.Err() != nil {
-		return errors.New(fmt.Sprintf("failed retrieving access_token keys. %v", matches.Err()))
+		return fmt.Errorf("failed retrieving access_token keys. %v", matches.Err())
 	}
 	for _, key := range matches.Val() {
 		var result *redis.StringStringMapCmd
@@ -187,7 +187,7 @@ func (m *module) RevokeTokens(subject, clientID string, global bool) (err error)
 	}
 	// revoke refresh_token
 	if matches = m.rd.Keys(context.Background(), constants.RDKeyRefreshToken+"*"); matches.Err() != nil {
-		return errors.New(fmt.Sprintf("failed retrieving refresh_token keys. %v", matches.Err()))
+		return fmt.Errorf("failed retrieving refresh_token keys. %v", matches.Err())
 	}
 	for _, key := range matches.Val() {
 		var result *redis.StringStringMapCmd
