@@ -40,8 +40,8 @@ deploy dev ratify-be:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd ratify-be
-    - docker build --tag $CI_REGISTRY_IMAGE:ratify-be-dev .
-    - docker push $CI_REGISTRY_IMAGE:ratify-be-dev
+    - docker build --tag $CI_REGISTRY_IMAGE:be-dev .
+    - docker push $CI_REGISTRY_IMAGE:be-dev
   when: manual
   only:
     - branches
@@ -62,13 +62,12 @@ deploy prod ratify-be:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
   script:
     - cd ratify-be
-    - docker build --tag $CI_REGISTRY_IMAGE:ratify-be .
-    - docker push $CI_REGISTRY_IMAGE:ratify-be
-  when: manual
+    - docker build -t $CI_REGISTRY_IMAGE:be -t $CI_REGISTRY_IMAGE:be-$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE:be
+    - docker push $CI_REGISTRY_IMAGE:be-$CI_COMMIT_TAG
+  when: on_success
   only:
-    - branches
-  only:
-    - master
+    - tags
 
 # ------------------------ ratify-fe
 build ratify-fe:
@@ -97,8 +96,8 @@ deploy dev ratify-fe:
   script:
     - cd ratify-fe
     - cp $VUE_ENV_FILE ./.env.development
-    - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe-dev .
-    - docker push $CI_REGISTRY_IMAGE:ratify-fe-dev
+    - docker build --tag $CI_REGISTRY_IMAGE:fe-dev .
+    - docker push $CI_REGISTRY_IMAGE:fe-dev
   when: manual
   only:
     - branches
@@ -120,10 +119,9 @@ deploy prod ratify-fe:
   script:
     - cd ratify-fe
     - cp $VUE_ENV_FILE  ./.env.production
-    - docker build --tag $CI_REGISTRY_IMAGE:ratify-fe .
-    - docker push $CI_REGISTRY_IMAGE:ratify-fe
-  when: manual
+    - docker build -t $CI_REGISTRY_IMAGE:fe -t $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE:fe
+    - docker push $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG
+  when: on_success
   only:
-    - branches
-  only:
-    - master
+    - tags

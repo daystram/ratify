@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"fmt"
+
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/daystram/ratify/ratify-be/constants"
@@ -31,7 +32,7 @@ func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, 
 		LogoutURL:    application.LogoutURL,
 		Metadata:     application.Metadata,
 	}); err != nil {
-		return "", "", errors.New(fmt.Sprintf("error inserting application. %v", err))
+		return "", "", fmt.Errorf("error inserting application. %v", err)
 	}
 	return
 }
@@ -42,14 +43,14 @@ func (m *module) RenewApplicationClientSecret(clientID string) (clientSecret str
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
 	}); err != nil {
-		return "", errors.New(fmt.Sprintf("error renewing application client_secret. %v", err))
+		return "", fmt.Errorf("error renewing application client_secret. %v", err)
 	}
 	return
 }
 
 func (m *module) RetrieveApplication(clientID string) (application models.Application, err error) {
 	if application, err = m.db.applicationOrmer.GetOneByClientID(clientID); err != nil {
-		return models.Application{}, errors.New(fmt.Sprintf("cannot find application with client_id %s", clientID))
+		return models.Application{}, fmt.Errorf("cannot find application with client_id %s", clientID)
 	}
 	return
 }
@@ -77,14 +78,14 @@ func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (e
 		CallbackURL: application.CallbackURL,
 		LogoutURL:   application.LogoutURL,
 	}); err != nil {
-		return errors.New(fmt.Sprintf("error updating application. %v", err))
+		return fmt.Errorf("error updating application. %v", err)
 	}
 	return
 }
 
 func (m *module) DeleteApplication(clientID string) (err error) {
 	if err = m.db.applicationOrmer.DeleteApplication(clientID); err != nil {
-		return errors.New(fmt.Sprintf("error deleting application. %v", err))
+		return fmt.Errorf("error deleting application. %v", err)
 	}
 	return
 }

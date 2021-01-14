@@ -20,7 +20,7 @@ func (m *module) EnableTOTP(user models.User) (uri string, err error) {
 	}
 	secret := gotp.RandomSecret(constants.TOTPSecretLength)
 	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDTemTOTPToken, user.Subject), secret, constants.TOTPConfirmExpiry).Err(); err != nil {
-		return "", errors.New(fmt.Sprintf("failed storing totp_token. %v", err))
+		return "", fmt.Errorf("failed storing totp_token. %v", err)
 	}
 	return gotp.NewDefaultTOTP(secret).ProvisioningUri(user.Username, constants.TOTPIssuer), nil
 }

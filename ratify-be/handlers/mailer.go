@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/mail"
 	"time"
@@ -19,7 +18,7 @@ func (m *module) SendVerificationEmail(user models.User) (err error) {
 	token := utils.GenerateRandomString(constants.EmailVerificationTokenLength)
 	if result := m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token),
 		user.Subject, constants.EmailVerificationTokenExpiry); result.Err() != nil {
-		return errors.New(fmt.Sprintf("invalid verification_token. %v", result.Err()))
+		return fmt.Errorf("invalid verification_token. %v", result.Err())
 	}
 	email := hermes.Email{
 		Body: hermes.Body{
@@ -56,10 +55,10 @@ func (m *module) sendEmail(to, subject string, email hermes.Email) (err error) {
 
 	var emailHTML, emailText string
 	if emailHTML, err = h.GenerateHTML(email); err != nil {
-		return errors.New(fmt.Sprintf("failed generating HTML email. %v", err))
+		return fmt.Errorf("failed generating HTML email. %v", err)
 	}
 	if emailText, err = h.GeneratePlainText(email); err != nil {
-		return errors.New(fmt.Sprintf("failed generating text email. %v", err))
+		return fmt.Errorf("failed generating text email. %v", err)
 	}
 
 	from := mail.Address{

@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 
@@ -14,14 +13,14 @@ import (
 
 func (m *module) RetrieveActivityLogs(subject string) (logs []models.Log, err error) {
 	if logs, err = m.db.logOrmer.GetAllByUserSubject(subject); err != nil {
-		return nil, errors.New(fmt.Sprintf("cannot retrieve logs. %+v", err))
+		return nil, fmt.Errorf("cannot retrieve logs. %+v", err)
 	}
 	return
 }
 
 func (m *module) RetrieveAdminLogs() (logs []models.Log, err error) {
 	if logs, err = m.db.logOrmer.GetAllAdmin(); err != nil {
-		return nil, errors.New(fmt.Sprintf("cannot retrieve logs. %+v", err))
+		return nil, fmt.Errorf("cannot retrieve logs. %+v", err)
 	}
 	return
 }
