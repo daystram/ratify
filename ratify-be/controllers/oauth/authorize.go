@@ -118,6 +118,7 @@ func POSTAuthorize(c *gin.Context) {
 
 // @Summary Request logout
 // @Tags oauth
+// @Accept application/x-www-form-urlencoded
 // @Param user body datatransfers.LogoutRequest true "Logout request info"
 // @Success 200 "OK"
 // @Router /oauth/logout [POST]
@@ -129,13 +130,19 @@ func POSTLogout(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
+	// introspect access_token
+	var tokenInfo datatransfers.TokenIntrospection
+	if tokenInfo, err = handlers.Handler.IntrospectAccessToken(logoutRequest.AccessToken); err != nil || !tokenInfo.Active {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "invalid_token", Error: "invalid access_token"})
+		return
+	}
 	// retrieve application
 	if _, err = handlers.Handler.RetrieveApplication(logoutRequest.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
 	// revoke tokens
-	if err = handlers.Handler.RevokeTokens(c.GetString(constants.UserSubjectKey), logoutRequest.ClientID, logoutRequest.Global); err != nil {
+	if err = handlers.Handler.RevokeTokens(tokenInfo.Subject, logoutRequest.ClientID, logoutRequest.Global); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed revoking tokens"})
 		return
 	}

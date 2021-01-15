@@ -64,7 +64,7 @@ func InitializeRouter() (router *gin.Engine) {
 		oauthV1.POST("/token", oauth.POSTToken)
 		oauthV1.POST("/introspect", oauth.POSTIntrospect)
 		oauthV1.GET("/userinfo", middleware.AuthMiddleware, utils.AuthOnly, oauth.GETUserInfo)
-		oauthV1.POST("/logout", middleware.AuthMiddleware, utils.AuthOnly, oauth.POSTLogout)
+		oauthV1.POST("/logout", oauth.POSTLogout)
 	}
 	return
 }
