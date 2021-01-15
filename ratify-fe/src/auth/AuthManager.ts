@@ -3,7 +3,6 @@ import pkceChallenge from "pkce-challenge";
 import { v4 as uuidv4 } from "uuid";
 import axios, { AxiosResponse } from "axios";
 import jwtDecode from "jwt-decode";
-import { User } from "@/views";
 
 export const KEY_STATE = "state";
 export const KEY_CODE = "code";
@@ -67,7 +66,7 @@ export class AuthManager {
     this.storageManager = opts.storage;
     // code and state will still use sessionStorage (need to persist during page reloads)
     const oauthClient = axios.create({
-      baseURL: "/oauth/"
+      baseURL: `${this.options.issuer}/oauth/`
     });
     this.oauth = {
       token: function(tokenRequest: object): Promise<AxiosResponse> {
