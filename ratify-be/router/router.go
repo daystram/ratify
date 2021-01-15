@@ -7,8 +7,8 @@ import (
 
 	"github.com/daystram/ratify/ratify-be/controllers/middleware"
 	"github.com/daystram/ratify/ratify-be/controllers/oauth"
-	"github.com/daystram/ratify/ratify-be/controllers/v1"
-	_ "github.com/daystram/ratify/ratify-be/docs"
+	v1 "github.com/daystram/ratify/ratify-be/controllers/v1"
+	_ "github.com/daystram/ratify/ratify-be/docs" // ininitliase SwaggerUI
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
@@ -18,7 +18,6 @@ func InitializeRouter() (router *gin.Engine) {
 		swaggerFiles.Handler, ginSwagger.URL("/docs/doc.json")))
 	apiV1 := router.Group("/api/v1") // internal/dashboard APIs
 	apiV1.Use(
-		middleware.CORSMiddleware,
 		middleware.AuthMiddleware,
 	)
 	{
