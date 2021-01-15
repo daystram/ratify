@@ -87,6 +87,7 @@ type TokenIntrospection struct {
 }
 
 type LogoutRequest struct {
-	ClientID string `json:"client_id" binding:"required"`
-	Global   bool   `json:"global" binding:"-"`
+	AccessToken string `json:"access_token" binding:"required"`
+	ClientID    string `json:"client_id" binding:"required"`
+	Global      bool   `json:"global" binding:"-"`
 }
