@@ -1,9 +1,9 @@
 import qs from "qs";
-import oauth from "@/apis/oauth";
 import pkceChallenge from "pkce-challenge";
 import { v4 as uuidv4 } from "uuid";
-import { AxiosResponse } from "axios";
+import axios, { AxiosResponse } from "axios";
 import jwtDecode from "jwt-decode";
+import { User } from "@/views";
 
 export const KEY_STATE = "state";
 export const KEY_CODE = "code";
@@ -16,6 +16,11 @@ interface AuthManagerOptions {
   redirectUri: string;
   issuer: string;
   storage: TokenStorage;
+}
+
+interface OAuthClient {
+  token: (tokenRequest: object) => Promise<AxiosResponse>;
+  logout: (logoutRequest: object) => Promise<AxiosResponse>;
 }
 
 interface User {
@@ -55,11 +60,31 @@ export class MemoryStorage implements TokenStorage {
 export class AuthManager {
   private options: AuthManagerOptions;
   private storageManager: TokenStorage;
+  private oauth: OAuthClient;
 
   constructor(opts: AuthManagerOptions) {
     this.options = opts;
     this.storageManager = opts.storage;
     // code and state will still use sessionStorage (need to persist during page reloads)
+    const oauthClient = axios.create({
+      baseURL: "/oauth/"
+    });
+    this.oauth = {
+      token: function(tokenRequest: object): Promise<AxiosResponse> {
+        return oauthClient.post(`token`, qs.stringify(tokenRequest), {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        });
+      },
+      logout: function(logoutRequest: object): Promise<AxiosResponse> {
+        return oauthClient.post(`logout`, qs.stringify(logoutRequest), {
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          }
+        });
+      }
+    };
   }
 
   isAuthenticated(): boolean {
@@ -80,22 +105,6 @@ export class AuthManager {
     this.storageManager.removeItem(KEY_TOKEN);
   }
 
-  logout(global?: boolean) {
-    return oauth
-      .logout({
-        /* eslint-disable @typescript-eslint/camelcase */
-        client_id: this.options.clientId,
-        global: global || false
-        /* eslint-enable @typescript-eslint/camelcase */
-      })
-      .then(() => {
-        this.reset();
-      })
-      .catch(() => {
-        this.reset();
-      });
-  }
-
   authorize(immediate?: boolean, scopes?: string[]): void {
     window.location.href = `${this.options.issuer}/authorize?${qs.stringify({
       /* eslint-disable @typescript-eslint/camelcase */
@@ -113,7 +122,7 @@ export class AuthManager {
   }
 
   redeemToken(authorizationCode: string): Promise<AxiosResponse> {
-    return oauth
+    return this.oauth
       .token({
         /* eslint-disable @typescript-eslint/camelcase */
         client_id: this.options.clientId,
@@ -125,6 +134,23 @@ export class AuthManager {
       .then(response => {
         this.storageManager.setItem(KEY_TOKEN, JSON.stringify(response.data));
         return response;
+      });
+  }
+
+  logout(global?: boolean) {
+    return this.oauth
+      .logout({
+        /* eslint-disable @typescript-eslint/camelcase */
+        access_token: this.getToken(ACCESS_TOKEN),
+        client_id: this.options.clientId,
+        global: global || false
+        /* eslint-enable @typescript-eslint/camelcase */
+      })
+      .then(() => {
+        this.reset();
+      })
+      .catch(() => {
+        this.reset();
       });
   }
 
