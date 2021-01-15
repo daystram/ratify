@@ -126,7 +126,7 @@ func POSTLogout(c *gin.Context) {
 	var err error
 	// fetch request info
 	var logoutRequest datatransfers.LogoutRequest
-	if err = c.ShouldBindJSON(&logoutRequest); err != nil {
+	if err = c.ShouldBind(&logoutRequest); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
