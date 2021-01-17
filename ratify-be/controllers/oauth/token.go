@@ -94,21 +94,21 @@ func POSTIntrospect(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
 		return
 	}
-	// retrieve details
-	// TODO: allow introspecting other token types
-	var tokenInfo datatransfers.TokenIntrospection
-	if tokenInfo, err = handlers.Handler.IntrospectAccessToken(introspectRequest.Token); err != nil || !tokenInfo.Active {
-		c.JSON(http.StatusOK, tokenInfo)
-		return
-	}
-	// verify client_secret
+	// verify client_id and client_secret
 	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(tokenInfo.ClientID); err != nil {
+	if application, err = handlers.Handler.RetrieveApplication(introspectRequest.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
 	if err = bcrypt.CompareHashAndPassword([]byte(application.ClientSecret), []byte(introspectRequest.ClientSecret)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "invalid client_secret"})
+		return
+	}
+	// introspect
+	// TODO: allow introspecting other token types
+	var tokenInfo datatransfers.TokenIntrospection
+	if tokenInfo, err = handlers.Handler.IntrospectAccessToken(introspectRequest.Token); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed introspecting token"})
 		return
 	}
 	c.JSON(http.StatusOK, tokenInfo)
