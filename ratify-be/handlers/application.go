@@ -39,9 +39,13 @@ func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, 
 
 func (m *module) RenewApplicationClientSecret(clientID string) (clientSecret string, err error) {
 	clientSecret = utils.GenerateRandomString(constants.ClientSecretLength)
+	var hashedClientSecret []byte
+	if hashedClientSecret, err = bcrypt.GenerateFromPassword([]byte(clientSecret), bcrypt.DefaultCost); err != nil {
+		return "", errors.New("failed hashing client_secret")
+	}
 	if err = m.db.applicationOrmer.UpdateApplication(models.Application{
 		ClientID:     clientID,
-		ClientSecret: clientSecret,
+		ClientSecret: string(hashedClientSecret),
 	}); err != nil {
 		return "", fmt.Errorf("error renewing application client_secret. %v", err)
 	}
