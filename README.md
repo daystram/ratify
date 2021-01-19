@@ -21,6 +21,10 @@ Ratify is a Central Authentication Service (CAS) implementing OAuth 2.0 and Open
 - Authorization Code with PKCE
 - _WIP: Client Credentials_
 
+## Client Libraries
+Use the following libraries to easily integrate your application with Ratify's authentication service.
+- JavaScript: [ratify-client-js](https://github.com/daystram/ratify-client-js)
+
 ## Develop
 Ratify is split into two sub-applications, `ratify-be` (backend) and `ratify-fe` (frontend). `ratify-fe` itself acts as stand-alone application to `ratify-be` and thus utilizes an access token it self-issued via the _Authorization Code with PKCE_ flow to authenticate users.
 
@@ -103,5 +107,4 @@ services:
 
 ## License
 This project is licensed under the [MIT License](./LICENSE).
-
  
