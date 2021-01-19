@@ -1,6 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
+import { ACCESS_TOKEN } from "@daystram/ratify-client";
 import { authManager, refreshAuth } from "@/auth";
-import { ACCESS_TOKEN } from "@/auth/AuthManager";
 import router from "@/router";
 
 const apiClient: AxiosInstance = axios.create({
