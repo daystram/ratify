@@ -1,12 +1,12 @@
+import { ACCESS_TOKEN, RatifyClient } from "@daystram/ratify-client";
 import router from "@/router";
-import { AuthManager, ACCESS_TOKEN } from "@/auth/AuthManager";
 import { Route } from "vue-router";
 
 const CLIENT_ID = process.env.VUE_APP_CLIENT_ID;
 const ISSUER = process.env.VUE_APP_OAUTH_ISSUER;
 const REDIRECT_URI = `${location.origin}/callback`;
 
-const authManager = new AuthManager({
+const authManager = new RatifyClient({
   clientId: CLIENT_ID,
   redirectUri: REDIRECT_URI,
   issuer: ISSUER,
