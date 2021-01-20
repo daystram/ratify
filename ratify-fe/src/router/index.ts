@@ -44,13 +44,13 @@ const routes: Array<RouteConfig> = [
   },
   {
     path: "/manage",
-    beforeEnter: authenticatedOnly,
     component: Manage,
     redirect: "/manage/dashboard",
     children: [
       {
         path: "dashboard",
         name: "manage:dashboard",
+        beforeEnter: authenticatedOnly,
         component: Dashboard,
         meta: {
           title: "Dashboard | Ratify"
@@ -59,6 +59,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "profile",
         name: "manage:profile",
+        beforeEnter: authenticatedOnly,
         component: Profile,
         meta: {
           title: "Profile | Ratify"
@@ -67,6 +68,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "activity",
         name: "manage:activity",
+        beforeEnter: authenticatedOnly,
         component: Activity,
         meta: {
           title: "Activity | Ratify"
@@ -75,6 +77,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "session",
         name: "manage:session",
+        beforeEnter: authenticatedOnly,
         component: Placeholder,
         meta: {
           title: "WIP:Sessions | Ratify"
@@ -83,6 +86,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "setting",
         name: "manage:setting",
+        beforeEnter: authenticatedOnly,
         component: Placeholder,
         meta: {
           title: "WIP:Settings | Ratify"
@@ -91,6 +95,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "user",
         name: "manage:user",
+        beforeEnter: authenticatedOnly,
         component: User,
         meta: {
           title: "WIP:Users | Ratify"
@@ -99,6 +104,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "application",
         name: "manage:application",
+        beforeEnter: authenticatedOnly,
         component: ApplicationList,
         meta: {
           title: "Applications | Ratify"
@@ -107,6 +113,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "application/:clientId",
         name: "manage:application-detail",
+        beforeEnter: authenticatedOnly,
         component: ApplicationDetail,
         meta: {
           title: "Application Detail | Ratify"
@@ -115,6 +122,7 @@ const routes: Array<RouteConfig> = [
       {
         path: "log",
         name: "manage:log",
+        beforeEnter: authenticatedOnly,
         component: Log,
         meta: {
           title: "Logs | Ratify"
