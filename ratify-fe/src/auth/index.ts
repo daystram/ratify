@@ -68,8 +68,8 @@ const refreshAuth = function(destinationPath: string) {
   authManager.authorize(true);
 };
 
-const authenticatedOnly = function(to: Route, from: Route, next: () => void) {
-  if (authManager.getToken(ACCESS_TOKEN)) {
+const authenticatedOnly = function(to: Route, _: Route, next: () => void) {
+  if (authManager.isAuthenticated()) {
     next();
   } else {
     refreshAuth(to.fullPath);
@@ -81,7 +81,7 @@ const unAuthenticatedOnly = function(
   from: object,
   next: () => void
 ) {
-  if (!authManager.getToken(ACCESS_TOKEN)) {
+  if (!authManager.isAuthenticated()) {
     next();
   } else {
     router.push({ name: "manage:dashboard" });
