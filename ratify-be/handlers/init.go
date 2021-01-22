@@ -48,7 +48,8 @@ type handlerFunc interface {
 	OAuthIntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error)
 	OAuthStoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
 	OAuthValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
-	OAuthRevokeTokens(userSubject, clientID string, global bool) (err error)
+	OAuthRevokeAccessToken(accessToken string) (err error)
+	OAuthRevokeAllTokens(userSubject, clientID string, global bool) (err error)
 
 	// session
 	SessionInitialize(subject string, userAgent datatransfers.UserAgent) (sessionID string, err error)
