@@ -4,7 +4,11 @@ import { authManager, refreshAuth } from "@/auth";
 import router from "@/router";
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: "/api/v1/"
+  baseURL: `${
+    process.env.NODE_ENV === "development"
+      ? process.env.VUE_APP_DEV_BASE_API
+      : ""
+  }/api/v1/`
 });
 
 apiClient.interceptors.response.use(
