@@ -51,8 +51,8 @@ type handlerFunc interface {
 	OAuthRevokeTokens(userSubject, clientID string, global bool) (err error)
 
 	// session
-	SessionInitialize(subject string) (sessionID string, err error)
-	SessionCheck(sessionID string) (user models.User, newSessionID string, err error)
+	SessionInitialize(subject string, userAgent datatransfers.UserAgent) (sessionID string, err error)
+	SessionInfo(sessionID string) (session datatransfers.Session, err error)
 	SessionClear(sessionID string) (err error)
 	SessionAddChild(sessionID, accessToken string) (err error)
 

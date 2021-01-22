@@ -3,23 +3,27 @@ package handlers
 import (
 	"context"
 	"fmt"
-	"log"
+	"strconv"
 	"time"
 
 	"github.com/go-redis/redis/v8"
 
 	"github.com/daystram/ratify/ratify-be/constants"
 	"github.com/daystram/ratify/ratify-be/datatransfers"
-	"github.com/daystram/ratify/ratify-be/models"
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) SessionInitialize(subject string) (sessionID string, err error) {
+func (m *module) SessionInitialize(subject string, userAgent datatransfers.UserAgent) (sessionID string, err error) {
 	// generate session_id
+	now := time.Now().Unix()
 	sessionID = utils.GenerateRandomString(constants.SessionIDLength)
 	sessionIDKey := fmt.Sprintf(constants.RDTemSessionID, sessionID)
 	sessionIDValue := map[string]interface{}{
-		"subject": subject,
+		"subject":    subject,
+		"issued_at":  now,
+		"ua_ip":      userAgent.IP,
+		"ua_browser": userAgent.Browser,
+		"ua_os":      userAgent.OS,
 	}
 	if err = m.rd.HSet(context.Background(), sessionIDKey, sessionIDValue).Err(); err != nil {
 		return "", fmt.Errorf("failed storing session_id. %v", err)
@@ -29,7 +33,6 @@ func (m *module) SessionInitialize(subject string) (sessionID string, err error)
 		return "", fmt.Errorf("failed setting session_id expiry. %v", err)
 	}
 	// collect session_id to list
-	now := time.Now().Unix()
 	sessionListKey := fmt.Sprintf(constants.RDTemSessionList, subject)
 	if err = m.rd.ZAdd(context.Background(), sessionListKey, &redis.Z{
 		Score:  float64(now + int64(constants.AccessTokenExpiry.Seconds())),
@@ -56,28 +59,32 @@ func (m *module) SessionAddChild(sessionID, accessToken string) (err error) {
 	return
 }
 
-func (m *module) SessionCheck(sessionID string) (user models.User, newSessionID string, err error) {
+func (m *module) SessionInfo(sessionID string) (session datatransfers.Session, err error) {
+	// retrieve session
 	var result *redis.StringStringMapCmd
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemSessionID, sessionID)); result.Err() != nil {
-		return models.User{}, "", fmt.Errorf("failed retrieving session. %v", result.Err())
+		return datatransfers.Session{}, fmt.Errorf("failed retrieving session. %v", result.Err())
 	}
-	// TODO: rotate/refresh sessionID?
-	var userSubject string
-	userSubject = result.Val()["subject"]
-	if user, err = m.db.userOrmer.GetOneBySubject(userSubject); err != nil {
-		return models.User{}, "", fmt.Errorf("failed retrieving user. %v", result.Err())
+	// build
+	session.SessionID = sessionID
+	session.Subject = result.Val()["subject"]
+	session.UserAgent = datatransfers.UserAgent{
+		IP:      result.Val()["ua_ip"],
+		Browser: result.Val()["ua_browser"],
+		OS:      result.Val()["ua_os"],
 	}
-	return user, sessionID, nil
+	session.IssuedAt, _ = strconv.ParseInt(result.Val()["issued_at"], 10, 64)
+	return session, nil
 }
 
 func (m *module) SessionClear(sessionID string) (err error) {
 	// get session detail
-	var user models.User
-	if user, _, err = m.SessionCheck(sessionID); err != nil {
+	var session datatransfers.Session
+	if session, err = m.SessionInfo(sessionID); err != nil {
 		return fmt.Errorf("failed checking session_id. %v", err)
 	}
 	// remove session_id from list
-	sessionListKey := fmt.Sprintf(constants.RDTemSessionList, user.Subject)
+	sessionListKey := fmt.Sprintf(constants.RDTemSessionList, session.Subject)
 	if err = m.rd.ZRem(context.Background(), sessionListKey, sessionID).Err(); err != nil {
 		return fmt.Errorf("failed unlisting session_id. %v", err)
 	}

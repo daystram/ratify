@@ -56,9 +56,14 @@ func POSTAuthorize(c *gin.Context) {
 				return
 			}
 			// verify user session
-			if user, sessionID, err = handlers.Handler.SessionCheck(sessionID); err != nil {
+			var session datatransfers.Session
+			if session, err = handlers.Handler.SessionInfo(sessionID); err != nil {
 				c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid session_id"})
+				return
+			}
+			if user, err = handlers.Handler.UserGetOneBySubject(session.Subject); err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "failed retrieveing user"})
 				return
 			}
 		} else {
@@ -82,7 +87,7 @@ func POSTAuthorize(c *gin.Context) {
 				return
 			}
 			// initialize new session
-			if sessionID, err = handlers.Handler.SessionInitialize(user.Subject); err != nil {
+			if sessionID, err = handlers.Handler.SessionInitialize(user.Subject, utils.ParseUserAgent(c)); err != nil {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed initializing new session"})
 				return
 			}
