@@ -6,14 +6,14 @@ const (
 
 	RDTemAuthorizationCode = GrantTypeAuthorizationCode + defaultDelimiter
 	RDTemCodeChallenge     = RDKeyCodeChallenge + defaultDelimiter
-	RDTemSessionToken      = RDKeySessionToken + defaultDelimiter
+	RDTemSessionID         = RDKeySessionID + defaultDelimiter
 	RDTemAccessToken       = RDKeyAccessToken + defaultDelimiter
 	RDTemRefreshToken      = RDKeyRefreshToken + defaultDelimiter
 	RDTemVerificationToken = RDKeyVerificationToken + defaultDelimiter
 	RDTemTOTPToken         = RDKeyTOTPToken + defaultDelimiter
 
 	RDKeyCodeChallenge     = "code_challenge"
-	RDKeySessionToken      = "session_token"
+	RDKeySessionID         = "session_id"
 	RDKeyAccessToken       = "access_token"
 	RDKeyRefreshToken      = "refresh_token"
 	RDKeyVerificationToken = "refresh_token"
