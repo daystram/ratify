@@ -67,6 +67,11 @@ func POSTToken(c *gin.Context) {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating tokens"})
 			return
 		}
+		// spawn child session
+		if err = handlers.Handler.SessionAddChild(sessionID, accessToken); err != nil {
+			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed spawning child session"})
+			return
+		}
 		c.JSON(http.StatusOK, datatransfers.TokenResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,

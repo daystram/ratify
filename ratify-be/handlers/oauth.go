@@ -67,6 +67,7 @@ func (m *module) OAuthGenerateAccessToken(tokenRequest datatransfers.TokenReques
 		return "", "", fmt.Errorf("failed setting access_token expiry. %v", err)
 	}
 	if withRefresh {
+		// NOTE: always check if embedded access_token has been revoked when attempting to renew using refresh_token
 		refreshTokenKey := fmt.Sprintf(constants.RDTemAccessToken, accessToken)
 		refreshTokenValue := map[string]interface{}{
 			"subject":      subject,
@@ -173,9 +174,14 @@ func (m *module) OAuthIntrospectAccessToken(accessToken string) (tokenInfo datat
 	}, nil
 }
 
-func (m *module) OAuthRevokeTokens(subject, clientID string, global bool) (err error) {
+func (m *module) OAuthRevokeAccessToken(accessToken string) (err error) {
+	return m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemAccessToken, accessToken)).Err()
+}
+
+// expensive flush
+func (m *module) OAuthRevokeAllTokens(subject, clientID string, global bool) (err error) {
 	var matches *redis.StringSliceCmd
-	// revoke access_token
+	// revoke all access_token
 	if matches = m.rd.Keys(context.Background(), constants.RDKeyAccessToken+"*"); matches.Err() != nil {
 		return fmt.Errorf("failed retrieving access_token keys. %v", matches.Err())
 	}
@@ -187,7 +193,7 @@ func (m *module) OAuthRevokeTokens(subject, clientID string, global bool) (err e
 			}
 		}
 	}
-	// revoke refresh_token
+	// revoke all refresh_token
 	if matches = m.rd.Keys(context.Background(), constants.RDKeyRefreshToken+"*"); matches.Err() != nil {
 		return fmt.Errorf("failed retrieving refresh_token keys. %v", matches.Err())
 	}

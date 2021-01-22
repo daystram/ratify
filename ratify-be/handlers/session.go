@@ -59,6 +59,10 @@ func (m *module) SessionAddChild(sessionID, accessToken string) (err error) {
 	return
 }
 
+func (m *module) SessionDeleteChild(sessionID, accessToken string) (err error) {
+	return m.rd.ZRem(context.Background(), fmt.Sprintf(constants.RDTemSessionChild, sessionID), accessToken).Err()
+}
+
 func (m *module) SessionInfo(sessionID string) (session datatransfers.Session, err error) {
 	// retrieve session
 	var result *redis.StringStringMapCmd
@@ -84,11 +88,22 @@ func (m *module) SessionClear(sessionID string) (err error) {
 		return fmt.Errorf("failed checking session_id. %v", err)
 	}
 	// remove session_id from list
-	sessionListKey := fmt.Sprintf(constants.RDTemSessionList, session.Subject)
-	if err = m.rd.ZRem(context.Background(), sessionListKey, sessionID).Err(); err != nil {
-		return fmt.Errorf("failed unlisting session_id. %v", err)
+	m.rd.ZRem(context.Background(), fmt.Sprintf(constants.RDTemSessionList, session.Subject), sessionID)
+	// revoke session_id
+	m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemSessionID, sessionID))
+	// revoke associated access_token
+	var result *redis.StringSliceCmd
+	if result = m.rd.ZRangeByScore(context.Background(), fmt.Sprintf(constants.RDTemSessionChild, sessionID), &redis.ZRangeBy{
+		Min: "-inf",
+		Max: "+inf",
+	}); result.Err() != nil {
+		return fmt.Errorf("failed retrieving active sessions. %v", err)
 	}
-	return m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemSessionID, sessionID)).Err()
+	for _, accessToken := range result.Val() {
+		m.OAuthRevokeAccessToken(accessToken)
+		m.SessionDeleteChild(sessionID, accessToken)
+	}
+	return
 }
 
 func (m *module) GetActiveSessions(subject string) (activeSessions []datatransfers.Session, err error) {
