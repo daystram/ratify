@@ -113,8 +113,8 @@ func POSTAuthorize(c *gin.Context) {
 			AuthorizationCode: authorizationCode,
 			State:             authRequest.State,
 		})
-		// c.SetSameSite(http.SameSiteStrictMode)
-		c.SetCookie(constants.SessionIDCookieKey, sessionID, int(constants.SessionIDExpiry.Seconds()), "/oauth", "", false, true)
+		c.SetSameSite(http.SameSiteStrictMode)
+		c.SetCookie(constants.SessionIDCookieKey, sessionID, int(constants.SessionIDExpiry.Seconds()), "/oauth", "", true, true)
 		c.JSON(http.StatusOK, gin.H{
 			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
 		})
@@ -162,7 +162,7 @@ func POSTLogout(c *gin.Context) {
 				log.Printf("failed clearing session. %v", err)
 			}
 		}
-		c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", false, true)
+		c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
