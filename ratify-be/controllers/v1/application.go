@@ -24,7 +24,7 @@ func GETOneApplicationDetail(c *gin.Context) {
 	// fetch application info
 	var application models.Application
 	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/") // trim due to router catch-all
-	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
+	if application, err = handlers.Handler.ApplicationGetOneByClientID(application.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
@@ -58,7 +58,7 @@ func GETApplicationList(c *gin.Context) {
 	var err error
 	// get all owned applications
 	var applications []models.Application
-	if applications, err = handlers.Handler.RetrieveAllApplications(); err != nil {
+	if applications, err = handlers.Handler.ApplicationGetAll(); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "cannot retrieve applications"})
 		return
 	}
@@ -91,11 +91,11 @@ func POSTApplication(c *gin.Context) {
 	}
 	// register application
 	var clientSecret string
-	if applicationInfo.ClientID, clientSecret, err = handlers.Handler.RegisterApplication(applicationInfo, c.GetString(constants.UserSubjectKey)); err != nil {
+	if applicationInfo.ClientID, clientSecret, err = handlers.Handler.ApplicationRegister(applicationInfo, c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering application"})
 		return
 	}
-	handlers.Handler.LogApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: applicationInfo.ClientID}, true, datatransfers.LogDetail{
+	handlers.Handler.LogInsertApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: applicationInfo.ClientID}, true, datatransfers.LogDetail{
 		Scope: constants.LogScopeApplicationCreate,
 	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_id": applicationInfo.ClientID, "client_secret": clientSecret}})
@@ -119,7 +119,7 @@ func PUTApplication(c *gin.Context) {
 	}
 	var application models.Application
 	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/")
-	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
+	if application, err = handlers.Handler.ApplicationGetOneByClientID(application.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
@@ -133,11 +133,11 @@ func PUTApplication(c *gin.Context) {
 	}
 	// update application
 	applicationInfo.ClientID = application.ClientID
-	if err = handlers.Handler.UpdateApplication(applicationInfo); err != nil {
+	if err = handlers.Handler.ApplicationUpdate(applicationInfo); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating application"})
 		return
 	}
-	handlers.Handler.LogApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: application.ClientID}, true, datatransfers.LogDetail{
+	handlers.Handler.LogInsertApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: application.ClientID}, true, datatransfers.LogDetail{
 		Scope: constants.LogScopeApplicationDetail,
 	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
@@ -155,7 +155,7 @@ func DELETEApplication(c *gin.Context) {
 	// fetch application info
 	var application models.Application
 	application.ClientID = strings.TrimPrefix(c.Param("client_id"), "/")
-	if application, err = handlers.Handler.RetrieveApplication(application.ClientID); err != nil {
+	if application, err = handlers.Handler.ApplicationGetOneByClientID(application.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
@@ -165,11 +165,11 @@ func DELETEApplication(c *gin.Context) {
 		return
 	}
 	// delete application
-	if err = handlers.Handler.DeleteApplication(application.ClientID); err != nil {
+	if err = handlers.Handler.ApplicationDelete(application.ClientID); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed deleting application"})
 		return
 	}
-	handlers.Handler.LogApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{}, false, datatransfers.LogDetail{
+	handlers.Handler.LogInsertApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{}, false, datatransfers.LogDetail{
 		Scope:  constants.LogScopeApplicationCreate,
 		Detail: datatransfers.ApplicationInfo{Name: application.Name},
 	})
@@ -187,17 +187,17 @@ func PUTApplicationRevokeSecret(c *gin.Context) {
 	var err error
 	// fetch application info
 	clientID := strings.TrimPrefix(c.Param("client_id"), "/")
-	if _, err = handlers.Handler.RetrieveApplication(clientID); err != nil {
+	if _, err = handlers.Handler.ApplicationGetOneByClientID(clientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
 	// renew application client_secret
 	var clientSecret string
-	if clientSecret, err = handlers.Handler.RenewApplicationClientSecret(clientID); err != nil {
+	if clientSecret, err = handlers.Handler.ApplicationRenewClientSecret(clientID); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed renewing application client_secret"})
 		return
 	}
-	handlers.Handler.LogApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: clientID}, true, datatransfers.LogDetail{
+	handlers.Handler.LogInsertApplication(models.User{Subject: c.GetString(constants.UserSubjectKey)}, models.Application{ClientID: clientID}, true, datatransfers.LogDetail{
 		Scope: constants.LogScopeApplicationSecret,
 	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: gin.H{"client_secret": clientSecret}})

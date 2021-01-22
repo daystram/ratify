@@ -30,7 +30,7 @@ func POSTToken(c *gin.Context) {
 	}
 	// retrieve application
 	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(tokenRequest.ClientID); err != nil {
+	if application, err = handlers.Handler.ApplicationGetOneByClientID(tokenRequest.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
@@ -39,7 +39,7 @@ func POSTToken(c *gin.Context) {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		// verify request credentials
 		var sessionID, subject, scope string
-		if sessionID, subject, scope, err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
+		if sessionID, subject, scope, err = handlers.Handler.OAuthValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid authorization_code"})
 			return
 		}
@@ -50,7 +50,7 @@ func POSTToken(c *gin.Context) {
 			}
 		}
 		if flow == constants.FlowAuthorizationCodeWithPKCE {
-			if err = handlers.Handler.ValidateCodeVerifier(tokenRequest.Code, tokenRequest.PKCETokenFields); err != nil {
+			if err = handlers.Handler.OAuthValidateCodeVerifier(tokenRequest.Code, tokenRequest.PKCETokenFields); err != nil {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed verifying code_challenge"})
 				return
 			}
@@ -58,12 +58,12 @@ func POSTToken(c *gin.Context) {
 		// generate codes
 		var accessToken, refreshToken, idToken string
 		if utils.HasOpenIDScope(scope) {
-			if idToken, err = handlers.Handler.GenerateIDToken(application.ClientID, subject, strings.Split(scope, " ")); err != nil {
+			if idToken, err = handlers.Handler.OAuthGenerateIDToken(application.ClientID, subject, strings.Split(scope, " ")); err != nil {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating tokens"})
 				return
 			}
 		}
-		if accessToken, refreshToken, err = handlers.Handler.GenerateAccessRefreshToken(tokenRequest, sessionID, subject, flow == constants.FlowAuthorizationCode); err != nil {
+		if accessToken, refreshToken, err = handlers.Handler.OAuthGenerateAccessToken(tokenRequest, sessionID, subject, flow == constants.FlowAuthorizationCode); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating tokens"})
 			return
 		}
@@ -97,7 +97,7 @@ func POSTIntrospect(c *gin.Context) {
 	}
 	// verify client_id and client_secret
 	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(introspectRequest.ClientID); err != nil {
+	if application, err = handlers.Handler.ApplicationGetOneByClientID(introspectRequest.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
@@ -108,7 +108,7 @@ func POSTIntrospect(c *gin.Context) {
 	// introspect
 	// TODO: allow introspecting other token types
 	var tokenInfo datatransfers.TokenIntrospection
-	if tokenInfo, err = handlers.Handler.IntrospectAccessToken(introspectRequest.Token); err != nil {
+	if tokenInfo, err = handlers.Handler.OAuthIntrospectAccessToken(introspectRequest.Token); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed introspecting token"})
 		return
 	}
@@ -124,7 +124,7 @@ func POSTIntrospect(c *gin.Context) {
 func GETUserInfo(c *gin.Context) {
 	var err error
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+	if user, err = handlers.Handler.UserGetOneBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
 		return
 	}

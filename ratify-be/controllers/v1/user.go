@@ -22,7 +22,7 @@ import (
 func GETUser(c *gin.Context) {
 	var err error
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+	if user, err = handlers.Handler.UserGetOneBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
 		return
 	}
@@ -53,26 +53,26 @@ func POSTRegister(c *gin.Context) {
 		return
 	}
 	// check email and username
-	if checkUser, _ := handlers.Handler.RetrieveUserByUsername(signup.Username); checkUser.Subject != "" {
+	if checkUser, _ := handlers.Handler.UserGetOneByUsername(signup.Username); checkUser.Subject != "" {
 		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: errors.ErrUserUsernameExists.Error(), Error: "username already used"})
 		return
 	}
-	if checkUser, _ := handlers.Handler.RetrieveUserByEmail(signup.Email); checkUser.Subject != "" {
+	if checkUser, _ := handlers.Handler.UserGetOneByEmail(signup.Email); checkUser.Subject != "" {
 		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: errors.ErrUserEmailExists.Error(), Error: "email already used"})
 		return
 	}
 	// register user
 	var user models.User
-	if user.Subject, err = handlers.Handler.RegisterUser(signup); err != nil {
+	if user.Subject, err = handlers.Handler.AuthRegister(signup); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed registering user"})
 		return
 	}
 	// send verification email
-	if user, err = handlers.Handler.RetrieveUserBySubject(user.Subject); err != nil {
+	if user, err = handlers.Handler.UserGetOneBySubject(user.Subject); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed retrieving new user"})
 		return
 	}
-	if err = handlers.Handler.SendVerificationEmail(user); err != nil {
+	if err = handlers.Handler.MailerSendEmailVerification(user); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed sending verification email"})
 		return
 	}
@@ -94,15 +94,15 @@ func PUTUser(c *gin.Context) {
 		return
 	}
 	var user models.User
-	if user, _ = handlers.Handler.RetrieveUserByEmail(update.Email); user.Subject != "" && user.Subject != c.GetString(constants.UserSubjectKey) {
+	if user, _ = handlers.Handler.UserGetOneByEmail(update.Email); user.Subject != "" && user.Subject != c.GetString(constants.UserSubjectKey) {
 		c.JSON(http.StatusConflict, datatransfers.APIResponse{Code: errors.ErrUserEmailExists.Error(), Error: "email already used"})
 		return
 	}
-	if err = handlers.Handler.UpdateUser(c.GetString(constants.UserSubjectKey), update); err != nil {
+	if err = handlers.Handler.UserUpdate(c.GetString(constants.UserSubjectKey), update); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating user"})
 		return
 	}
-	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserProfile})
+	handlers.Handler.LogInsertUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserProfile})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
@@ -122,14 +122,14 @@ func PUTUserPassword(c *gin.Context) {
 	}
 	// retrieve user
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+	if user, err = handlers.Handler.UserGetOneBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
 		return
 	}
 	// update user password
-	if err := handlers.Handler.UpdateUserPassword(c.GetString(constants.UserSubjectKey), password.Old, password.New); err != nil {
+	if err := handlers.Handler.UserUpdatePassword(c.GetString(constants.UserSubjectKey), password.Old, password.New); err != nil {
 		if err == errors.ErrAuthIncorrectCredentials {
-			handlers.Handler.LogUser(user, false, datatransfers.LogDetail{
+			handlers.Handler.LogInsertUser(user, false, datatransfers.LogDetail{
 				Scope:  constants.LogScopeUserPassword,
 				Detail: utils.ParseUserAgent(c),
 			})
@@ -139,7 +139,7 @@ func PUTUserPassword(c *gin.Context) {
 		}
 		return
 	}
-	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserPassword})
+	handlers.Handler.LogInsertUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserPassword})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
@@ -158,7 +158,7 @@ func POSTVerify(c *gin.Context) {
 		return
 	}
 	// verify user
-	if err := handlers.Handler.VerifyUser(verify.Token); err != nil {
+	if err := handlers.Handler.AuthVerify(verify.Token); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "failed verifying user"})
 		return
 	}
@@ -181,13 +181,13 @@ func POSTResend(c *gin.Context) {
 	}
 	// get user
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserByEmail(resend.Email); err != nil {
+	if user, err = handlers.Handler.UserGetOneByEmail(resend.Email); err != nil {
 		c.JSON(http.StatusOK, datatransfers.APIResponse{}) // silent request drop
 		return
 	}
 	// resend email
 	if !user.EmailVerified { // silent request drop
-		if err := handlers.Handler.SendVerificationEmail(user); err != nil {
+		if err := handlers.Handler.MailerSendEmailVerification(user); err != nil {
 			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "failed verifying user"})
 			return
 		}

@@ -14,7 +14,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/models"
 )
 
-func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, err error) {
+func (m *module) AuthAuthenticate(credentials datatransfers.UserLogin) (user models.User, err error) {
 	// check username/email
 	if user, err = m.db.userOrmer.GetOneByUsername(credentials.Username); err != nil {
 		if user, err = m.db.userOrmer.GetOneByEmail(credentials.Username); err != nil {
@@ -34,14 +34,14 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user mod
 		if credentials.OTP == "" {
 			return user, errors2.ErrAuthMissingOTP
 		}
-		if !m.CheckTOTP(credentials.OTP, user) {
+		if !m.MFACheckTOTP(credentials.OTP, user) {
 			return user, errors2.ErrAuthIncorrectCredentials
 		}
 	}
 	return user, nil
 }
 
-func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject string, err error) {
+func (m *module) AuthRegister(userSignup datatransfers.UserSignup) (userSubject string, err error) {
 	var hashedPassword []byte
 	if hashedPassword, err = bcrypt.GenerateFromPassword([]byte(userSignup.Password), bcrypt.DefaultCost); err != nil {
 		return "", errors.New("failed hashing password")
@@ -58,7 +58,7 @@ func (m *module) RegisterUser(userSignup datatransfers.UserSignup) (userSubject 
 	return
 }
 
-func (m *module) VerifyUser(token string) (err error) {
+func (m *module) AuthVerify(token string) (err error) {
 	var result *redis.StringCmd
 	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token)); result.Err() != nil {
 		return fmt.Errorf("invalid verification_token. %v", result.Err())

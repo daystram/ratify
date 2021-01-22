@@ -22,12 +22,12 @@ func POSTEnableTOTP(c *gin.Context) {
 	var err error
 	// get user
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+	if user, err = handlers.Handler.UserGetOneBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed retrieving user"})
 		return
 	}
 	var uri string
-	if uri, err = handlers.Handler.EnableTOTP(user); err != nil {
+	if uri, err = handlers.Handler.MFAEnableTOTP(user); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: fmt.Sprintf("failed enabling totp. %v", err)})
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: uri})
@@ -50,12 +50,12 @@ func POSTConfirmTOTP(c *gin.Context) {
 	}
 	// get user
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+	if user, err = handlers.Handler.UserGetOneBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed retrieving user"})
 		return
 	}
 	// confirm TOTP
-	if err = handlers.Handler.ConfirmTOTP(totp.OTP, user); err != nil {
+	if err = handlers.Handler.MFAConfirmTOTP(totp.OTP, user); err != nil {
 		if err == errors.ErrAuthIncorrectCredentials {
 			c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Code: err.Error(), Error: "incorrect otp"})
 		} else {
@@ -63,7 +63,7 @@ func POSTConfirmTOTP(c *gin.Context) {
 		}
 		return
 	}
-	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{
+	handlers.Handler.LogInsertUser(user, true, datatransfers.LogDetail{
 		Scope:  constants.LogScopeUserMFA,
 		Detail: true,
 	})
@@ -80,16 +80,16 @@ func POSTDisableTOTP(c *gin.Context) {
 	var err error
 	// get user
 	var user models.User
-	if user, err = handlers.Handler.RetrieveUserBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+	if user, err = handlers.Handler.UserGetOneBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed retrieving user"})
 		return
 	}
 	// disable TOTP
-	if err = handlers.Handler.DisableTOTP(user); err != nil {
+	if err = handlers.Handler.MFADisableTOTP(user); err != nil {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: fmt.Sprintf("failed disabling totp. %v", err)})
 		return
 	}
-	handlers.Handler.LogUser(user, true, datatransfers.LogDetail{
+	handlers.Handler.LogInsertUser(user, true, datatransfers.LogDetail{
 		Scope:  constants.LogScopeUserMFA,
 		Detail: false,
 	})

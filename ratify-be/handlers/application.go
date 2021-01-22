@@ -12,7 +12,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID, clientSecret string, err error) {
+func (m *module) ApplicationRegister(application datatransfers.ApplicationInfo, ownerSubject string) (clientID, clientSecret string, err error) {
 	if application.Description == "" {
 		application.Description = "New application"
 	}
@@ -37,7 +37,7 @@ func (m *module) RegisterApplication(application datatransfers.ApplicationInfo, 
 	return
 }
 
-func (m *module) RenewApplicationClientSecret(clientID string) (clientSecret string, err error) {
+func (m *module) ApplicationRenewClientSecret(clientID string) (clientSecret string, err error) {
 	clientSecret = utils.GenerateRandomString(constants.ClientSecretLength)
 	var hashedClientSecret []byte
 	if hashedClientSecret, err = bcrypt.GenerateFromPassword([]byte(clientSecret), bcrypt.DefaultCost); err != nil {
@@ -52,28 +52,28 @@ func (m *module) RenewApplicationClientSecret(clientID string) (clientSecret str
 	return
 }
 
-func (m *module) RetrieveApplication(clientID string) (application models.Application, err error) {
+func (m *module) ApplicationGetOneByClientID(clientID string) (application models.Application, err error) {
 	if application, err = m.db.applicationOrmer.GetOneByClientID(clientID); err != nil {
 		return models.Application{}, fmt.Errorf("cannot find application with client_id %s", clientID)
 	}
 	return
 }
 
-func (m *module) RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error) {
+func (m *module) ApplicationGetOneByOwnerSubject(ownerSubject string) (applications []models.Application, err error) {
 	if applications, err = m.db.applicationOrmer.GetAllByOwnerSubject(ownerSubject); err != nil {
 		return []models.Application{}, errors.New("cannot retrieve applications")
 	}
 	return
 }
 
-func (m *module) RetrieveAllApplications() (applications []models.Application, err error) {
+func (m *module) ApplicationGetAll() (applications []models.Application, err error) {
 	if applications, err = m.db.applicationOrmer.GetAll(); err != nil {
 		return []models.Application{}, errors.New("cannot retrieve applications")
 	}
 	return
 }
 
-func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (err error) {
+func (m *module) ApplicationUpdate(application datatransfers.ApplicationInfo) (err error) {
 	if err = m.db.applicationOrmer.UpdateApplication(models.Application{
 		ClientID:    application.ClientID,
 		Name:        application.Name,
@@ -87,7 +87,7 @@ func (m *module) UpdateApplication(application datatransfers.ApplicationInfo) (e
 	return
 }
 
-func (m *module) DeleteApplication(clientID string) (err error) {
+func (m *module) ApplicationDelete(clientID string) (err error) {
 	if err = m.db.applicationOrmer.DeleteApplication(clientID); err != nil {
 		return fmt.Errorf("error deleting application. %v", err)
 	}

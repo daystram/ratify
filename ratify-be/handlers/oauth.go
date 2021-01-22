@@ -18,7 +18,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject, sessionID string) (authorizationCode string, err error) {
+func (m *module) OAuthGenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject, sessionID string) (authorizationCode string, err error) {
 	authorizationCode = utils.GenerateRandomString(constants.AuthorizationCodeLength)
 	key := fmt.Sprintf(constants.RDTemAuthorizationCode, authorizationCode)
 	value := map[string]interface{}{
@@ -37,7 +37,7 @@ func (m *module) GenerateAuthorizationCode(authRequest datatransfers.Authorizati
 	return
 }
 
-func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (sessionID, subject, scope string, err error) {
+func (m *module) OAuthValidateAuthorizationCode(application models.Application, authorizationCode string) (sessionID, subject, scope string, err error) {
 	var result *redis.StringStringMapCmd
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemAuthorizationCode, authorizationCode)); result.Err() != nil {
 		return "", "", "", fmt.Errorf("failed retrieving authorization_code. %v", result.Err())
@@ -51,7 +51,7 @@ func (m *module) ValidateAuthorizationCode(application models.Application, autho
 	return
 }
 
-func (m *module) GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, sessionID, subject string, withRefresh bool) (accessToken, refreshToken string, err error) {
+func (m *module) OAuthGenerateAccessToken(tokenRequest datatransfers.TokenRequest, sessionID, subject string, withRefresh bool) (accessToken, refreshToken string, err error) {
 	accessToken = utils.GenerateRandomString(constants.AccessTokenLength)
 	accessTokenKey := fmt.Sprintf(constants.RDTemAccessToken, accessToken)
 	accessTokenValue := map[string]interface{}{
@@ -90,7 +90,7 @@ func (m *module) GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequ
 Since an opaque token is used, applications must call an endpoint in ratify-be to validate the token on every request.
 */
 
-func (m *module) GenerateIDToken(clientID, subject string, scope []string) (idToken string, err error) {
+func (m *module) OAuthGenerateIDToken(clientID, subject string, scope []string) (idToken string, err error) {
 	var user models.User
 	if user, err = m.db.userOrmer.GetOneBySubject(subject); err != nil {
 		return "", errors.New("cannot find user")
@@ -121,7 +121,7 @@ func (m *module) GenerateIDToken(clientID, subject string, scope []string) (idTo
 	return utils.GenerateJWT(claims)
 }
 
-func (m *module) StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error) {
+func (m *module) OAuthStoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error) {
 	if err = m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDTemCodeChallenge, authorizationCode),
 		pkce.CodeChallengeMethod+constants.RDDelimiter+pkce.CodeChallenge,
 		constants.AuthorizationCodeExpiry).Err(); err != nil {
@@ -130,7 +130,7 @@ func (m *module) StoreCodeChallenge(authorizationCode string, pkce datatransfers
 	return
 }
 
-func (m *module) ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error) {
+func (m *module) OAuthValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error) {
 	var result *redis.StringCmd
 	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDTemCodeChallenge, authorizationCode)); result.Err() != nil {
 		return fmt.Errorf("failed retrieving code challenge. %v", err)
@@ -157,7 +157,7 @@ func (m *module) ValidateCodeVerifier(authorizationCode string, pkce datatransfe
 	return
 }
 
-func (m *module) IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error) {
+func (m *module) OAuthIntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error) {
 	var result *redis.StringStringMapCmd
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemAccessToken, accessToken)); result.Err() != nil {
 		return datatransfers.TokenIntrospection{Active: false}, fmt.Errorf("failed retrieving access_token. %v", result.Err())
@@ -173,7 +173,7 @@ func (m *module) IntrospectAccessToken(accessToken string) (tokenInfo datatransf
 	}, nil
 }
 
-func (m *module) RevokeTokens(subject, clientID string, global bool) (err error) {
+func (m *module) OAuthRevokeTokens(subject, clientID string, global bool) (err error) {
 	var matches *redis.StringSliceCmd
 	// revoke access_token
 	if matches = m.rd.Keys(context.Background(), constants.RDKeyAccessToken+"*"); matches.Err() != nil {
