@@ -91,3 +91,22 @@ func (m *module) SessionClear(sessionID string) (err error) {
 	return m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemSessionID, sessionID)).Err()
 }
 
+func (m *module) GetActiveSessions(subject string) (activeSessions []datatransfers.Session, err error) {
+	// retrieve session_list
+	var result *redis.StringSliceCmd
+	if result = m.rd.ZRangeByScore(context.Background(), fmt.Sprintf(constants.RDTemSessionList, subject), &redis.ZRangeBy{
+		Min: fmt.Sprintf("%d", time.Now().Unix()),
+		Max: "+inf",
+	}); result.Err() != nil {
+		return nil, fmt.Errorf("failed retrieving active sessions. %v", err)
+	}
+	// build activeSessions
+	activeSessions = make([]datatransfers.Session, 0)
+	for _, sessionID := range result.Val() {
+		var session datatransfers.Session
+		if session, err = m.SessionInfo(sessionID); err == nil {
+			activeSessions = append(activeSessions, session)
+		}
+	}
+	return
+}
