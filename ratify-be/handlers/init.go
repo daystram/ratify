@@ -20,9 +20,7 @@ var Handler handlerFunc
 
 type handlerFunc interface {
 	// auth
-	AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, sessionID string, err error)
-	CheckSession(sessionID string) (user models.User, newSessionID string, err error)
-	ClearSession(sessionID string) (err error)
+	AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, err error)
 	RegisterUser(credentials datatransfers.UserSignup) (userSubject string, err error)
 	VerifyUser(token string) (err error)
 
@@ -51,6 +49,11 @@ type handlerFunc interface {
 	StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
 	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
 	RevokeTokens(userSubject, clientID string, global bool) (err error)
+
+	// session
+	InitializeSession(subject string) (sessionID string, err error)
+	CheckSession(sessionID string) (user models.User, newSessionID string, err error)
+	ClearSession(sessionID string) (err error)
 
 	// mailer
 	SendVerificationEmail(user models.User) (err error)

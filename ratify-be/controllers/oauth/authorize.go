@@ -55,15 +55,15 @@ func POSTAuthorize(c *gin.Context) {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid cookie"})
 				return
 			}
-				// verify user session
-				if user, sessionID, err = handlers.Handler.CheckSession(sessionID); err != nil {
-					c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid session_id"})
-					return
-				}
+			// verify user session
+			if user, sessionID, err = handlers.Handler.CheckSession(sessionID); err != nil {
+				c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid session_id"})
+				return
+			}
 		} else {
 			// verify user login
-			if user, sessionID, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
+			if user, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
 				if err == errors.ErrAuthIncorrectIdentifier {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
 				} else if err == errors.ErrAuthIncorrectCredentials {
@@ -79,6 +79,11 @@ func POSTAuthorize(c *gin.Context) {
 				} else {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed logging in user"})
 				}
+				return
+			}
+			// initialize new session
+			if sessionID, err = handlers.Handler.InitializeSession(user.Subject); err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed initializing new session"})
 				return
 			}
 		}
@@ -103,8 +108,8 @@ func POSTAuthorize(c *gin.Context) {
 			AuthorizationCode: authorizationCode,
 			State:             authRequest.State,
 		})
-		c.SetSameSite(http.SameSiteStrictMode)
-		c.SetCookie(constants.SessionIDCookieKey, sessionID, int(constants.SessionIDExpiry.Seconds()), "/oauth", "", true, true)
+		// c.SetSameSite(http.SameSiteStrictMode)
+		c.SetCookie(constants.SessionIDCookieKey, sessionID, int(constants.SessionIDExpiry.Seconds()), "/oauth", "", false, true)
 		c.JSON(http.StatusOK, gin.H{
 			"data": fmt.Sprintf("%s?%s", strings.TrimSuffix(application.CallbackURL, "/"), param.Encode()),
 		})
@@ -152,7 +157,7 @@ func POSTLogout(c *gin.Context) {
 				log.Printf("failed clearing session. %v", err)
 			}
 		}
-		c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
+		c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", false, true)
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
