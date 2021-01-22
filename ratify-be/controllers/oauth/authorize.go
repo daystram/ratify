@@ -153,7 +153,7 @@ func POSTLogout(c *gin.Context) {
 	if logoutRequest.Global {
 		var sessionID string
 		if sessionID, err = c.Cookie(constants.SessionIDCookieKey); err == nil {
-			if err = handlers.Handler.SessionClearCurrent(sessionID); err != nil {
+			if err = handlers.Handler.SessionClear(sessionID); err != nil {
 				log.Printf("failed clearing session. %v", err)
 			}
 		}

@@ -28,6 +28,16 @@ func (m *module) SessionInitialize(subject string) (sessionID string, err error)
 		m.rd.Del(context.Background(), sessionIDKey)
 		return "", fmt.Errorf("failed setting session_id expiry. %v", err)
 	}
+	// collect session_id to list
+	sessionListKey := fmt.Sprintf(constants.RDTemSessionList, subject)
+	if err = m.rd.ZAdd(context.Background(), sessionListKey, &redis.Z{
+		Score:  float64(time.Now().Unix() + int64(constants.SessionIDExpiry.Seconds())),
+		Member: sessionID,
+	}).Err(); err != nil {
+		m.rd.Del(context.Background(), sessionIDKey)
+		return "", fmt.Errorf("failed listing session_id. %v", err)
+	}
+	m.rd.ZRemRangeByScore(context.Background(), sessionListKey, "(0", fmt.Sprintf("%d", time.Now().Unix()))
 	return
 }
 
@@ -46,7 +56,17 @@ func (m *module) SessionCheck(sessionID string) (user models.User, newSessionID 
 	return user, sessionID, nil
 }
 
-func (m *module) SessionClearCurrent(sessionID string) (err error) {
+func (m *module) SessionClear(sessionID string) (err error) {
+	// get session detail
+	var user models.User
+	if user, _, err = m.SessionCheck(sessionID); err != nil {
+		return fmt.Errorf("failed checking session_id. %v", err)
+	}
+	// remove session_id from list
+	sessionListKey := fmt.Sprintf(constants.RDTemSessionList, user.Subject)
+	if err = m.rd.ZRem(context.Background(), sessionListKey, sessionID).Err(); err != nil {
+		return fmt.Errorf("failed unlisting session_id. %v", err)
+	}
 	return m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemSessionID, sessionID)).Err()
 }
 
