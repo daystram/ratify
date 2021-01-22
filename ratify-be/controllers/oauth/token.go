@@ -38,8 +38,8 @@ func POSTToken(c *gin.Context) {
 	switch flow {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		// verify request credentials
-		var subject, scope string
-		if _, subject, scope, err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
+		var sessionID, subject, scope string
+		if sessionID, subject, scope, err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid authorization_code"})
 			return
 		}
@@ -63,7 +63,7 @@ func POSTToken(c *gin.Context) {
 				return
 			}
 		}
-		if accessToken, refreshToken, err = handlers.Handler.GenerateAccessRefreshToken(tokenRequest, subject, flow == constants.FlowAuthorizationCode); err != nil {
+		if accessToken, refreshToken, err = handlers.Handler.GenerateAccessRefreshToken(tokenRequest, sessionID, subject, flow == constants.FlowAuthorizationCode); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating tokens"})
 			return
 		}

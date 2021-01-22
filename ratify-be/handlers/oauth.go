@@ -51,12 +51,13 @@ func (m *module) ValidateAuthorizationCode(application models.Application, autho
 	return
 }
 
-func (m *module) GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, subject string, withRefresh bool) (accessToken, refreshToken string, err error) {
+func (m *module) GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, sessionID, subject string, withRefresh bool) (accessToken, refreshToken string, err error) {
 	accessToken = utils.GenerateRandomString(constants.AccessTokenLength)
 	accessTokenKey := fmt.Sprintf(constants.RDTemAccessToken, accessToken)
 	accessTokenValue := map[string]interface{}{
-		"subject":   subject,
-		"client_id": tokenRequest.ClientID,
+		"client_id":  tokenRequest.ClientID,
+		"session_id": sessionID, //  would desync if session_id made rotating
+		"subject":    subject,
 	}
 	if err = m.rd.HSet(context.Background(), accessTokenKey, accessTokenValue).Err(); err != nil {
 		return "", "", fmt.Errorf("failed storing access_token. %v", err)
