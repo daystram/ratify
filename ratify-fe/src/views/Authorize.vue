@@ -68,7 +68,12 @@
                     </div>
                   </v-expand-transition>
                   <v-expand-transition>
-                    <div v-show="apiResponseCode === 'email_unverified'">
+                    <div
+                      v-show="
+                        apiResponseCode === 'email_unverified' &&
+                          formLoadStatus !== STATUS.COMPLETE
+                      "
+                    >
                       <v-alert type="warning" text dense>
                         Email has not been verified! <br />
                         Click

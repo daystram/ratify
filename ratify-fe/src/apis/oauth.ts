@@ -1,7 +1,11 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 
 const oauthClient: AxiosInstance = axios.create({
-  baseURL: "/oauth/"
+  baseURL: `${
+    process.env.NODE_ENV === "development"
+      ? process.env.VUE_APP_DEV_BASE_API
+      : ""
+  }/oauth/`
 });
 
 export default {

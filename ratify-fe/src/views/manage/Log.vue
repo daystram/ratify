@@ -108,7 +108,6 @@ export default Vue.extend({
               });
               break;
             case "application::create":
-              console.log(logs[i]);
               this.activities.push({
                 color: { I: "success", W: "error" }[logs[i].severity],
                 icon: "mdi-application",
