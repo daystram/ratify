@@ -43,15 +43,15 @@ type handlerFunc interface {
 	DeleteApplication(clientID string) (err error)
 
 	// oauth
-	GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject string) (authorizationCode string, err error)
-	ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error)
+	GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject, sessionID string) (authorizationCode string, err error)
+	ValidateAuthorizationCode(application models.Application, authorizationCode string) (sessionID, subject, scope string, err error)
 	GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, subject string, withRefresh bool) (accessToken, refreshToken string, err error)
 	GenerateIDToken(clientID, subject string, scope []string) (idToken string, err error)
 	IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error)
 	StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
 	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
 	RevokeTokens(userSubject, clientID string, global bool) (err error)
-
+	
 	// mailer
 	SendVerificationEmail(user models.User) (err error)
 

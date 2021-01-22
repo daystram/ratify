@@ -39,7 +39,7 @@ func POSTToken(c *gin.Context) {
 	case constants.FlowAuthorizationCode, constants.FlowAuthorizationCodeWithPKCE:
 		// verify request credentials
 		var subject, scope string
-		if subject, scope, err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
+		if _, subject, scope, err = handlers.Handler.ValidateAuthorizationCode(application, tokenRequest.Code); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "invalid authorization_code"})
 			return
 		}
@@ -74,6 +74,7 @@ func POSTToken(c *gin.Context) {
 			TokenType:    "Bearer",
 			ExpiresIn:    int(constants.AccessTokenExpiry.Seconds()),
 		})
+		return
 	default:
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "unsupported grant_type"})
 		return

@@ -85,7 +85,7 @@ func POSTAuthorize(c *gin.Context) {
 		}
 		// generate authorization code
 		var authorizationCode string
-		if authorizationCode, err = handlers.Handler.GenerateAuthorizationCode(authRequest, user.Subject); err != nil {
+		if authorizationCode, err = handlers.Handler.GenerateAuthorizationCode(authRequest, user.Subject, sessionID); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating authorization_code"})
 			return
 		}

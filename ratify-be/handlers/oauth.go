@@ -18,13 +18,14 @@ import (
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject string) (authorizationCode string, err error) {
+func (m *module) GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject, sessionID string) (authorizationCode string, err error) {
 	authorizationCode = utils.GenerateRandomString(constants.AuthorizationCodeLength)
 	key := fmt.Sprintf(constants.RDTemAuthorizationCode, authorizationCode)
 	value := map[string]interface{}{
-		"subject":   subject,
-		"client_id": authRequest.ClientID,
-		"scope":     authRequest.Scope,
+		"client_id":  authRequest.ClientID,
+		"session_id": sessionID,
+		"subject":    subject,
+		"scope":      authRequest.Scope,
 	}
 	if err = m.rd.HSet(context.Background(), key, value).Err(); err != nil {
 		return "", fmt.Errorf("failed storing authorization_code. %v", err)
@@ -36,16 +37,16 @@ func (m *module) GenerateAuthorizationCode(authRequest datatransfers.Authorizati
 	return
 }
 
-func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error) {
+func (m *module) ValidateAuthorizationCode(application models.Application, authorizationCode string) (sessionID, subject, scope string, err error) {
 	var result *redis.StringStringMapCmd
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemAuthorizationCode, authorizationCode)); result.Err() != nil {
-		return "", "", fmt.Errorf("failed retrieving authorization_code. %v", result.Err())
+		return "", "", "", fmt.Errorf("failed retrieving authorization_code. %v", result.Err())
 	}
 	m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemAuthorizationCode, authorizationCode)) // immediate invalidation
 	var clientID string
-	clientID, subject, scope = result.Val()["client_id"], result.Val()["subject"], result.Val()["scope"]
+	clientID, sessionID, subject, scope = result.Val()["client_id"], result.Val()["session_id"], result.Val()["subject"], result.Val()["scope"]
 	if clientID != application.ClientID {
-		return "", "", errors.New("unregistered authorization_code")
+		return "", "", "", errors.New("unregistered authorization_code")
 	}
 	return
 }
