@@ -19,7 +19,7 @@ func (m *module) AuthenticateUser(credentials datatransfers.UserLogin) (user mod
 	// check username/email
 	if user, err = m.db.userOrmer.GetOneByUsername(credentials.Username); err != nil {
 		if user, err = m.db.userOrmer.GetOneByEmail(credentials.Username); err != nil {
-			return models.User{}, "", errors2.ErrAuthIncorrectCredentials
+			return models.User{}, "", errors2.ErrAuthIncorrectIdentifier
 		}
 	}
 	// check password
