@@ -29,18 +29,32 @@ func (m *module) SessionInitialize(subject string) (sessionID string, err error)
 		return "", fmt.Errorf("failed setting session_id expiry. %v", err)
 	}
 	// collect session_id to list
+	now := time.Now().Unix()
 	sessionListKey := fmt.Sprintf(constants.RDTemSessionList, subject)
 	if err = m.rd.ZAdd(context.Background(), sessionListKey, &redis.Z{
-		Score:  float64(time.Now().Unix() + int64(constants.SessionIDExpiry.Seconds())),
+		Score:  float64(now + int64(constants.AccessTokenExpiry.Seconds())),
 		Member: sessionID,
 	}).Err(); err != nil {
 		m.rd.Del(context.Background(), sessionIDKey)
 		return "", fmt.Errorf("failed listing session_id. %v", err)
 	}
-	m.rd.ZRemRangeByScore(context.Background(), sessionListKey, "(0", fmt.Sprintf("%d", time.Now().Unix()))
+	m.rd.ZRemRangeByScore(context.Background(), sessionListKey, "0", fmt.Sprintf("%d", now))
 	return
 }
 
+func (m *module) SessionAddChild(sessionID, accessToken string) (err error) {
+	// collect child access_token to list
+	now := time.Now().Unix()
+	sessionChildKey := fmt.Sprintf(constants.RDTemSessionChild, sessionID)
+	if err = m.rd.ZAdd(context.Background(), sessionChildKey, &redis.Z{
+		Score:  float64(now + int64(constants.AccessTokenExpiry.Seconds())),
+		Member: accessToken,
+	}).Err(); err != nil {
+		return fmt.Errorf("failed listing access_token. %v", err)
+	}
+	m.rd.ZRemRangeByScore(context.Background(), sessionChildKey, "0", fmt.Sprintf("%d", now))
+	return
+}
 
 func (m *module) SessionCheck(sessionID string) (user models.User, newSessionID string, err error) {
 	var result *redis.StringStringMapCmd

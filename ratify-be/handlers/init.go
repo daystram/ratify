@@ -54,7 +54,7 @@ type handlerFunc interface {
 	SessionInitialize(subject string) (sessionID string, err error)
 	SessionCheck(sessionID string) (user models.User, newSessionID string, err error)
 	SessionClear(sessionID string) (err error)
-	SessionAddChild(sessionID, accessToken string, userAgent datatransfers.UserAgent) (err error)
+	SessionAddChild(sessionID, accessToken string) (err error)
 
 	// mailer
 	MailerSendEmailVerification(user models.User) (err error)
