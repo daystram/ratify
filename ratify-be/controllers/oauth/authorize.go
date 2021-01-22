@@ -33,7 +33,13 @@ func POSTAuthorize(c *gin.Context) {
 	// retrieve application
 	var application models.Application
 	if application, err = handlers.Handler.RetrieveApplication(authRequest.ClientID); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	// verify request credentials
+	// TODO: support comma-separated callback URLs
+	if authRequest.RedirectURI != "" && authRequest.RedirectURI != application.CallbackURL {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "not allowed callback_uri"})
 		return
 	}
 	flow := authRequest.Flow()
@@ -48,14 +54,13 @@ func POSTAuthorize(c *gin.Context) {
 				c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid cookie"})
 				return
-			} else {
+			}
 				// verify user session
 				if user, sessionID, err = handlers.Handler.CheckSession(sessionID); err != nil {
 					c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid session_id"})
 					return
 				}
-			}
 		} else {
 			// verify user login
 			if user, sessionID, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
@@ -76,12 +81,6 @@ func POSTAuthorize(c *gin.Context) {
 				}
 				return
 			}
-		}
-		// verify request credentials
-		// TODO: support comma-separated callback URLs
-		if authRequest.RedirectURI != "" && authRequest.RedirectURI != application.CallbackURL {
-			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "not allowed callback_uri"})
-			return
 		}
 		// generate authorization code
 		var authorizationCode string
