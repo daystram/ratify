@@ -32,8 +32,14 @@ func POSTAuthorize(c *gin.Context) {
 	}
 	// retrieve application
 	var application models.Application
-	if application, err = handlers.Handler.RetrieveApplication(authRequest.ClientID); err != nil {
-		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
+	if application, err = handlers.Handler.ApplicationGetOneByClientID(authRequest.ClientID); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "application not found"})
+		return
+	}
+	// verify request credentials
+	// TODO: support comma-separated callback URLs
+	if authRequest.RedirectURI != "" && authRequest.RedirectURI != application.CallbackURL {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "not allowed callback_uri"})
 		return
 	}
 	flow := authRequest.Flow()
@@ -48,21 +54,25 @@ func POSTAuthorize(c *gin.Context) {
 				c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid cookie"})
 				return
-			} else {
-				// verify user session
-				if user, sessionID, err = handlers.Handler.CheckSession(sessionID); err != nil {
-					c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
-					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid session_id"})
-					return
-				}
+			}
+			// verify user session
+			var session datatransfers.SessionInfo
+			if session, err = handlers.Handler.SessionInfo(sessionID); err != nil {
+				c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid session_id"})
+				return
+			}
+			if user, err = handlers.Handler.UserGetOneBySubject(session.Subject); err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "failed retrieveing user"})
+				return
 			}
 		} else {
 			// verify user login
-			if user, sessionID, err = handlers.Handler.AuthenticateUser(authRequest.UserLogin); err != nil {
+			if user, err = handlers.Handler.AuthAuthenticate(authRequest.UserLogin); err != nil {
 				if err == errors.ErrAuthIncorrectIdentifier {
 					c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "incorrect credentials"})
 				} else if err == errors.ErrAuthIncorrectCredentials {
-					handlers.Handler.LogLogin(user, application, false, datatransfers.LogDetail{
+					handlers.Handler.LogInsertLogin(user, application, false, datatransfers.LogDetail{
 						Scope:  constants.LogScopeOAuthAuthorize,
 						Detail: utils.ParseUserAgent(c),
 					})
@@ -76,27 +86,26 @@ func POSTAuthorize(c *gin.Context) {
 				}
 				return
 			}
-		}
-		// verify request credentials
-		// TODO: support comma-separated callback URLs
-		if authRequest.RedirectURI != "" && authRequest.RedirectURI != application.CallbackURL {
-			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "not allowed callback_uri"})
-			return
+			// initialize new session
+			if sessionID, err = handlers.Handler.SessionInitialize(user.Subject, utils.ParseUserAgent(c)); err != nil {
+				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed initializing new session"})
+				return
+			}
 		}
 		// generate authorization code
 		var authorizationCode string
-		if authorizationCode, err = handlers.Handler.GenerateAuthorizationCode(authRequest, user.Subject); err != nil {
+		if authorizationCode, err = handlers.Handler.OAuthGenerateAuthorizationCode(authRequest, user.Subject, sessionID); err != nil {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed generating authorization_code"})
 			return
 		}
 		// note code challenge
 		if flow == constants.FlowAuthorizationCodeWithPKCE {
-			if err = handlers.Handler.StoreCodeChallenge(authorizationCode, authRequest.PKCEAuthFields); err != nil {
+			if err = handlers.Handler.OAuthStoreCodeChallenge(authorizationCode, authRequest.PKCEAuthFields); err != nil {
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed storing code_challenge"})
 				return
 			}
 		}
-		handlers.Handler.LogLogin(user, application, true, datatransfers.LogDetail{
+		handlers.Handler.LogInsertLogin(user, application, true, datatransfers.LogDetail{
 			Scope:  constants.LogScopeOAuthAuthorize,
 			Detail: utils.ParseUserAgent(c),
 		})
@@ -132,27 +141,25 @@ func POSTLogout(c *gin.Context) {
 	}
 	// introspect access_token
 	var tokenInfo datatransfers.TokenIntrospection
-	if tokenInfo, err = handlers.Handler.IntrospectAccessToken(logoutRequest.AccessToken); err != nil || !tokenInfo.Active {
+	if tokenInfo, err = handlers.Handler.OAuthIntrospectAccessToken(logoutRequest.AccessToken); err != nil || !tokenInfo.Active {
 		c.AbortWithStatusJSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: "invalid_token", Error: "invalid access_token"})
 		return
 	}
 	// retrieve application
-	if _, err = handlers.Handler.RetrieveApplication(logoutRequest.ClientID); err != nil {
+	if _, err = handlers.Handler.ApplicationGetOneByClientID(logoutRequest.ClientID); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "application not found"})
 		return
 	}
-	// revoke tokens
-	if err = handlers.Handler.RevokeTokens(tokenInfo.Subject, logoutRequest.ClientID, logoutRequest.Global); err != nil {
-		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed revoking tokens"})
+	// revoke token
+	if err = handlers.Handler.OAuthRevokeAccessToken(logoutRequest.AccessToken); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed revoking access_token"})
 		return
 	}
+	// revoke current session if global (global: all access_token spawned from current session is revoked)
 	if logoutRequest.Global {
-		var sessionID string
-		if sessionID, err = c.Cookie(constants.SessionIDCookieKey); err == nil {
-			if err = handlers.Handler.ClearSession(sessionID); err != nil {
-				log.Printf("failed clearing session. %v", err)
+		if err = handlers.Handler.SessionRevoke(c.GetString(constants.SessionIDKey)); err != nil {
+				log.Printf("failed revoking session. %v", err)
 			}
-		}
 		c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})

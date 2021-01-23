@@ -14,7 +14,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/utils"
 )
 
-func (m *module) SendVerificationEmail(user models.User) (err error) {
+func (m *module) MailerSendEmailVerification(user models.User) (err error) {
 	token := utils.GenerateRandomString(constants.EmailVerificationTokenLength)
 	if result := m.rd.SetEX(context.Background(), fmt.Sprintf(constants.RDTemVerificationToken, token),
 		user.Subject, constants.EmailVerificationTokenExpiry); result.Err() != nil {

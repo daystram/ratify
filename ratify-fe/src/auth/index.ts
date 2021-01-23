@@ -1,4 +1,4 @@
-import { ACCESS_TOKEN, RatifyClient } from "@daystram/ratify-client";
+import { RatifyClient } from "@daystram/ratify-client";
 import router from "@/router";
 import { Route } from "vue-router";
 
@@ -24,15 +24,6 @@ const logout = function(global: boolean) {
     });
   };
 };
-
-/*
-// logout implementation for clients:
-const logout = function() {
-  authManager.logout().then(() => {
-    router.replace({ name: "home" });
-  });
-};
- */
 
 const callback = function() {
   const params = new URLSearchParams(document.location.search);

@@ -55,7 +55,7 @@ For `ratify-be`, a configuration file has to be bound to the container. Use the 
 
 To run `ratify-be`, run the following:
 ```console
-$ docker run --name ratify-be -v /path_to_config/config.yaml:/config.yaml:ro -p 8080:8080 -d daystram/ratify:be
+$ docker run --name ratify-be --env-file ./.env -p 8080:8080 -d daystram/ratify:be
 ```
 
 And `ratify-fe` as follows:
@@ -90,8 +90,8 @@ services:
     image: daystram/ratify:be
     ports:
       - 8080:8080
-    volumes:
-      - /path_to_config/config.yaml:/config.yaml
+    env_file:
+      - /path_to_env_file/.env
     restart: unless-stopped
   postgres:
     image: postgres:13.1-alpine

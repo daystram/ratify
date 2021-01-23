@@ -6,7 +6,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/daystram/ratify/ratify-be/controllers/middleware"
-	"github.com/daystram/ratify/ratify-be/controllers/oauth"
+	oauth "github.com/daystram/ratify/ratify-be/controllers/oauth"
 	v1 "github.com/daystram/ratify/ratify-be/controllers/v1"
 	_ "github.com/daystram/ratify/ratify-be/docs" // ininitliase SwaggerUI
 	"github.com/daystram/ratify/ratify-be/utils"
@@ -48,6 +48,11 @@ func InitializeRouter() (router *gin.Engine) {
 			mfa.POST("/enable", utils.AuthOnly, v1.POSTEnableTOTP)
 			mfa.POST("/confirm", utils.AuthOnly, v1.POSTConfirmTOTP)
 			mfa.POST("/disable", utils.AuthOnly, v1.POSTDisableTOTP)
+		}
+		session := apiV1.Group("/session")
+		{
+			session.GET("/", utils.AuthOnly, v1.GETSessionActive)
+			session.POST("/", utils.AuthOnly, v1.POSTSessionRevoke)
 		}
 		log := apiV1.Group("/log")
 		{

@@ -14,5 +14,6 @@ func ParseUserAgent(c *gin.Context) datatransfers.UserAgent {
 		IP:      c.ClientIP(),
 		Browser: browser,
 		OS:      ua.OS(),
+		Mobile:  ua.Mobile(),
 	}
 }

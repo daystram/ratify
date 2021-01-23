@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +20,7 @@ func GETActivityLog(c *gin.Context) {
 	var err error
 	// get logs
 	var logs []models.Log
-	if logs, err = handlers.Handler.RetrieveActivityLogs(c.GetString(constants.UserSubjectKey)); err != nil {
+	if logs, err = handlers.Handler.LogGetAllActivity(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "cannot retrieve activity logs"})
 		return
 	}
@@ -47,11 +46,10 @@ func GETAdminLog(c *gin.Context) {
 	var err error
 	// get logs
 	var logs []models.Log
-	if logs, err = handlers.Handler.RetrieveAdminLogs(); err != nil {
+	if logs, err = handlers.Handler.LogGetAllAdmin(); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "cannot retrieve admin logs"})
 		return
 	}
-	log.Println(logs)
 	logsResponse := make([]datatransfers.LogInfo, 0)
 	for _, entry := range logs {
 		logsResponse = append(logsResponse, datatransfers.LogInfo{

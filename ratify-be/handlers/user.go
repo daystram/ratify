@@ -11,27 +11,27 @@ import (
 	"github.com/daystram/ratify/ratify-be/models"
 )
 
-func (m *module) RetrieveUserBySubject(subject string) (user models.User, err error) {
+func (m *module) UserGetOneBySubject(subject string) (user models.User, err error) {
 	if user, err = m.db.userOrmer.GetOneBySubject(subject); err != nil {
 		return models.User{}, fmt.Errorf("cannot find user with subject %s", subject)
 	}
 	return
 }
 
-func (m *module) RetrieveUserByUsername(username string) (user models.User, err error) {
+func (m *module) UserGetOneByUsername(username string) (user models.User, err error) {
 	if user, err = m.db.userOrmer.GetOneByUsername(username); err != nil {
 		return models.User{}, fmt.Errorf("cannot find user with username %s", username)
 	}
 	return
 }
-func (m *module) RetrieveUserByEmail(email string) (user models.User, err error) {
+func (m *module) UserGetOneByEmail(email string) (user models.User, err error) {
 	if user, err = m.db.userOrmer.GetOneByEmail(email); err != nil {
 		return models.User{}, fmt.Errorf("cannot find user with email %s", email)
 	}
 	return
 }
 
-func (m *module) UpdateUser(subject string, user datatransfers.UserUpdate) (err error) {
+func (m *module) UserUpdate(subject string, user datatransfers.UserUpdate) (err error) {
 	if err = m.db.userOrmer.UpdateUser(models.User{
 		Subject:    subject,
 		GivenName:  user.GivenName,
@@ -43,7 +43,7 @@ func (m *module) UpdateUser(subject string, user datatransfers.UserUpdate) (err 
 	return
 }
 
-func (m *module) UpdateUserPassword(subject, oldPassword, newPassword string) (err error) {
+func (m *module) UserUpdatePassword(subject, oldPassword, newPassword string) (err error) {
 	var user models.User
 	if user, err = m.db.userOrmer.GetOneBySubject(subject); err != nil {
 		return errors2.ErrAuthIncorrectCredentials

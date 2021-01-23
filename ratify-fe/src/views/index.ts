@@ -9,6 +9,7 @@ export const Log = () => import("./manage/Log.vue");
 export const Manage = () => import("./manage/Manage.vue");
 export const Placeholder = () => import("./Placeholder.vue");
 export const Profile = () => import("./manage/Profile.vue");
+export const Session = () => import("./manage/Session.vue");
 export const Signup = () => import("./Signup.vue");
 export const User = () => import("./manage/User.vue");
 export const Verify = () => import("./Verify.vue");

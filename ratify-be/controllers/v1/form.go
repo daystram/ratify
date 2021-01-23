@@ -25,10 +25,10 @@ func POSTUniqueCheck(c *gin.Context) {
 	unique := false
 	switch uniqueRequest.Field {
 	case "user:username":
-		_, err = handlers.Handler.RetrieveUserByUsername(uniqueRequest.Value)
+		_, err = handlers.Handler.UserGetOneByUsername(uniqueRequest.Value)
 		unique = err != nil
 	case "user:email":
-		_, err = handlers.Handler.RetrieveUserByEmail(uniqueRequest.Value)
+		_, err = handlers.Handler.UserGetOneByEmail(uniqueRequest.Value)
 		unique = err != nil
 	default:
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: fmt.Sprintf("unsupported field %s", uniqueRequest.Field)})

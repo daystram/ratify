@@ -6,6 +6,7 @@ ratify-be
 config/config.yaml
 .air.toml
 docs/
+.env
 
 ### Git ###
 # Created by git for backups. To disable backups in Git:

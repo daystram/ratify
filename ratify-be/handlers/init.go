@@ -20,53 +20,59 @@ var Handler handlerFunc
 
 type handlerFunc interface {
 	// auth
-	AuthenticateUser(credentials datatransfers.UserLogin) (user models.User, sessionID string, err error)
-	CheckSession(sessionID string) (user models.User, newSessionID string, err error)
-	ClearSession(sessionID string) (err error)
-	RegisterUser(credentials datatransfers.UserSignup) (userSubject string, err error)
-	VerifyUser(token string) (err error)
+	AuthAuthenticate(credentials datatransfers.UserLogin) (user models.User, err error)
+	AuthRegister(credentials datatransfers.UserSignup) (userSubject string, err error)
+	AuthVerify(token string) (err error)
 
 	// user
-	RetrieveUserBySubject(subject string) (user models.User, err error)
-	RetrieveUserByUsername(username string) (user models.User, err error)
-	RetrieveUserByEmail(email string) (user models.User, err error)
-	UpdateUser(subject string, user datatransfers.UserUpdate) (err error)
-	UpdateUserPassword(subject, oldPassword, newPassword string) (err error)
+	UserGetOneBySubject(subject string) (user models.User, err error)
+	UserGetOneByUsername(username string) (user models.User, err error)
+	UserGetOneByEmail(email string) (user models.User, err error)
+	UserUpdate(subject string, user datatransfers.UserUpdate) (err error)
+	UserUpdatePassword(subject, oldPassword, newPassword string) (err error)
 
 	// application
-	RetrieveApplication(clientID string) (application models.Application, err error)
-	RetrieveOwnedApplications(ownerSubject string) (applications []models.Application, err error)
-	RetrieveAllApplications() (applications []models.Application, err error)
-	RegisterApplication(application datatransfers.ApplicationInfo, ownerSubject string) (clientID, clientSecret string, err error)
-	UpdateApplication(application datatransfers.ApplicationInfo) (err error)
-	RenewApplicationClientSecret(clientID string) (clientSecret string, err error)
-	DeleteApplication(clientID string) (err error)
+	ApplicationGetOneByClientID(clientID string) (application models.Application, err error)
+	ApplicationGetOneByOwnerSubject(ownerSubject string) (applications []models.Application, err error)
+	ApplicationGetAll() (applications []models.Application, err error)
+	ApplicationRegister(application datatransfers.ApplicationInfo, ownerSubject string) (clientID, clientSecret string, err error)
+	ApplicationUpdate(application datatransfers.ApplicationInfo) (err error)
+	ApplicationRenewClientSecret(clientID string) (clientSecret string, err error)
+	ApplicationDelete(clientID string) (err error)
 
 	// oauth
-	GenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject string) (authorizationCode string, err error)
-	ValidateAuthorizationCode(application models.Application, authorizationCode string) (subject, scope string, err error)
-	GenerateAccessRefreshToken(tokenRequest datatransfers.TokenRequest, subject string, withRefresh bool) (accessToken, refreshToken string, err error)
-	GenerateIDToken(clientID, subject string, scope []string) (idToken string, err error)
-	IntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error)
-	StoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
-	ValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
-	RevokeTokens(userSubject, clientID string, global bool) (err error)
+	OAuthGenerateAuthorizationCode(authRequest datatransfers.AuthorizationRequest, subject, sessionID string) (authorizationCode string, err error)
+	OAuthValidateAuthorizationCode(application models.Application, authorizationCode string) (sessionID, subject, scope string, err error)
+	OAuthGenerateAccessToken(tokenRequest datatransfers.TokenRequest, sessionID, subject string, withRefresh bool) (accessToken, refreshToken string, err error)
+	OAuthGenerateIDToken(clientID, subject string, scope []string) (idToken string, err error)
+	OAuthIntrospectAccessToken(accessToken string) (tokenInfo datatransfers.TokenIntrospection, err error)
+	OAuthStoreCodeChallenge(authorizationCode string, pkce datatransfers.PKCEAuthFields) (err error)
+	OAuthValidateCodeVerifier(authorizationCode string, pkce datatransfers.PKCETokenFields) (err error)
+	OAuthRevokeAccessToken(accessToken string) (err error)
+	OAuthRevokeAllTokens(userSubject, clientID string, global bool) (err error)
+
+	// session
+	SessionInitialize(subject string, userAgent datatransfers.UserAgent) (sessionID string, err error)
+	SessionInfo(sessionID string) (session datatransfers.SessionInfo, err error)
+	SessionRevoke(sessionID string) (err error)
+	SessionAddChild(sessionID, accessToken string) (err error)
+	SessionGetAllActive(subject string) (activeSessions []*datatransfers.SessionInfo, err error)
 
 	// mailer
-	SendVerificationEmail(user models.User) (err error)
+	MailerSendEmailVerification(user models.User) (err error)
 
 	// mfa
-	EnableTOTP(user models.User) (uri string, err error)
-	ConfirmTOTP(otp string, user models.User) (err error)
-	DisableTOTP(user models.User) (err error)
-	CheckTOTP(otp string, user models.User) (valid bool)
+	MFAEnableTOTP(user models.User) (uri string, err error)
+	MFAConfirmTOTP(otp string, user models.User) (err error)
+	MFADisableTOTP(user models.User) (err error)
+	MFACheckTOTP(otp string, user models.User) (valid bool)
 
 	// log
-	RetrieveActivityLogs(subject string) (logs []models.Log, err error)
-	RetrieveAdminLogs() (logs []models.Log, err error)
-	LogLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
-	LogUser(user models.User, success bool, detail datatransfers.LogDetail)
-	LogApplication(user models.User, application models.Application, action bool, detail datatransfers.LogDetail)
+	LogGetAllActivity(subject string) (logs []models.Log, err error)
+	LogGetAllAdmin() (logs []models.Log, err error)
+	LogInsertLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
+	LogInsertUser(user models.User, success bool, detail datatransfers.LogDetail)
+	LogInsertApplication(user models.User, application models.Application, action bool, detail datatransfers.LogDetail)
 }
 
 type module struct {

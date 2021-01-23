@@ -12,7 +12,8 @@ import {
   Profile,
   Signup,
   User,
-  Verify
+  Verify,
+  Session
 } from "@/views";
 import {
   authenticatedOnly,
@@ -78,9 +79,9 @@ const routes: Array<RouteConfig> = [
         path: "session",
         name: "manage:session",
         beforeEnter: authenticatedOnly,
-        component: Placeholder,
+        component: Session,
         meta: {
-          title: "WIP:Sessions | Ratify"
+          title: "Sessions | Ratify"
         }
       },
       {

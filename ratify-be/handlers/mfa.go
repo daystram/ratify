@@ -14,7 +14,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/models"
 )
 
-func (m *module) EnableTOTP(user models.User) (uri string, err error) {
+func (m *module) MFAEnableTOTP(user models.User) (uri string, err error) {
 	if user.EnabledTOTP() {
 		return "", errors.New("totp already enabled")
 	}
@@ -25,13 +25,13 @@ func (m *module) EnableTOTP(user models.User) (uri string, err error) {
 	return gotp.NewDefaultTOTP(secret).ProvisioningUri(user.Username, constants.TOTPIssuer), nil
 }
 
-func (m *module) ConfirmTOTP(otp string, user models.User) (err error) {
+func (m *module) MFAConfirmTOTP(otp string, user models.User) (err error) {
 	var result *redis.StringCmd
 	if result = m.rd.Get(context.Background(), fmt.Sprintf(constants.RDTemTOTPToken, user.Subject)); result.Err() != nil {
 		return errors2.ErrAuthIncorrectCredentials
 	}
 	user.TOTPSecret = result.Val()
-	if !m.CheckTOTP(otp, user) {
+	if !m.MFACheckTOTP(otp, user) {
 		return errors2.ErrAuthIncorrectCredentials
 	}
 	_ = m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemTOTPToken, user.Subject))
@@ -44,7 +44,7 @@ func (m *module) ConfirmTOTP(otp string, user models.User) (err error) {
 	return
 }
 
-func (m *module) DisableTOTP(user models.User) (err error) {
+func (m *module) MFADisableTOTP(user models.User) (err error) {
 	if !user.EnabledTOTP() {
 		return errors.New("totp not enabled")
 	}
@@ -57,7 +57,7 @@ func (m *module) DisableTOTP(user models.User) (err error) {
 	return
 }
 
-func (m *module) CheckTOTP(otp string, user models.User) (valid bool) {
+func (m *module) MFACheckTOTP(otp string, user models.User) (valid bool) {
 	totp := gotp.NewDefaultTOTP(user.TOTPSecret)
 	now := time.Now()
 	return totp.Verify(otp, int(now.Add(-30*time.Second).Unix())) ||
