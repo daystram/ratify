@@ -77,7 +77,7 @@ func (m *module) SessionAddChild(sessionID, accessToken string) (err error) {
 	return
 }
 
-func (m *module) SessionDeleteChild(sessionID, accessToken string) (err error) {
+func (m *module) sessionDeleteChild(sessionID, accessToken string) (err error) {
 	return m.rd.ZRem(context.Background(), fmt.Sprintf(constants.RDTemSessionChild, sessionID), accessToken).Err()
 }
 
@@ -100,28 +100,29 @@ func (m *module) SessionInfo(sessionID string) (session datatransfers.SessionInf
 	return session, nil
 }
 
-func (m *module) SessionClear(sessionID string) (err error) {
+func (m *module) SessionRevoke(sessionID string) (err error) {
 	// get session detail
 	var session datatransfers.SessionInfo
 	if session, err = m.SessionInfo(sessionID); err != nil {
 		return fmt.Errorf("failed checking session_id. %v", err)
 	}
-	// remove session_id from list
+	// remove session_id from session_list
 	m.rd.ZRem(context.Background(), fmt.Sprintf(constants.RDTemSessionList, session.Subject), sessionID)
 	// revoke session_id
 	m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemSessionID, sessionID))
-	// revoke associated access_token
+	// revoke associated access_token listed in session_child
+	sessionChildKey := fmt.Sprintf(constants.RDTemSessionChild, sessionID)
 	var result *redis.StringSliceCmd
-	if result = m.rd.ZRangeByScore(context.Background(), fmt.Sprintf(constants.RDTemSessionChild, sessionID), &redis.ZRangeBy{
-		Min: "-inf",
+	if result = m.rd.ZRangeByScore(context.Background(), sessionChildKey, &redis.ZRangeBy{
+		Min: "0",
 		Max: "+inf",
 	}); result.Err() != nil {
 		return fmt.Errorf("failed retrieving active sessions. %v", err)
 	}
 	for _, accessToken := range result.Val() {
 		m.OAuthRevokeAccessToken(accessToken)
-		m.SessionDeleteChild(sessionID, accessToken)
 	}
+	m.rd.Del(context.Background(), sessionChildKey)
 	return
 }
 
@@ -129,7 +130,7 @@ func (m *module) SessionGetAllActive(subject string) (activeSessions []*datatran
 	// retrieve session_list
 	var result *redis.StringSliceCmd
 	if result = m.rd.ZRangeByScore(context.Background(), fmt.Sprintf(constants.RDTemSessionList, subject), &redis.ZRangeBy{
-		Min: fmt.Sprintf("%d", time.Now().Unix()),
+		Min: "0",
 		Max: "+inf",
 	}); result.Err() != nil {
 		return nil, fmt.Errorf("failed retrieving active sessions. %v", err)
