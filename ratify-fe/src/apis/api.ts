@@ -56,7 +56,7 @@ export default {
       return apiClient.get(`application/`, withAuth());
     },
     register: function(application: object): Promise<AxiosResponse> {
-      return apiClient.post(`application`, application, withAuth());
+      return apiClient.post(`application/`, application, withAuth());
     }
   },
   form: {
@@ -69,19 +69,28 @@ export default {
       return apiClient.get(`user/${subject || ""}`, withAuth());
     },
     update: function(user: object): Promise<AxiosResponse> {
-      return apiClient.put(`user`, user, withAuth());
+      return apiClient.put(`user/`, user, withAuth());
     },
     updatePassword: function(passwords: object): Promise<AxiosResponse> {
       return apiClient.put("user/password", passwords, withAuth());
     },
     signup: function(userSignup: object): Promise<AxiosResponse> {
-      return apiClient.post("user", userSignup);
+      return apiClient.post("user/", userSignup);
     },
     verify: function(token: string): Promise<AxiosResponse> {
       return apiClient.post("user/verify", { token });
     },
     resend: function(email: string): Promise<AxiosResponse> {
       return apiClient.post("user/resend", { email });
+    }
+  },
+  session: {
+    list: function(): Promise<AxiosResponse> {
+      return apiClient.get(`session/`, withAuth());
+    },
+    revoke: function(sessionId: string): Promise<AxiosResponse> {
+      // eslint-disable-next-line @typescript-eslint/camelcase
+      return apiClient.post(`session/`, { session_id: sessionId }, withAuth());
     }
   },
   mfa: {
