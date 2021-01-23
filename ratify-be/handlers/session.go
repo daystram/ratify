@@ -24,6 +24,7 @@ func (m *module) SessionInitialize(subject string, userAgent datatransfers.UserA
 		"ua_ip":      userAgent.IP,
 		"ua_browser": userAgent.Browser,
 		"ua_os":      userAgent.OS,
+		"ua_mobile":  userAgent.Mobile,
 	}
 	if err = m.rd.HSet(context.Background(), sessionIDKey, sessionIDValue).Err(); err != nil {
 		return "", fmt.Errorf("failed storing session_id. %v", err)
@@ -77,6 +78,7 @@ func (m *module) SessionInfo(sessionID string) (session datatransfers.Session, e
 		Browser: result.Val()["ua_browser"],
 		OS:      result.Val()["ua_os"],
 	}
+	session.UserAgent.Mobile, _ = strconv.ParseBool(result.Val()["ua_mobile"])
 	session.IssuedAt, _ = strconv.ParseInt(result.Val()["issued_at"], 10, 64)
 	return session, nil
 }
