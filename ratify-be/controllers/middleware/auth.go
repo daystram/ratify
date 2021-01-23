@@ -32,6 +32,7 @@ func AuthMiddleware(c *gin.Context) {
 	}
 	c.Set(constants.IsAuthenticatedKey, true)
 	c.Set(constants.UserSubjectKey, user.Subject)
+	c.Set(constants.SessionIDKey, tokenInfo.SessionID)
 	c.Set(constants.IsSuperuserKey, user.Superuser)
 	c.Next()
 }

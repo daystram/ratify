@@ -70,8 +70,8 @@ func (m *module) OAuthGenerateAccessToken(tokenRequest datatransfers.TokenReques
 		// NOTE: always check if embedded access_token has been revoked when attempting to renew using refresh_token
 		refreshTokenKey := fmt.Sprintf(constants.RDTemAccessToken, accessToken)
 		refreshTokenValue := map[string]interface{}{
-			"subject":      subject,
 			"client_id":    tokenRequest.ClientID,
+			"subject":      subject,
 			"access_token": accessToken,
 		}
 		refreshToken = utils.GenerateRandomString(constants.RefreshTokenLength)
@@ -167,14 +167,16 @@ func (m *module) OAuthIntrospectAccessToken(accessToken string) (tokenInfo datat
 		return datatransfers.TokenIntrospection{Active: false}, nil
 	}
 	return datatransfers.TokenIntrospection{
-		Active:   true,
-		ClientID: result.Val()["client_id"],
-		Subject:  result.Val()["subject"],
-		Scope:    result.Val()["scope"],
+		Active:    true,
+		ClientID:  result.Val()["client_id"],
+		SessionID: result.Val()["session_id"],
+		Subject:   result.Val()["subject"],
+		Scope:     result.Val()["scope"],
 	}, nil
 }
 
 func (m *module) OAuthRevokeAccessToken(accessToken string) (err error) {
+	// NOTE: access_token listed in session_child will remain. Look at handlers.Handler.OAuthRevokeAllTokens
 	return m.rd.Del(context.Background(), fmt.Sprintf(constants.RDTemAccessToken, accessToken)).Err()
 }
 
