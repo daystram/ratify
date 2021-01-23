@@ -132,6 +132,14 @@ func POSTAuthorize(c *gin.Context) {
 // @Success 200 "OK"
 // @Router /oauth/logout [POST]
 func POSTLogout(c *gin.Context) {
+	/* NOTE
+	Due to CORS limitation, access_token for  logout
+	must be passed via request body (Authorization header
+	and __Secure-sessid cookie cannot be passsed cross-origin).
+	Thus, context variables parsed from middleware is
+	unavailable. Cookie use must be avoided, as it is only
+	accessible on the same origin (i.e. Ratify Management Dashboard).
+	*/
 	var err error
 	// fetch request info
 	var logoutRequest datatransfers.LogoutRequest
@@ -157,7 +165,7 @@ func POSTLogout(c *gin.Context) {
 	}
 	// revoke current session if global (global: all access_token spawned from current session is revoked)
 	if logoutRequest.Global {
-		if err = handlers.Handler.SessionRevoke(c.GetString(constants.SessionIDKey)); err != nil {
+		if err = handlers.Handler.SessionRevoke(tokenInfo.SessionID); err != nil {
 				log.Printf("failed revoking session. %v", err)
 			}
 		c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
