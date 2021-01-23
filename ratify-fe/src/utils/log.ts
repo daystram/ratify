@@ -7,7 +7,7 @@ function dayDiff(from: Date, to: Date): number {
 
 export function addDateSeparator(
   date: Date,
-  activities: [{ separator: boolean; today: boolean; date: Date }]
+  activities: { separator?: boolean; today?: boolean; date: Date }[]
 ) {
   const diff = dayDiff(
     date,
@@ -20,4 +20,20 @@ export function addDateSeparator(
       date: date
     });
   }
+}
+
+export interface LogSeverityMap {
+  I: string;
+  W: string;
+  E: string;
+  F: string;
+}
+
+export interface LogInfo {
+  preferred_username: string;
+  application_name: string | undefined;
+  client_id: string | undefined;
+  severity: keyof LogSeverityMap;
+  description: string;
+  created_at: number;
 }
