@@ -33,15 +33,31 @@ func (m *module) SessionInitialize(subject string, userAgent datatransfers.UserA
 		m.rd.Del(context.Background(), sessionIDKey)
 		return "", fmt.Errorf("failed setting session_id expiry. %v", err)
 	}
+	// initilize session_child (to allow setting expiry)
+	sessionChildKey := fmt.Sprintf(constants.RDTemSessionChild, sessionID)
+	if err = m.rd.ZAddNX(context.Background(), sessionChildKey, &redis.Z{
+		Score:  -1,
+		Member: "$$", // placeholder sentinel value
+	}).Err(); err != nil {
+		m.rd.Del(context.Background(), sessionIDKey)
+		return "", fmt.Errorf("failed initializing session_child. %v", err)
+	}
+	if err = m.rd.Expire(context.Background(), sessionChildKey, constants.SessionIDExpiry).Err(); err != nil {
+		m.rd.Del(context.Background(), sessionIDKey)
+		m.rd.Del(context.Background(), sessionChildKey)
+		return "", fmt.Errorf("failed setting session_child expiry. %v", err)
+	}
 	// collect session_id to list
 	sessionListKey := fmt.Sprintf(constants.RDTemSessionList, subject)
-	if err = m.rd.ZAdd(context.Background(), sessionListKey, &redis.Z{
+	if err = m.rd.ZAddNX(context.Background(), sessionListKey, &redis.Z{
 		Score:  float64(now + int64(constants.AccessTokenExpiry.Seconds())),
 		Member: sessionID,
 	}).Err(); err != nil {
 		m.rd.Del(context.Background(), sessionIDKey)
-		return "", fmt.Errorf("failed listing session_id. %v", err)
+		m.rd.Del(context.Background(), sessionChildKey)
+		return "", fmt.Errorf("failed enlisting session_id. %v", err)
 	}
+	// prune dead sessions
 	m.rd.ZRemRangeByScore(context.Background(), sessionListKey, "0", fmt.Sprintf("%d", now))
 	return
 }
@@ -50,12 +66,13 @@ func (m *module) SessionAddChild(sessionID, accessToken string) (err error) {
 	// collect child access_token to list
 	now := time.Now().Unix()
 	sessionChildKey := fmt.Sprintf(constants.RDTemSessionChild, sessionID)
-	if err = m.rd.ZAdd(context.Background(), sessionChildKey, &redis.Z{
+	if err = m.rd.ZAddNX(context.Background(), sessionChildKey, &redis.Z{
 		Score:  float64(now + int64(constants.AccessTokenExpiry.Seconds())),
 		Member: accessToken,
 	}).Err(); err != nil {
-		return fmt.Errorf("failed listing access_token. %v", err)
+		return fmt.Errorf("failed enlisting access_token. %v", err)
 	}
+	// prune dead children
 	m.rd.ZRemRangeByScore(context.Background(), sessionChildKey, "0", fmt.Sprintf("%d", now))
 	return
 }
