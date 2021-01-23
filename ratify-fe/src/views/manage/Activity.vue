@@ -75,17 +75,26 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from "vue";
 import { STATUS } from "@/constants/status.ts";
 import api from "@/apis/api";
 import { authManager } from "@/auth/index.ts";
-import { addDateSeparator } from "@/utils/log.ts";
+import { addDateSeparator, LogInfo, LogSeverityMap } from "@/utils/log.ts";
 
 export default Vue.extend({
   data: () => ({
     pageLoadStatus: STATUS.PRE_LOADING,
-    activities: []
+    activities: new Array<{
+      color: string;
+      icon: string;
+      title: string;
+      subtitle: string;
+      date: Date;
+      separator?: boolean;
+      today?: boolean;
+      end?: boolean;
+    }>()
   }),
 
   created() {
@@ -93,7 +102,7 @@ export default Vue.extend({
       .userActivity()
       .then(response => {
         /* eslint-disable @typescript-eslint/camelcase */
-        const logs = response.data.data;
+        const logs: LogInfo[] = response.data.data;
         for (let i = 0; i < logs.length; i++) {
           const desc = JSON.parse(logs[i].description);
           const date = new Date(logs[i].created_at * 1000);
@@ -101,25 +110,27 @@ export default Vue.extend({
           switch (desc.scope) {
             case "oauth::authorize":
               this.activities.push({
-                color: {
+                color: ({
                   I: "success",
                   W: "error"
-                }[logs[i].severity],
+                } as LogSeverityMap)[logs[i].severity],
                 icon: "mdi-lock",
-                title: {
+                title: ({
                   I: "Successful Sign In",
                   W: "Failed Sign In Attempt"
-                }[logs[i].severity],
-                subtitle: {
+                } as LogSeverityMap)[logs[i].severity],
+                subtitle: ({
                   I: `Signed in from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`,
                   W: `Incorrect credentials, attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`
-                }[logs[i].severity],
+                } as LogSeverityMap)[logs[i].severity],
                 date: date
               });
               break;
             case "user::profile":
               this.activities.push({
-                color: { I: "info", W: "error" }[logs[i].severity],
+                color: ({ I: "info", W: "error" } as LogSeverityMap)[
+                  logs[i].severity
+                ],
                 icon: "mdi-account",
                 title: "Profile Updated",
                 subtitle: "",
@@ -128,16 +139,32 @@ export default Vue.extend({
               break;
             case "user::password":
               this.activities.push({
-                color: { I: "info", W: "error" }[logs[i].severity],
+                color: ({ I: "info", W: "error" } as LogSeverityMap)[
+                  logs[i].severity
+                ],
                 icon: "mdi-key",
-                title: {
+                title: ({
                   I: "Password Updated",
                   W: "Failed Password Update Attempt"
-                }[logs[i].severity],
-                subtitle: {
+                } as LogSeverityMap)[logs[i].severity],
+                subtitle: ({
                   I: ``,
                   W: `Incorrect old password, attempted from ${desc?.detail?.ip} via ${desc?.detail?.browser} at ${desc?.detail?.os}`
-                }[logs[i].severity],
+                } as LogSeverityMap)[logs[i].severity],
+                date: date
+              });
+              break;
+            case "user::session":
+              this.activities.push({
+                color: ({ I: "warn", W: "error" } as LogSeverityMap)[
+                  logs[i].severity
+                ],
+                icon: "mdi-dock-window",
+                title: ({
+                  I: "Session Revoked",
+                  W: "Failed Revoking Session"
+                } as LogSeverityMap)[logs[i].severity],
+                subtitle: "",
                 date: date
               });
               break;
@@ -146,25 +173,29 @@ export default Vue.extend({
                 color: desc.detail ? "primary" : "warning",
                 icon: "mdi-two-factor-authentication",
                 title: desc.detail ? "TOTP MFA Enabled" : "TOTP MFA Disabled",
+                subtitle: "",
                 date: date
               });
               break;
           }
         }
-        const date = new Date(authManager.getUser().created_at * 1000);
+        const date = new Date(
+          ((authManager.getUser() as unknown) as { created_at: number })
+            .created_at * 1000
+        );
         addDateSeparator(date, this.activities);
         this.activities.push({
           color: "success",
           icon: "mdi-account",
           title: "Account Created",
+          subtitle: "",
           end: true,
           date: date
         });
         /* eslint-enable @typescript-eslint/camelcase */
         this.pageLoadStatus = STATUS.COMPLETE;
       })
-      .catch(error => {
-        console.log(error);
+      .catch(() => {
         this.pageLoadStatus = STATUS.ERROR;
       });
   }

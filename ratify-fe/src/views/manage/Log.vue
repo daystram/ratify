@@ -84,7 +84,7 @@ import { addDateSeparator, LogInfo, LogSeverityMap } from "@/utils/log";
 export default Vue.extend({
   data: () => ({
     pageLoadStatus: STATUS.PRE_LOADING,
-    activities: new Array<{
+    logs: new Array<{
       color: string;
       icon: string;
       title: string;
@@ -104,10 +104,10 @@ export default Vue.extend({
         for (let i = 0; i < logs.length; i++) {
           const desc = JSON.parse(logs[i].description);
           const date = new Date(logs[i].created_at * 1000);
-          addDateSeparator(date, this.activities);
+          addDateSeparator(date, this.logs);
           switch (desc.scope) {
             case "application::detail":
-              this.activities.push({
+              this.logs.push({
                 color: "info",
                 icon: "mdi-application",
                 title: "Application Detail Updated",
@@ -116,7 +116,7 @@ export default Vue.extend({
               });
               break;
             case "application::create":
-              this.activities.push({
+              this.logs.push({
                 color: ({ I: "success", W: "error" } as LogSeverityMap)[
                   logs[i].severity
                 ],
@@ -133,7 +133,7 @@ export default Vue.extend({
               });
               break;
             case "application::secret":
-              this.activities.push({
+              this.logs.push({
                 color: "warning",
                 icon: "mdi-key",
                 title: "Application Secret Key Revoked",
@@ -146,8 +146,7 @@ export default Vue.extend({
         /* eslint-enable @typescript-eslint/camelcase */
         this.pageLoadStatus = STATUS.COMPLETE;
       })
-      .catch(error => {
-        console.log(error);
+      .catch(() => {
         this.pageLoadStatus = STATUS.ERROR;
       });
   }
