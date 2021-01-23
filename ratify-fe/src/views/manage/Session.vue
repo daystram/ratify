@@ -157,8 +157,7 @@ export default Vue.extend({
         /* eslint-enable @typescript-eslint/camelcase */
         this.pageLoadStatus = STATUS.COMPLETE;
       })
-      .catch(error => {
-        console.log(error);
+      .catch(() => {
         this.pageLoadStatus = STATUS.ERROR;
       });
   },
