@@ -192,7 +192,7 @@
     <v-fade-transition>
       <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
         <v-col cols="12">
-          <v-divider :inset="false" />
+          <v-divider inset />
           <div v-for="application in applications" :key="application.client_id">
             <v-list-item>
               <v-list-item-content>
@@ -226,20 +226,21 @@
                       <v-btn
                         rounded
                         text
+                        outlined
                         color="secondary lighten-1"
                         :to="{
                           name: 'manage:application-detail',
                           params: { clientId: application.client_id }
                         }"
                       >
-                        manage
+                        Manage
                       </v-btn>
                     </v-col>
                   </v-row>
                 </v-list-item-content>
               </v-list-item-content>
             </v-list-item>
-            <v-divider :inset="false" />
+            <v-divider inset />
           </div>
         </v-col>
       </v-row>
@@ -357,7 +358,9 @@ export default Vue.extend({
         .list()
         .then(response => {
           this.applications = response.data.data;
-          this.applications.sort((a, b) => b["created_at"] - a["created_at"]);
+          this.applications.sort((a: { name: string }, b: { name: string }) =>
+            a["name"].localeCompare(b["name"])
+          );
           this.pageLoadStatus = STATUS.COMPLETE;
         })
         .catch(() => {
