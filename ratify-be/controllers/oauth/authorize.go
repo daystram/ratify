@@ -56,7 +56,7 @@ func POSTAuthorize(c *gin.Context) {
 				return
 			}
 			// verify user session
-			var session datatransfers.Session
+			var session datatransfers.SessionInfo
 			if session, err = handlers.Handler.SessionInfo(sessionID); err != nil {
 				c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 				c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Code: errors.ErrAuthIncorrectCredentials.Error(), Error: "invalid session_id"})

@@ -7,9 +7,10 @@ type UserAgent struct {
 	Mobile  bool   `json:"mobile"`
 }
 
-type Session struct {
-	SessionID string `json:"session_id"`
+type SessionInfo struct {
+	SessionID string `json:"session_id,required"`
 	Subject   string `json:"-"`
 	UserAgent
 	IssuedAt int64 `json:"issued_at"`
+	Current  bool  `json:"current"`
 }

@@ -81,11 +81,11 @@ func (m *module) SessionDeleteChild(sessionID, accessToken string) (err error) {
 	return m.rd.ZRem(context.Background(), fmt.Sprintf(constants.RDTemSessionChild, sessionID), accessToken).Err()
 }
 
-func (m *module) SessionInfo(sessionID string) (session datatransfers.Session, err error) {
+func (m *module) SessionInfo(sessionID string) (session datatransfers.SessionInfo, err error) {
 	// retrieve session
 	var result *redis.StringStringMapCmd
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemSessionID, sessionID)); result.Err() != nil {
-		return datatransfers.Session{}, fmt.Errorf("failed retrieving session. %v", result.Err())
+		return datatransfers.SessionInfo{}, fmt.Errorf("failed retrieving session. %v", result.Err())
 	}
 	// build
 	session.SessionID = sessionID
@@ -102,7 +102,7 @@ func (m *module) SessionInfo(sessionID string) (session datatransfers.Session, e
 
 func (m *module) SessionClear(sessionID string) (err error) {
 	// get session detail
-	var session datatransfers.Session
+	var session datatransfers.SessionInfo
 	if session, err = m.SessionInfo(sessionID); err != nil {
 		return fmt.Errorf("failed checking session_id. %v", err)
 	}
@@ -125,7 +125,7 @@ func (m *module) SessionClear(sessionID string) (err error) {
 	return
 }
 
-func (m *module) GetActiveSessions(subject string) (activeSessions []datatransfers.Session, err error) {
+func (m *module) SessionGetAllActive(subject string) (activeSessions []*datatransfers.SessionInfo, err error) {
 	// retrieve session_list
 	var result *redis.StringSliceCmd
 	if result = m.rd.ZRangeByScore(context.Background(), fmt.Sprintf(constants.RDTemSessionList, subject), &redis.ZRangeBy{
@@ -135,11 +135,11 @@ func (m *module) GetActiveSessions(subject string) (activeSessions []datatransfe
 		return nil, fmt.Errorf("failed retrieving active sessions. %v", err)
 	}
 	// build activeSessions
-	activeSessions = make([]datatransfers.Session, 0)
+	activeSessions = make([]*datatransfers.SessionInfo, 0)
 	for _, sessionID := range result.Val() {
-		var session datatransfers.Session
+		var session datatransfers.SessionInfo
 		if session, err = m.SessionInfo(sessionID); err == nil {
-			activeSessions = append(activeSessions, session)
+			activeSessions = append(activeSessions, &session)
 		}
 	}
 	return

@@ -53,8 +53,7 @@ type handlerFunc interface {
 
 	// session
 	SessionInitialize(subject string, userAgent datatransfers.UserAgent) (sessionID string, err error)
-	SessionInfo(sessionID string) (session datatransfers.Session, err error)
-	SessionClear(sessionID string) (err error)
+	SessionInfo(sessionID string) (session datatransfers.SessionInfo, err error)
 	SessionAddChild(sessionID, accessToken string) (err error)
 
 	// mailer
