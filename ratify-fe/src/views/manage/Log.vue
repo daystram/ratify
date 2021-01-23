@@ -75,16 +75,24 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from "vue";
 import { STATUS } from "@/constants/status";
 import api from "@/apis/api";
-import { addDateSeparator } from "@/utils/log";
+import { addDateSeparator, LogInfo, LogSeverityMap } from "@/utils/log";
 
 export default Vue.extend({
   data: () => ({
     pageLoadStatus: STATUS.PRE_LOADING,
-    activities: []
+    activities: new Array<{
+      color: string;
+      icon: string;
+      title: string;
+      subtitle: string;
+      date: Date;
+      separator?: boolean;
+      today?: boolean;
+    }>()
   }),
 
   created() {
@@ -92,7 +100,7 @@ export default Vue.extend({
       .adminActivity()
       .then(response => {
         /* eslint-disable @typescript-eslint/camelcase */
-        const logs = response.data.data;
+        const logs: LogInfo[] = response.data.data;
         for (let i = 0; i < logs.length; i++) {
           const desc = JSON.parse(logs[i].description);
           const date = new Date(logs[i].created_at * 1000);
@@ -109,16 +117,18 @@ export default Vue.extend({
               break;
             case "application::create":
               this.activities.push({
-                color: { I: "success", W: "error" }[logs[i].severity],
+                color: ({ I: "success", W: "error" } as LogSeverityMap)[
+                  logs[i].severity
+                ],
                 icon: "mdi-application",
-                title: {
+                title: ({
                   I: "Added New Application",
                   W: "Removed Application"
-                }[logs[i].severity],
-                subtitle: {
+                } as LogSeverityMap)[logs[i].severity],
+                subtitle: ({
                   I: `${logs[i]?.application_name} created by ${logs[i].preferred_username}`,
                   W: `${desc?.detail?.name} deleted by ${logs[i].preferred_username}`
-                }[logs[i].severity],
+                } as LogSeverityMap)[logs[i].severity],
                 date: date
               });
               break;
