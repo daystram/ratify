@@ -80,10 +80,11 @@ type IntrospectRequest struct {
 }
 
 type TokenIntrospection struct {
-	Active   bool   `json:"active"`
-	ClientID string `json:"client_id,omitempty"`
-	Subject  string `json:"sub,omitempty"`
-	Scope    string `json:"scope,omitempty"`
+	Active    bool   `json:"active"`
+	ClientID  string `json:"client_id,omitempty"`
+	SessionID string `json:"-"`
+	Subject   string `json:"sub,omitempty"`
+	Scope     string `json:"scope,omitempty"`
 }
 
 type LogoutRequest struct {

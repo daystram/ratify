@@ -56,6 +56,7 @@ type handlerFunc interface {
 	SessionInfo(sessionID string) (session datatransfers.SessionInfo, err error)
 	SessionRevoke(sessionID string) (err error)
 	SessionAddChild(sessionID, accessToken string) (err error)
+	SessionGetAllActive(subject string) (activeSessions []*datatransfers.SessionInfo, err error)
 
 	// mailer
 	MailerSendEmailVerification(user models.User) (err error)
