@@ -31,7 +31,8 @@ func GETOneApplicationDetail(c *gin.Context) {
 	// check superuser
 	if !c.GetBool(constants.IsSuperuserKey) {
 		c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
-			Name: application.Name,
+			Name:        application.Name,
+			CallbackURL: application.CallbackURL,
 		}})
 		return
 	}
