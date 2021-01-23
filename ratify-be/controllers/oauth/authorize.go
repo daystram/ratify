@@ -155,14 +155,11 @@ func POSTLogout(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed revoking access_token"})
 		return
 	}
-	// revoke current session if global
+	// revoke current session if global (global: all access_token spawned from current session is revoked)
 	if logoutRequest.Global {
-		var sessionID string
-		if sessionID, err = c.Cookie(constants.SessionIDCookieKey); err == nil {
-			if err = handlers.Handler.SessionRevoke(sessionID); err != nil {
+		if err = handlers.Handler.SessionRevoke(c.GetString(constants.SessionIDKey)); err != nil {
 				log.Printf("failed revoking session. %v", err)
 			}
-		}
 		c.SetCookie(constants.SessionIDCookieKey, "", -1, "/oauth", "", true, true)
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
