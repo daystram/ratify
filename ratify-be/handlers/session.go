@@ -87,6 +87,9 @@ func (m *module) SessionInfo(sessionID string) (session datatransfers.SessionInf
 	if result = m.rd.HGetAll(context.Background(), fmt.Sprintf(constants.RDTemSessionID, sessionID)); result.Err() != nil {
 		return datatransfers.SessionInfo{}, fmt.Errorf("failed retrieving session. %v", result.Err())
 	}
+	if result.Val()["subject"] == "" {
+		return datatransfers.SessionInfo{}, fmt.Errorf("invalid session. %v", redis.Nil)
+	}
 	// build
 	session.SessionID = sessionID
 	session.Subject = result.Val()["subject"]
