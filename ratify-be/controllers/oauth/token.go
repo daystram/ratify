@@ -72,6 +72,7 @@ func POSTToken(c *gin.Context) {
 			c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "failed spawning child session"})
 			return
 		}
+		handlers.Handler.LogInsertAuthorize(application, true, datatransfers.LogDetail{})
 		c.JSON(http.StatusOK, datatransfers.TokenResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,

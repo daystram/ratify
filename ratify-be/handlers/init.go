@@ -71,6 +71,7 @@ type handlerFunc interface {
 	LogGetAllActivity(subject string) (logs []models.Log, err error)
 	LogGetAllAdmin() (logs []models.Log, err error)
 	LogInsertLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail)
+	LogInsertAuthorize(application models.Application, action bool, detail datatransfers.LogDetail)
 	LogInsertUser(user models.User, success bool, detail datatransfers.LogDetail)
 	LogInsertApplication(user models.User, application models.Application, action bool, detail datatransfers.LogDetail)
 }
