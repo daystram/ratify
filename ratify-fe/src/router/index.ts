@@ -8,7 +8,6 @@ import {
   Home,
   Log,
   Manage,
-  Placeholder,
   Profile,
   Signup,
   User,
@@ -82,15 +81,6 @@ const routes: Array<RouteConfig> = [
         component: Session,
         meta: {
           title: "Sessions | Ratify"
-        }
-      },
-      {
-        path: "setting",
-        name: "manage:setting",
-        beforeEnter: authenticatedOnly,
-        component: Placeholder,
-        meta: {
-          title: "WIP:Settings | Ratify"
         }
       },
       {
