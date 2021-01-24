@@ -27,6 +27,7 @@ func (m *module) LogGetAllAdmin() (logs []models.Log, err error) {
 
 func (m *module) LogInsertLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail) {
 	description, _ := json.Marshal(detail)
+	m.db.userOrmer.IncrementLoginCount(user)
 	m.logEntry(models.Log{
 		UserSubject:         sql.NullString{String: user.Subject, Valid: true},
 		ApplicationClientID: sql.NullString{String: application.ClientID, Valid: true},
@@ -34,6 +35,10 @@ func (m *module) LogInsertLogin(user models.User, application models.Application
 		Severity:            map[bool]string{true: constants.LogSeverityInfo, false: constants.LogSeverityWarn}[success],
 		Description:         string(description),
 	})
+}
+
+func (m *module) LogInsertAuthorize(application models.Application, _ bool, _ datatransfers.LogDetail) {
+	m.db.applicationOrmer.IncrementAuthorizeCount(application)
 }
 
 func (m *module) LogInsertUser(user models.User, success bool, detail datatransfers.LogDetail) {

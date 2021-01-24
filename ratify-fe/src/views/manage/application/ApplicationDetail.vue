@@ -22,7 +22,8 @@
         <v-col cols="12">
           <h1
             :class="
-              'text-h2 text-truncate ' + (detail.name ? '' : 'text--disabled')
+              'text-h2 text-truncate pb-2 ' +
+                (detail.name ? '' : 'text--disabled')
             "
           >
             {{ detail.name || "Application Name" }}
@@ -35,6 +36,49 @@
           >
             {{ detail.description || "Application description" }}
           </div>
+        </v-col>
+      </v-row>
+    </v-fade-transition>
+    <v-fade-transition>
+      <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
+        <v-col cols="12">
+          <v-card>
+            <v-card-title>
+              <v-row no-gutters align="center">
+                <v-col cols="auto">
+                  Metrics
+                </v-col>
+              </v-row>
+            </v-card-title>
+            <v-divider inset />
+            <div class="v-card__body">
+              <v-row>
+                <v-col cols="12" sm="4">
+                  <div class="mb-1 text-overline text--secondary text-center">
+                    Total Authorized
+                  </div>
+                  <div class="text-h4 text-center">
+                    {{ metric.authorizeCount }}
+                  </div>
+                </v-col>
+                <v-col cols="12" sm="8">
+                  <div class="mb-1 text-overline text--secondary text-center">
+                    Last Authorized
+                  </div>
+                  <div class="text-h4 text-center">
+                    {{
+                      metric.lastAuthorize
+                        ? Intl.DateTimeFormat("default", {
+                            dateStyle: "medium",
+                            timeStyle: "short"
+                          }).format(new Date(metric.lastAuthorize * 1000))
+                        : "Never"
+                    }}
+                  </div>
+                </v-col>
+              </v-row>
+            </div>
+          </v-card>
         </v-col>
       </v-row>
     </v-fade-transition>
@@ -552,6 +596,10 @@ import { maxLength, required, url } from "vuelidate/lib/validators";
 
 export default Vue.extend({
   data: () => ({
+    metric: {
+      lastAuthorize: 0,
+      authorizeCount: 0
+    },
     detail: {
       name: "",
       clientId: "",
@@ -653,6 +701,8 @@ export default Vue.extend({
     api.application
       .detail(this.$route.params.clientId, true)
       .then(response => {
+        this.metric.lastAuthorize = response.data.data.last_authorize;
+        this.metric.authorizeCount = response.data.data.authorize_count;
         this.detail.name = response.data.data.name;
         this.detail.clientId = response.data.data.client_id;
         this.detail.description = response.data.data.description;

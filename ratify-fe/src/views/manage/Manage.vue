@@ -133,12 +133,6 @@
             </v-list-item-icon>
             <v-list-item-title v-text="'Activities'" />
           </v-list-item>
-          <v-list-item :to="{ name: 'manage:setting' }">
-            <v-list-item-icon>
-              <v-icon v-text="'mdi-cog'" />
-            </v-list-item-icon>
-            <v-list-item-title v-text="'Settings'" />
-          </v-list-item>
         </v-list-item-group>
       </v-list>
     </v-navigation-drawer>

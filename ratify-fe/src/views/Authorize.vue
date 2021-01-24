@@ -327,6 +327,9 @@ export default Vue.extend({
       .detail(this.authRequest.clientId)
       .then(response => {
         this.application = response.data.data;
+        if (this.authRequest.redirectUri !== response.data.data.callback_url) {
+          throw new Error();
+        }
         // attempt authorization via session_id cookie
         this.authorizeUser(true)
           .then(() => {

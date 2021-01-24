@@ -31,6 +31,13 @@ func (m *module) UserGetOneByEmail(email string) (user models.User, err error) {
 	return
 }
 
+func (m *module) UserGetAll() (users []models.User, err error) {
+	if users, err = m.db.userOrmer.GetAll(); err != nil {
+		return []models.User{}, errors.New("cannot retrieve users")
+	}
+	return
+}
+
 func (m *module) UserUpdate(subject string, user datatransfers.UserUpdate) (err error) {
 	if err = m.db.userOrmer.UpdateUser(models.User{
 		Subject:    subject,

@@ -8,12 +8,12 @@ import {
   Home,
   Log,
   Manage,
-  Placeholder,
   Profile,
   Signup,
-  User,
   Verify,
-  Session
+  Session,
+  UserList,
+  UserDetail
 } from "@/views";
 import {
   authenticatedOnly,
@@ -85,21 +85,21 @@ const routes: Array<RouteConfig> = [
         }
       },
       {
-        path: "setting",
-        name: "manage:setting",
-        beforeEnter: authenticatedOnly,
-        component: Placeholder,
-        meta: {
-          title: "WIP:Settings | Ratify"
-        }
-      },
-      {
         path: "user",
         name: "manage:user",
         beforeEnter: authenticatedOnly,
-        component: User,
+        component: UserList,
         meta: {
-          title: "WIP:Users | Ratify"
+          title: "Users | Ratify"
+        }
+      },
+      {
+        path: "user/:subject",
+        name: "manage:user-detail",
+        beforeEnter: authenticatedOnly,
+        component: UserDetail,
+        meta: {
+          title: "User Detail | Ratify"
         }
       },
       {

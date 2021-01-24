@@ -13,6 +13,7 @@ const (
 	LogScopeOAuthAuthorize    = "oauth::authorize"
 	LogScopeUserProfile       = "user::profile"
 	LogScopeUserPassword      = "user::password"
+	LogScopeUserSession       = "user::session"
 	LogScopeUserMFA           = "user::mfa"
 	LogScopeApplicationDetail = "application::detail"
 	LogScopeApplicationCreate = "application::create"
