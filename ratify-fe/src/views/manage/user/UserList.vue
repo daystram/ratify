@@ -44,7 +44,7 @@
                         color="secondary lighten-1"
                         :to="{
                           name: 'manage:user-detail',
-                          params: { subject: user.subject }
+                          params: { subject: user.sub }
                         }"
                       >
                         Manage
