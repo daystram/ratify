@@ -166,10 +166,11 @@
                   </div>
                   <div>
                     {{
-                      Intl.DateTimeFormat("default", {
-                        dateStyle: "full",
-                        timeStyle: "medium"
-                      }).format(new Date(detail.created_at * 1000))
+                      detail.created_at &&
+                        Intl.DateTimeFormat("default", {
+                          dateStyle: "full",
+                          timeStyle: "medium"
+                        }).format(new Date(detail.created_at * 1000))
                     }}
                   </div>
                 </v-col>

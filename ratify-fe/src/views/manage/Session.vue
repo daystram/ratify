@@ -40,7 +40,7 @@
                         <v-list-item-title class="text-h5">
                           <span
                             class="d-inline-block text-truncate"
-                            style="max-width: 320px;"
+                            style="max-width: 480px;"
                           >
                             {{ `${session.browser} at ${session.os}` }}
                           </span>
@@ -48,7 +48,7 @@
                         <v-list-item-subtitle>
                           <div
                             class="d-inline-block text-truncate"
-                            style="max-width: 320px;"
+                            style="max-width: 480px;"
                           >
                             From {{ session.ip }}
                           </div>
@@ -56,9 +56,9 @@
                         <v-list-item-subtitle>
                           <div
                             class="d-inline-block text-truncate"
-                            style="max-width: 320px;"
+                            style="max-width: 480px;"
                           >
-                            Issued at
+                            Issued on
                             {{
                               Intl.DateTimeFormat("default", {
                                 dateStyle: "full",
