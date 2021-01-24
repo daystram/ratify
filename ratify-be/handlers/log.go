@@ -15,6 +15,7 @@ func (m *module) LogGetAllActivity(subject string) (logs []models.Log, err error
 	if logs, err = m.db.logOrmer.GetAllByUserSubject(subject); err != nil {
 		return nil, fmt.Errorf("cannot retrieve logs. %+v", err)
 	}
+	m.db.userOrmer.FlagRecentFailure(models.User{Subject: subject}, false)
 	return
 }
 
@@ -27,7 +28,11 @@ func (m *module) LogGetAllAdmin() (logs []models.Log, err error) {
 
 func (m *module) LogInsertLogin(user models.User, application models.Application, success bool, detail datatransfers.LogDetail) {
 	description, _ := json.Marshal(detail)
-	m.db.userOrmer.IncrementLoginCount(user)
+	if success {
+		m.db.userOrmer.IncrementLoginCount(user)
+	} else {
+		m.db.userOrmer.FlagRecentFailure(user, true)
+	}
 	m.logEntry(models.Log{
 		UserSubject:         sql.NullString{String: user.Subject, Valid: true},
 		ApplicationClientID: sql.NullString{String: application.ClientID, Valid: true},

@@ -31,9 +31,11 @@ func GETDashboardInfo(c *gin.Context) {
 		return
 	}
 	dashboardInfo := datatransfers.DashboardInfo{
-		SignInCount:  user.LoginCount,
-		LastSignIn:   user.LastLogin,
-		SessionCount: len(activeSessions),
+		SignInCount:   user.LoginCount,
+		LastSignIn:    user.LastLogin,
+		SessionCount:  len(activeSessions),
+		MFAEnabled:    user.EnabledTOTP(),
+		RecentFailure: user.RecentFailure,
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: dashboardInfo})
 	return
