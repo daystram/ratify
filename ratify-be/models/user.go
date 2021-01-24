@@ -33,6 +33,7 @@ type UserOrmer interface {
 	GetOneBySubject(subject string) (user User, err error)
 	GetOneByUsername(username string) (user User, err error)
 	GetOneByEmail(email string) (user User, err error)
+	GetAll() (users []User, err error)
 	InsertUser(user User) (subject string, err error)
 	UpdateUser(user User) (err error)
 	IncrementLoginCount(user User) (err error)
@@ -56,6 +57,11 @@ func (o *userOrm) GetOneByUsername(username string) (user User, err error) {
 func (o *userOrm) GetOneByEmail(email string) (user User, err error) {
 	result := o.db.Model(&User{}).Where("email = ?", email).First(&user)
 	return user, result.Error
+}
+
+func (o *userOrm) GetAll() (users []User, err error) {
+	result := o.db.Model(&User{}).Find(&users)
+	return users, result.Error
 }
 
 func (o *userOrm) InsertUser(user User) (subject string, err error) {
