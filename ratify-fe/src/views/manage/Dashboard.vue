@@ -9,8 +9,64 @@
     </v-row>
     <v-row>
       <v-col cols="12">
-        MOCK DASHBOARD
-        <Home />
+        <v-card>
+          <v-card-title>
+            <v-row no-gutters align="center">
+              <v-col cols="auto">
+                Your Activty
+              </v-col>
+            </v-row>
+          </v-card-title>
+          <v-divider inset />
+          <div class="v-card__body">
+            <v-expand-transition>
+              <v-row v-if="activity.formLoadStatus === STATUS.COMPLETE">
+                <v-col cols="12" sm="6" md="3" order-md="1">
+                  <div class="mb-1 text-overline text--secondary text-center">
+                    Total Sign Ins
+                  </div>
+                  <div class="text-h4 text-center">
+                    {{ activity.signInCount }}
+                  </div>
+                </v-col>
+                <v-col cols="12" sm="12" md="6" order-sm="1" order-md="2">
+                  <div class="mb-1 text-overline text--secondary text-center">
+                    Last Signed In
+                  </div>
+                  <div class="text-h4 text-center">
+                    {{
+                      Intl.DateTimeFormat("default", {
+                        dateStyle: "medium",
+                        timeStyle: "short"
+                      }).format(activity.lastSignIn)
+                    }}
+                  </div>
+                </v-col>
+                <v-col cols="12" sm="6" md="3" order-md="3">
+                  <div class="mb-1 text-overline text--secondary text-center">
+                    Active Sessions
+                  </div>
+                  <div class="text-h4 text-center">
+                    {{ activity.sessionCount }}
+                  </div>
+                </v-col>
+              </v-row>
+            </v-expand-transition>
+            <v-expand-transition>
+              <div v-if="activity.formLoadStatus === STATUS.ERROR">
+                <v-alert
+                  type="error"
+                  text
+                  dense
+                  transition="scroll-y-transition"
+                  class="mb-0"
+                >
+                  Failed retrieving your activity!
+                </v-alert>
+              </div>
+            </v-expand-transition>
+          </div>
+        </v-card>
       </v-col>
     </v-row>
   </div>
@@ -18,13 +74,40 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { Home } from "@/views";
 import { authManager } from "@/auth";
+import { STATUS } from "@/constants/status";
+import api from "@/apis/api";
 
 export default Vue.extend({
-  components: { Home },
+  data() {
+    return {
+      activity: {
+        formLoadStatus: STATUS.LOADING,
+        signInCount: 0,
+        lastSignIn: new Date(),
+        sessionCount: 0
+      }
+    };
+  },
+
   computed: {
     user: () => authManager.getUser()
+  },
+
+  created() {
+    api.dashboard
+      .fetch()
+      .then(response => {
+        this.activity.formLoadStatus = STATUS.COMPLETE;
+        this.activity.signInCount = response.data.data.signin_count;
+        this.activity.lastSignIn = new Date(
+          response.data.data.last_signin * 1000
+        );
+        this.activity.sessionCount = response.data.data.session_count;
+      })
+      .catch(() => {
+        this.activity.formLoadStatus = STATUS.ERROR;
+      });
   }
 });
 </script>
