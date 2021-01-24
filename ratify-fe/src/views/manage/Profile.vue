@@ -774,7 +774,7 @@ export default Vue.extend({
 
   created() {
     api.user
-      .detail()
+      .detail(this.user?.sub || "")
       .then(response => {
         this.profile.givenName = response.data.data.given_name;
         this.profile.familyName = response.data.data.family_name;

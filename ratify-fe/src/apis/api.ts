@@ -65,8 +65,11 @@ export default {
     }
   },
   user: {
-    detail: function(subject?: string): Promise<AxiosResponse> {
-      return apiClient.get(`user/${subject || ``}`, withAuth());
+    detail: function(subject: string): Promise<AxiosResponse> {
+      return apiClient.get(`user/${subject}`, withAuth());
+    },
+    list: function(): Promise<AxiosResponse> {
+      return apiClient.get(`user/`, withAuth());
     },
     update: function(user: object): Promise<AxiosResponse> {
       return apiClient.put(`user/`, user, withAuth());

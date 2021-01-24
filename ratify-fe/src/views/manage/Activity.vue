@@ -179,10 +179,7 @@ export default Vue.extend({
               break;
           }
         }
-        const date = new Date(
-          ((authManager.getUser() as unknown) as { created_at: number })
-            .created_at * 1000
-        );
+        const date = new Date((authManager.getUser()?.created_at || 0) * 1000);
         addDateSeparator(date, this.activities);
         this.activities.push({
           color: "success",
