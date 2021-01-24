@@ -27,7 +27,8 @@ func InitializeRouter() (router *gin.Engine) {
 		}
 		user := apiV1.Group("/user")
 		{
-			user.GET("/", utils.AuthOnly, v1.GETUser)
+			user.GET("/:subject", utils.AuthOnly, v1.GETUserDetail)
+			user.GET("/", utils.AuthOnly, utils.SuperuserOnly, v1.GETUserList)
 			user.POST("/", v1.POSTRegister)
 			user.PUT("/", utils.AuthOnly, v1.PUTUser)
 			user.PUT("/password", utils.AuthOnly, v1.PUTUserPassword)

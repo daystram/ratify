@@ -1,8 +1,8 @@
 package v1
 
 import (
-	"github.com/daystram/ratify/ratify-be/utils"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 
@@ -11,6 +11,7 @@ import (
 	"github.com/daystram/ratify/ratify-be/errors"
 	"github.com/daystram/ratify/ratify-be/handlers"
 	"github.com/daystram/ratify/ratify-be/models"
+	"github.com/daystram/ratify/ratify-be/utils"
 )
 
 // @Summary Get user detail
@@ -18,11 +19,18 @@ import (
 // @Security BearerAuth
 // @Param user body datatransfers.UserSignup true "User signup info"
 // @Success 200 "OK"
-// @Router /api/v1/user [GET]
-func GETUser(c *gin.Context) {
+// @Router /api/v1/user/{subject} [GET]
+func GETUserDetail(c *gin.Context) {
 	var err error
+	// check superuser
 	var user models.User
-	if user, err = handlers.Handler.UserGetOneBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
+	user.Subject = strings.TrimPrefix(c.Param("subject"), "/")
+	if !c.GetBool(constants.IsSuperuserKey) && (user.Subject != c.GetString(constants.UserSubjectKey)) {
+		c.JSON(http.StatusUnauthorized, datatransfers.APIResponse{Error: "access unauthorized"})
+		return
+	}
+	// retrieve user
+	if user, err = handlers.Handler.UserGetOneBySubject(user.Subject); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
 		return
 	}
@@ -36,6 +44,35 @@ func GETUser(c *gin.Context) {
 		MFAEnabled:    user.EnabledTOTP(),
 		CreatedAt:     user.CreatedAt,
 	}})
+	return
+}
+
+// @Summary Get all users
+// @Tags user
+// @Security BearerAuth
+// @Success 200 "OK"
+// @Router /api/v1/user [GET]
+func GETUserList(c *gin.Context) {
+	var err error
+	// get all users
+	var users []models.User
+	if users, err = handlers.Handler.UserGetAll(); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "cannot retrieve users"})
+		return
+	}
+	var usersResponse []datatransfers.UserInfo
+	for _, user := range users {
+		usersResponse = append(usersResponse, datatransfers.UserInfo{
+			Subject:       user.Subject,
+			GivenName:     user.GivenName,
+			FamilyName:    user.FamilyName,
+			Username:      user.Username,
+			EmailVerified: user.EmailVerified,
+			MFAEnabled:    user.EnabledTOTP(),
+			CreatedAt:     user.CreatedAt,
+		})
+	}
+	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: usersResponse})
 	return
 }
 

@@ -28,6 +28,7 @@ type handlerFunc interface {
 	UserGetOneBySubject(subject string) (user models.User, err error)
 	UserGetOneByUsername(username string) (user models.User, err error)
 	UserGetOneByEmail(email string) (user models.User, err error)
+	UserGetAll() (users []models.User, err error)
 	UserUpdate(subject string, user datatransfers.UserUpdate) (err error)
 	UserUpdatePassword(subject, oldPassword, newPassword string) (err error)
 
