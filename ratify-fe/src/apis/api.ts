@@ -66,22 +66,22 @@ export default {
   },
   user: {
     detail: function(subject?: string): Promise<AxiosResponse> {
-      return apiClient.get(`user/${subject || ""}`, withAuth());
+      return apiClient.get(`user/${subject || ``}`, withAuth());
     },
     update: function(user: object): Promise<AxiosResponse> {
       return apiClient.put(`user/`, user, withAuth());
     },
     updatePassword: function(passwords: object): Promise<AxiosResponse> {
-      return apiClient.put("user/password", passwords, withAuth());
+      return apiClient.put(`user/password`, passwords, withAuth());
     },
     signup: function(userSignup: object): Promise<AxiosResponse> {
-      return apiClient.post("user/", userSignup);
+      return apiClient.post(`user/`, userSignup);
     },
     verify: function(token: string): Promise<AxiosResponse> {
-      return apiClient.post("user/verify", { token });
+      return apiClient.post(`user/verify`, { token });
     },
     resend: function(email: string): Promise<AxiosResponse> {
-      return apiClient.post("user/resend", { email });
+      return apiClient.post(`user/resend`, { email });
     }
   },
   session: {
@@ -110,6 +110,11 @@ export default {
     },
     adminActivity: function(): Promise<AxiosResponse> {
       return apiClient.get(`log/admin_activity`, withAuth());
+    }
+  },
+  dashboard: {
+    fetch: function(): Promise<AxiosResponse> {
+      return apiClient.get(`dashboard/`, withAuth());
     }
   }
 };
