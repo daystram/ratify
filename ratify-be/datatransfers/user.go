@@ -42,4 +42,6 @@ type UserInfo struct {
 	EmailVerified bool   `json:"email_verified"`
 	MFAEnabled    bool   `json:"mfa_enabled"`
 	CreatedAt     int64  `json:"created_at"`
+	SignInCount   int    `json:"signin_count"`
+	LastSignIn    int64  `json:"last_signin"`
 }
