@@ -22,7 +22,8 @@
         <v-col cols="12">
           <h1
             :class="
-              'text-h2 text-truncate ' + (detail.name ? '' : 'text--disabled')
+              'text-h2 text-truncate pb-2 ' +
+                (detail.name ? '' : 'text--disabled')
             "
           >
             {{ detail.name || "Application Name" }}
