@@ -9,35 +9,35 @@
       <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
         <v-col cols="12">
           <v-timeline align-top dense>
-            <div v-for="(activity, index) in activities" :key="index">
-              <v-timeline-item v-if="activity.separator" class="pb-10" hide-dot>
+            <div v-for="(log, index) in logs" :key="index">
+              <v-timeline-item v-if="log.separator" class="pb-10" hide-dot>
                 <span class="text-h5">
                   {{
-                    activity.today
+                    log.today
                       ? "Today"
                       : Intl.DateTimeFormat("default", {
                           dateStyle: "full"
-                        }).format(activity.date)
+                        }).format(log.date)
                   }}
                 </span>
               </v-timeline-item>
               <v-timeline-item
                 v-else
-                :color="activity.color"
-                :icon="activity.icon"
-                :class="activity.end ? 'pb-0' : ' pb-10'"
+                :color="log.color"
+                :icon="log.icon"
+                :class="log.end ? 'pb-0' : ' pb-10'"
                 fill-dot
               >
                 <v-row class="pt-1" dense>
                   <v-col cols="" sm="3">
                     <div class="text-body-1" style="line-height: 32px">
-                      {{ activity.date.toLocaleTimeString() }}
+                      {{ log.date.toLocaleTimeString() }}
                     </div>
                   </v-col>
                   <v-col>
-                    <div class="text-h6">{{ activity.title }}</div>
+                    <div class="text-h6">{{ log.title }}</div>
                     <div class="text-subtitle-1 text--secondary">
-                      {{ activity.subtitle }}
+                      {{ log.subtitle }}
                     </div>
                   </v-col>
                 </v-row>
@@ -68,7 +68,7 @@
           transition="scroll-y-transition"
           class="mt-0"
         >
-          Failed retrieving activity log!
+          Failed retrieving log!
         </v-alert>
       </div>
     </v-expand-transition>

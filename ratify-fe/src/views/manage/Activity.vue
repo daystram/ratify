@@ -156,7 +156,7 @@ export default Vue.extend({
               break;
             case "user::session":
               this.activities.push({
-                color: ({ I: "warn", W: "error" } as LogSeverityMap)[
+                color: ({ I: "warning", W: "error" } as LogSeverityMap)[
                   logs[i].severity
                 ],
                 icon: "mdi-dock-window",
