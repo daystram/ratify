@@ -13,22 +13,40 @@
                 <v-list-item-content>
                   <v-row justify="end" align="center" no-gutters>
                     <v-col cols="12" md="">
-                      <v-list-item-title class="text-h5">
-                        <span
-                          class="d-inline-block text-truncate"
-                          style="max-width: 320px;"
-                        >
-                          {{ `${user.given_name} ${user.family_name}` }}
-                        </span>
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        <span
-                          class="d-inline-block text-truncate"
-                          style="max-width: 320px;"
-                        >
-                          {{ user.preferred_username }}
-                        </span>
-                      </v-list-item-subtitle>
+                      <v-row>
+                        <v-col cols="auto">
+                          <v-avatar
+                            color="primaryDim"
+                            size="48"
+                            style="user-select: none"
+                          >
+                            {{
+                              (user.given_name &&
+                                user.given_name[0].toUpperCase()) +
+                                (user.family_name &&
+                                  user.family_name[0].toUpperCase())
+                            }}
+                          </v-avatar>
+                        </v-col>
+                        <v-col>
+                          <v-list-item-title class="text-h5">
+                            <span
+                              class="d-inline-block text-truncate"
+                              style="max-width: 300px;"
+                            >
+                              {{ `${user.given_name} ${user.family_name}` }}
+                            </span>
+                          </v-list-item-title>
+                          <v-list-item-subtitle>
+                            <span
+                              class="d-inline-block text-truncate"
+                              style="max-width: 300px;"
+                            >
+                              {{ user.preferred_username }}
+                            </span>
+                          </v-list-item-subtitle>
+                        </v-col>
+                      </v-row>
                     </v-col>
                     <v-col cols="12" md="">
                       <span class="text-overline text-no-wrap mr-1">
@@ -109,8 +127,9 @@ export default Vue.extend({
         .list()
         .then(response => {
           this.users = response.data.data;
-          this.users.sort((a: { given_name: string }, b: { given_name: string }) =>
-            a["given_name"].localeCompare(b["given_name"])
+          this.users.sort(
+            (a: { given_name: string }, b: { given_name: string }) =>
+              a["given_name"].localeCompare(b["given_name"])
           );
           this.pageLoadStatus = STATUS.COMPLETE;
         })

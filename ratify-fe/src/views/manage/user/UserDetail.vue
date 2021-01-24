@@ -160,6 +160,19 @@
                     <code>{{ detail.sub }}</code>
                   </div>
                 </v-col>
+                <v-col cols="12" sm="6">
+                  <div class="mb-1 text-overline text--secondary">
+                    Created At
+                  </div>
+                  <div>
+                    {{
+                      Intl.DateTimeFormat("default", {
+                        dateStyle: "full",
+                        timeStyle: "medium"
+                      }).format(new Date(detail.created_at * 1000))
+                    }}
+                  </div>
+                </v-col>
               </v-row>
             </div>
           </v-card>
