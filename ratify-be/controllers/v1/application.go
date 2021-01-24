@@ -46,8 +46,8 @@ func GETOneApplicationDetail(c *gin.Context) {
 		Metadata:       application.Metadata,
 		Locked:         &application.Locked,
 		CreatedAt:      application.CreatedAt,
-		LastAuthorize:  application.LastAuthorize,
-		AuthorizeCount: application.AuthorizeCount,
+		LastAuthorize:  &application.LastAuthorize,
+		AuthorizeCount: &application.AuthorizeCount,
 	}})
 	return
 }

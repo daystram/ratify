@@ -66,10 +66,12 @@
                   </div>
                   <div class="text-h4 text-center">
                     {{
-                      Intl.DateTimeFormat("default", {
-                        dateStyle: "medium",
-                        timeStyle: "short"
-                      }).format(metric.lastAuthorize)
+                      metric.lastAuthorize
+                        ? Intl.DateTimeFormat("default", {
+                            dateStyle: "medium",
+                            timeStyle: "short"
+                          }).format(new Date(metric.lastAuthorize * 1000))
+                        : "Never"
                     }}
                   </div>
                 </v-col>
@@ -594,7 +596,7 @@ import { maxLength, required, url } from "vuelidate/lib/validators";
 export default Vue.extend({
   data: () => ({
     metric: {
-      lastAuthorize: new Date(),
+      lastAuthorize: 0,
       authorizeCount: 0
     },
     detail: {
@@ -698,9 +700,7 @@ export default Vue.extend({
     api.application
       .detail(this.$route.params.clientId, true)
       .then(response => {
-        this.metric.lastAuthorize = new Date(
-          response.data.data.last_authorize * 1000
-        );
+        this.metric.lastAuthorize = response.data.data.last_authorize;
         this.metric.authorizeCount = response.data.data.authorize_count;
         this.detail.name = response.data.data.name;
         this.detail.clientId = response.data.data.client_id;
