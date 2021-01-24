@@ -37,15 +37,17 @@ func GETOneApplicationDetail(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{Data: datatransfers.ApplicationInfo{
-		ClientID:    application.ClientID,
-		Name:        application.Name,
-		Description: application.Description,
-		LoginURL:    application.LoginURL,
-		CallbackURL: application.CallbackURL,
-		LogoutURL:   application.LogoutURL,
-		Metadata:    application.Metadata,
-		Locked:      &application.Locked,
-		CreatedAt:   application.CreatedAt,
+		ClientID:       application.ClientID,
+		Name:           application.Name,
+		Description:    application.Description,
+		LoginURL:       application.LoginURL,
+		CallbackURL:    application.CallbackURL,
+		LogoutURL:      application.LogoutURL,
+		Metadata:       application.Metadata,
+		Locked:         &application.Locked,
+		CreatedAt:      application.CreatedAt,
+		LastAuthorize:  application.LastAuthorize,
+		AuthorizeCount: application.AuthorizeCount,
 	}})
 	return
 }
