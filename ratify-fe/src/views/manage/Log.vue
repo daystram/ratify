@@ -141,6 +141,23 @@ export default Vue.extend({
                 date: date
               });
               break;
+            case "user::superuser":
+              this.logs.push({
+                color: ({ I: "success", W: "error" } as LogSeverityMap)[
+                  logs[i].severity
+                ],
+                icon: "mdi-account-supervisor-circle",
+                title: ({
+                  I: "Promoted to Admin",
+                  W: "Demoted from Admin"
+                } as LogSeverityMap)[logs[i].severity],
+                subtitle: ({
+                  I: `${desc?.detail?.preferred_username} promoted to admin by ${logs[i].preferred_username}`,
+                  W: `${desc?.detail?.preferred_username} demoted from admin by ${logs[i].preferred_username}`
+                } as LogSeverityMap)[logs[i].severity],
+                date: date
+              });
+              break;
           }
         }
         /* eslint-enable @typescript-eslint/camelcase */
