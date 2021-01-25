@@ -202,17 +202,34 @@ func PUTUserSuperuser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "cannot change own superuser status"})
 		return
 	}
-	// retrieve user
-	var user models.User
-	if user, err = handlers.Handler.UserGetOneBySubject(superuser.Subject); err != nil {
+	// retrieve users
+	var user, target models.User
+	if user, err = handlers.Handler.UserGetOneBySubject(c.GetString(constants.UserSubjectKey)); err != nil {
 		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
 		return
+	}
+	if target, err = handlers.Handler.UserGetOneBySubject(superuser.Subject); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
+		return
+	}
+	// clear session
+	var activeSessions []*datatransfers.SessionInfo
+	if activeSessions, err = handlers.Handler.SessionGetAllActive(superuser.Subject); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "cannot retrieve active sessions"})
+		return
+	}
+	for _, session := range activeSessions {
+		handlers.Handler.SessionRevoke(session.SessionID)
 	}
 	// update status
 	if err = handlers.Handler.UserUpdateSuperuser(superuser.Subject, superuser.Superuser); err != nil {
 		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating user"})
 		return
 	}
+	handlers.Handler.LogInsertUser(user, superuser.Superuser, datatransfers.LogDetail{
+		Scope:  constants.LogScopeUserSuperuser,
+		Detail: datatransfers.UserInfo{Username: target.Username},
+	})
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }

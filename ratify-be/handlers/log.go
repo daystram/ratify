@@ -48,9 +48,14 @@ func (m *module) LogInsertAuthorize(application models.Application, _ bool, _ da
 
 func (m *module) LogInsertUser(user models.User, success bool, detail datatransfers.LogDetail) {
 	description, _ := json.Marshal(detail)
+	logType := constants.LogTypeUser
+	if detail.Scope == constants.LogScopeUserSuperuser {
+		logType = constants.LogTypeUserAdmin
+	}
+	log.Println(logType)
 	m.logEntry(models.Log{
 		UserSubject: sql.NullString{String: user.Subject, Valid: true},
-		Type:        constants.LogTypeUser,
+		Type:        logType,
 		Severity:    map[bool]string{true: constants.LogSeverityInfo, false: constants.LogSeverityWarn}[success],
 		Description: string(description),
 	})

@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+
 	"gorm.io/gorm"
 
 	"github.com/daystram/ratify/ratify-be/constants"
@@ -56,7 +57,7 @@ func (o *logOrm) GetAllActivityByApplicationClientID(applicationClientID string)
 
 func (o *logOrm) GetAllAdmin() (logs []Log, err error) {
 	result := o.db.Model(&Log{}).
-		Where("type = ?", constants.LogTypeApplication).
+		Where("type = ? OR type = ?", constants.LogTypeApplication, constants.LogTypeUserAdmin).
 		Preload("User").Preload("Application").
 		Order("created_at DESC").
 		Find(&logs)
