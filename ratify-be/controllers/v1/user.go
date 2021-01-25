@@ -38,6 +38,7 @@ func GETUserDetail(c *gin.Context) {
 		GivenName:     user.GivenName,
 		FamilyName:    user.FamilyName,
 		Subject:       user.Subject,
+		Superuser:     user.Superuser,
 		Username:      user.Username,
 		Email:         user.Email,
 		EmailVerified: user.EmailVerified,
@@ -150,7 +151,7 @@ func PUTUser(c *gin.Context) {
 // @Tags user
 // @Param user body datatransfers.UserUpdatePassword true "User update password info"
 // @Success 200 "OK"
-// @Router /api/v1/user/password [POST]
+// @Router /api/v1/user/password [PUT]
 func PUTUserPassword(c *gin.Context) {
 	var err error
 	// fetch verification info
@@ -179,6 +180,39 @@ func PUTUserPassword(c *gin.Context) {
 		return
 	}
 	handlers.Handler.LogInsertUser(user, true, datatransfers.LogDetail{Scope: constants.LogScopeUserPassword})
+	c.JSON(http.StatusOK, datatransfers.APIResponse{})
+	return
+}
+
+// @Summary Update user superuser status
+// @Tags user
+// @Param user body datatransfers.UserUpdateSuperuser true "User update superuser info"
+// @Success 200 "OK"
+// @Router /api/v1/user/superuser [PUT]
+func PUTUserSuperuser(c *gin.Context) {
+	var err error
+	// fetch superuser info
+	var superuser datatransfers.UserUpdateSuperuser
+	if err = c.ShouldBindJSON(&superuser); err != nil {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: err.Error()})
+		return
+	}
+	// prevent changing own status
+	if c.GetString(constants.UserSubjectKey) == superuser.Subject {
+		c.JSON(http.StatusBadRequest, datatransfers.APIResponse{Error: "cannot change own superuser status"})
+		return
+	}
+	// retrieve user
+	var user models.User
+	if user, err = handlers.Handler.UserGetOneBySubject(superuser.Subject); err != nil {
+		c.JSON(http.StatusNotFound, datatransfers.APIResponse{Error: "user not found"})
+		return
+	}
+	// update status
+	if err = handlers.Handler.UserUpdateSuperuser(superuser.Subject, superuser.Superuser); err != nil {
+		c.JSON(http.StatusInternalServerError, datatransfers.APIResponse{Error: "failed updating user"})
+		return
+	}
 	c.JSON(http.StatusOK, datatransfers.APIResponse{})
 	return
 }
