@@ -25,6 +25,11 @@ type UserUpdatePassword struct {
 	New string `json:"new_password" binding:"required"`
 }
 
+type UserUpdateSuperuser struct {
+	Subject   string `json:"sub" binding:"required"`
+	Superuser bool   `json:"superuser"`
+}
+
 type UserVerify struct {
 	Token string `json:"token" binding:"required"`
 }
@@ -38,6 +43,7 @@ type UserInfo struct {
 	FamilyName    string `json:"family_name"`
 	Subject       string `json:"sub"`
 	Username      string `uri:"preferred_username" json:"preferred_username"`
+	Superuser     bool   `json:"superuser"`
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	MFAEnabled    bool   `json:"mfa_enabled"`

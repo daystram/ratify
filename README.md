@@ -4,7 +4,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/daystram/ratify)](https://hub.docker.com/r/daystram/ratify)
 [![MIT License](https://img.shields.io/github/license/daystram/ratify)](https://github.com/daystram/ratify/blob/master/LICENSE)
 
-Ratify is a Central Authentication Service (CAS) implementing OAuth 2.0 and OpenID Connect (OIDC) protocols, as defined in [RFC 6749](https://tools.ietf.org/html/rfc6749).
+Ratify is a Central Authentication Service (CAS) implementing OAuth 2.0 and OpenID Connect (OID) protocols, as defined in [RFC 6749](https://tools.ietf.org/html/rfc6749).
 
 ## Features
 - Implements various authorization flows
@@ -14,7 +14,7 @@ Ratify is a Central Authentication Service (CAS) implementing OAuth 2.0 and Open
 - Multi-factor authentication using Time-based One-Time Password (TOTP)
 - Universal login
 - User authentication and incident log
-- _WIP: Active session management_
+- Active session management
 
 ## Supported Authorizaton Flows
 - Authorization Code
@@ -107,4 +107,3 @@ services:
 
 ## License
 This project is licensed under the [MIT License](./LICENSE).
- 

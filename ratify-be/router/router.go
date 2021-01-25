@@ -32,6 +32,7 @@ func InitializeRouter() (router *gin.Engine) {
 			user.POST("/", v1.POSTRegister)
 			user.PUT("/", utils.AuthOnly, v1.PUTUser)
 			user.PUT("/password", utils.AuthOnly, v1.PUTUserPassword)
+			user.PUT("/superuser", utils.AuthOnly, utils.SuperuserOnly, v1.PUTUserSuperuser)
 			user.POST("/verify", v1.POSTVerify)
 			user.POST("/resend", v1.POSTResend)
 		}
