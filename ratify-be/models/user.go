@@ -37,6 +37,7 @@ type UserOrmer interface {
 	GetAll() (users []User, err error)
 	InsertUser(user User) (subject string, err error)
 	UpdateUser(user User) (err error)
+	UpdateUserSuperuser(user User) (err error)
 	FlagRecentFailure(user User, failed bool) (err error)
 	IncrementLoginCount(user User) (err error)
 }
@@ -74,6 +75,15 @@ func (o *userOrm) InsertUser(user User) (subject string, err error) {
 func (o *userOrm) UpdateUser(user User) (err error) {
 	// By default, only non-empty fields are updated. See https://gorm.io/docs/update.html#Updates-multiple-columns
 	result := o.db.Model(&User{}).Where("sub = ?", user.Subject).Updates(&user)
+	return result.Error
+}
+
+func (o *userOrm) UpdateUserSuperuser(user User) (err error) {
+	// required due to UpdateUser() treats false bool as empty field when not using sql.NullBool
+	result := o.db.Model(&User{}).Where("sub = ?", user.Subject).
+		Updates(map[string]interface{}{
+			"superuser": gorm.Expr("?", user.Superuser),
+		})
 	return result.Error
 }
 

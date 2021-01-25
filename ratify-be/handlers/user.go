@@ -70,3 +70,13 @@ func (m *module) UserUpdatePassword(subject, oldPassword, newPassword string) (e
 	}
 	return
 }
+
+func (m *module) UserUpdateSuperuser(subject string, superuser bool) (err error) {
+	if err = m.db.userOrmer.UpdateUserSuperuser(models.User{
+		Subject:   subject,
+		Superuser: superuser,
+	}); err != nil {
+		return errors.New("cannot update user superuser status")
+	}
+	return
+}

@@ -31,6 +31,7 @@ type handlerFunc interface {
 	UserGetAll() (users []models.User, err error)
 	UserUpdate(subject string, user datatransfers.UserUpdate) (err error)
 	UserUpdatePassword(subject, oldPassword, newPassword string) (err error)
+	UserUpdateSuperuser(subject string, superuser bool) (err error)
 
 	// application
 	ApplicationGetOneByClientID(clientID string) (application models.Application, err error)
