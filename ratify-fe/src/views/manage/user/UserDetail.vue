@@ -180,7 +180,7 @@
         </v-col>
       </v-row>
     </v-fade-transition>
-    <!-- <v-fade-transition>
+    <v-fade-transition>
       <v-row v-show="pageLoadStatus === STATUS.COMPLETE">
         <v-col cols="12">
           <v-card class="danger-border">
@@ -196,91 +196,33 @@
               <v-row justify="end" align="center">
                 <v-col cols="">
                   <div>
-                    Delete application
+                    Ratify Admin
                   </div>
                   <div class="text--secondary">
-                    You cannot un-delete an application. Take extreme caution.
+                    An admin is able to manage applications and users. When
+                    changing a user's admin status, they will be logged out of
+                    all active sessions.
                   </div>
                 </v-col>
                 <v-col cols="auto">
-                  <v-dialog
-                    v-model="deleting.prompt"
-                    width="500"
-                    @input="v => v || cancelDelete()"
-                  >
-                    <template v-slot:activator="{ on, attrs }">
-                      <v-btn
-                        rounded
-                        outlined
-                        text
-                        color="error"
-                        v-bind="attrs"
-                        v-on="on"
-                        :disabled="detail.locked"
-                      >
-                        Delete
-                      </v-btn>
-                    </template>
-                    <v-card class="danger-border">
-                      <v-card-title>
-                        <v-row no-gutters align="center">
-                          <v-col cols="auto" class="error--text">
-                            Delete Application
-                          </v-col>
-                          <v-spacer />
-                          <v-col cols="auto">
-                            <v-btn text icon color="grey" @click="cancelDelete">
-                              <v-icon v-text="'mdi-close'" />
-                            </v-btn>
-                          </v-col>
-                        </v-row>
-                      </v-card-title>
-                      <v-divider inset />
-                      <div class="v-card__body">
-                        <v-alert type="warning" text dense>
-                          You are about to delete this application!
-                        </v-alert>
-                        <v-row align="center">
-                          <v-col>
-                            <div>
-                              Are you sure you want to permanently delete
-                              <b>{{ detail.name }}</b
-                              >? This is action is <b>irreversible</b> and all
-                              of this application's clients will not be able to
-                              user Ratify authentication service.
-                            </div>
-                            <div class="mt-4">
-                              Type <b>{{ detail.name }}</b> to confirm.
-                            </div>
-                            <div>
-                              <v-text-field
-                                v-model="deleting.confirmName"
-                                class="py-2"
-                                :prepend-icon="'mdi-application'"
-                              />
-                            </div>
-                            <v-btn
-                              rounded
-                              block
-                              outlined
-                              color="error"
-                              :disabled="deleting.confirmName !== detail.name"
-                              @click="confirmDelete"
-                            >
-                              Delete
-                            </v-btn>
-                          </v-col>
-                        </v-row>
-                      </div>
-                    </v-card>
-                  </v-dialog>
+                  <v-switch
+                    v-model="superuser.superuser"
+                    :disabled="
+                      superuser.disabled ||
+                        superuser.formLoadStatus === STATUS.LOADING
+                    "
+                    :loading="superuser.formLoadStatus === STATUS.LOADING"
+                    inset
+                    color="warning"
+                    @change="updateSuperuser"
+                  />
                 </v-col>
               </v-row>
             </div>
           </v-card>
         </v-col>
       </v-row>
-    </v-fade-transition> -->
+    </v-fade-transition>
     <v-fade-transition>
       <v-overlay
         v-show="
@@ -313,6 +255,7 @@
 import Vue from "vue";
 import { STATUS } from "@/constants/status";
 import api from "@/apis/api";
+import { authManager } from "@/auth";
 
 export default Vue.extend({
   data: () => ({
@@ -321,6 +264,11 @@ export default Vue.extend({
       signInCount: 0
     },
     detail: {},
+    superuser: {
+      superuser: false,
+      disabled: false,
+      formLoadStatus: STATUS.IDLE
+    },
     pageLoadStatus: STATUS.PRE_LOADING
   }),
 
@@ -331,6 +279,9 @@ export default Vue.extend({
         this.metric.lastSignIn = response.data.data.last_signin;
         this.metric.signInCount = response.data.data.signin_count;
         this.detail = response.data.data;
+        this.superuser.superuser = response.data.data.superuser;
+        this.superuser.disabled =
+          authManager.getUser()?.sub === response.data.data.sub;
         this.pageLoadStatus = STATUS.COMPLETE;
       })
       .catch(error => {
@@ -340,6 +291,21 @@ export default Vue.extend({
         }
         this.pageLoadStatus = STATUS.ERROR;
       });
+  },
+
+  methods: {
+    updateSuperuser() {
+      this.superuser.formLoadStatus = STATUS.LOADING;
+      setTimeout(() => {
+        api.user
+          .updateSuperuser({
+            sub: (this.detail as { sub: string }).sub,
+            superuser: this.superuser.superuser
+          })
+          .catch(() => (this.superuser.superuser = !this.superuser.superuser))
+          .finally(() => (this.superuser.formLoadStatus = STATUS.IDLE));
+      }, 2000);
+    }
   }
 });
 </script>
