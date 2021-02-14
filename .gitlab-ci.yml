@@ -1,7 +1,8 @@
 stages:
   - build
   - test
-  - deploy
+  - image
+  - chart
 
 # ------------------------ ratify-be
 build ratify-be:
@@ -26,8 +27,8 @@ test ratify-be:
     - cd ratify-be
     - go test ./tests/...
 
-deploy dev ratify-be:
-  stage: deploy
+image dev ratify-be:
+  stage: image
   image: docker:19.03.12
   needs: ["test ratify-be"]
   environment:
@@ -48,8 +49,8 @@ deploy dev ratify-be:
   except:
     - master
 
-deploy prod ratify-be:
-  stage: deploy
+image prod ratify-be:
+  stage: image
   image: docker:19.03.12
   needs: ["test ratify-be"]
   environment:
@@ -81,8 +82,8 @@ build ratify-fe:
     paths:
       - ratify-fe/dist/
 
-deploy dev ratify-fe:
-  stage: deploy
+image dev ratify-fe:
+  stage: image
   image: docker:19.03.12
   needs: ["build ratify-fe"]
   environment:
@@ -104,8 +105,8 @@ deploy dev ratify-fe:
   except:
     - master
 
-deploy prod ratify-fe:
-  stage: deploy
+image prod ratify-fe:
+  stage: image
   image: docker:19.03.12
   needs: ["build ratify-fe"]
   environment:
@@ -122,6 +123,61 @@ deploy prod ratify-fe:
     - docker build -t $CI_REGISTRY_IMAGE:fe -t $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG .
     - docker push $CI_REGISTRY_IMAGE:fe
     - docker push $CI_REGISTRY_IMAGE:fe-$CI_COMMIT_TAG
+  when: on_success
+  only:
+    - tags
+
+# ------------------------ chart
+chart dev ratify:
+  stage: chart
+  image: daystram/k8s-tools:latest
+  needs: ["image dev ratify-be", "image dev ratify-fe"]
+  variables:
+    APPLICATION_NAME: "ratify"
+    APPLICATION_VERSION: "v0.0.0-development"
+  before_script:
+    - git config --global user.name "$BOTDAYSTRAM_NAME"
+    - git config --global user.email "$BOTDAYSTRAM_EMAIL"
+    - mkdir -p ~/.ssh && eval `ssh-agent -s` && ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - cat $BOTDAYSTRAM_KEY_FILE | ssh-add -
+    - cat $KUBECONFIG_FILE > $KUBECONFIG && chmod 700 $KUBECONFIG
+  script:
+    - git clone git@github.com:daystram/helm-charts.git
+    - cp -r .daystram helm-charts/docs/
+    - cd helm-charts/docs/
+    - curl -sfL https://charts.daystram.com/build.sh | sh -s - $APPLICATION_NAME $APPLICATION_VERSION
+    - rm -rf .daystram/
+    - git add .
+    - 'git commit -m "feat: added chart for ${APPLICATION_NAME}@${APPLICATION_VERSION}"'
+    - git push
+  when: on_success
+  only:
+    - branches
+  except:
+    - main
+
+chart prod ratify:
+  stage: chart
+  image: daystram/k8s-tools:latest
+  needs: ["image prod ratify-be", "image prod ratify-fe"]
+  variables:
+    APPLICATION_NAME: "ratify"
+    APPLICATION_VERSION: "$CI_COMMIT_TAG"
+  before_script:
+    - git config --global user.name "$BOTDAYSTRAM_NAME"
+    - git config --global user.email "$BOTDAYSTRAM_EMAIL"
+    - mkdir -p ~/.ssh && eval `ssh-agent -s` && ssh-keyscan github.com >> ~/.ssh/known_hosts
+    - cat $BOTDAYSTRAM_KEY_FILE | ssh-add -
+    - cat $KUBECONFIG_FILE > $KUBECONFIG && chmod 700 $KUBECONFIG
+  script:
+    - git clone git@github.com:daystram/helm-charts.git
+    - cp -r .daystram helm-charts/docs/
+    - cd helm-charts/docs/
+    - curl -sfL https://charts.daystram.com/build.sh | sh -s - $APPLICATION_NAME $APPLICATION_VERSION
+    - rm -rf .daystram/
+    - git add .
+    - 'git commit -m "feat: added chart for ${APPLICATION_NAME}@${APPLICATION_VERSION}"'
+    - git push
   when: on_success
   only:
     - tags
