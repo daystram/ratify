@@ -2,9 +2,9 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "folio.fullname" . }}-be
+  name: {{ include "ratify.fullname" . }}-be
   labels:
-    {{- include "folio.labels" . | nindent 4 }}
+    {{- include "ratify.labels" . | nindent 4 }}
     tier: be
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -12,7 +12,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "folio.selectorLabels" . | nindent 6 }}
+      {{- include "ratify.selectorLabels" . | nindent 6 }}
       tier: be
   template:
     metadata:
@@ -21,14 +21,14 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "folio.selectorLabels" . | nindent 8 }}
+        {{- include "ratify.selectorLabels" . | nindent 8 }}
         tier: be
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "folio.serviceAccountName" . }}
+      serviceAccountName: {{ include "ratify.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -63,9 +63,9 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "folio.fullname" . }}-fe
+  name: {{ include "ratify.fullname" . }}-fe
   labels:
-    {{- include "folio.labels" . | nindent 4 }}
+    {{- include "ratify.labels" . | nindent 4 }}
     tier: fe
 spec:
   {{- if not .Values.autoscaling.enabled }}
@@ -73,7 +73,7 @@ spec:
   {{- end }}
   selector:
     matchLabels:
-      {{- include "folio.selectorLabels" . | nindent 6 }}
+      {{- include "ratify.selectorLabels" . | nindent 6 }}
       tier: fe
   template:
     metadata:
@@ -82,14 +82,14 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "folio.selectorLabels" . | nindent 8 }}
+        {{- include "ratify.selectorLabels" . | nindent 8 }}
         tier: fe
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "folio.serviceAccountName" . }}
+      serviceAccountName: {{ include "ratify.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:

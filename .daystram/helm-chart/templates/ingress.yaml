@@ -2,9 +2,9 @@
 apiVersion: traefik.containo.us/v1alpha1
 kind: IngressRoute
 metadata:
-  name: {{ include "folio.fullname" . }}
+  name: {{ include "ratify.fullname" . }}
   labels:
-    {{- include "folio.labels" . | nindent 4 }}
+    {{- include "ratify.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -16,7 +16,7 @@ spec:
     - kind: Rule
       match: "Host(`{{ .Values.ingress.host }}`)"
       services:
-        - name: {{ include "folio.fullname" . }}-fe
+        - name: {{ include "ratify.fullname" . }}-fe
           passHostHeader: true
           port: {{ .Values.service.port }}
       middlewares:
@@ -24,20 +24,20 @@ spec:
     - kind: Rule
       match: "Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/api`)"
       services:
-        - name: {{ include "folio.fullname" . }}-be
+        - name: {{ include "ratify.fullname" . }}-be
           passHostHeader: true
           port: {{ .Values.service.port }}
     - kind: Rule
       match: "Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/oauth`)"
       services:
-        - name: {{ include "folio.fullname" . }}-be
+        - name: {{ include "ratify.fullname" . }}-be
           passHostHeader: true
           port: {{ .Values.service.port }}
       middlewares:
         - name: cors
   {{- if .Values.ingress.tls }}
   tls:
-    secretName: cert-{{ include "folio.fullname" . }}
+    secretName: cert-{{ include "ratify.fullname" . }}
   {{- end }}
 
 ---
@@ -75,9 +75,9 @@ spec:
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
-  name: cert-{{ include "folio.fullname" . }}
+  name: cert-{{ include "ratify.fullname" . }}
 spec:
-  secretName: cert-{{ include "folio.fullname" . }}
+  secretName: cert-{{ include "ratify.fullname" . }}
   dnsNames:
     - {{ .Values.ingress.host }}
   issuerRef:

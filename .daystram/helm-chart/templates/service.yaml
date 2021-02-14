@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "folio.fullname" . }}-fe
+  name: {{ include "ratify.fullname" . }}-fe
   labels:
-    {{- include "folio.labels" . | nindent 4 }}
+    {{- include "ratify.labels" . | nindent 4 }}
     tier: fe
 spec:
   type: {{ .Values.service.type }}
@@ -13,16 +13,16 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "folio.selectorLabels" . | nindent 4 }}
+    {{- include "ratify.selectorLabels" . | nindent 4 }}
     tier: fe
 
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "folio.fullname" . }}-be
+  name: {{ include "ratify.fullname" . }}-be
   labels:
-    {{- include "folio.labels" . | nindent 4 }}
+    {{- include "ratify.labels" . | nindent 4 }}
     tier: be
 spec:
   type: {{ .Values.service.type }}
@@ -32,5 +32,5 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "folio.selectorLabels" . | nindent 4 }}
+    {{- include "ratify.selectorLabels" . | nindent 4 }}
     tier: be
