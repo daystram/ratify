@@ -11,10 +11,10 @@ image:
 ratify:
   be:
     replicaCount: 1
-  fe:
-    replicaCount: 1
     envFrom:
       secretRef: secret-ratify-be
+  fe:
+    replicaCount: 1
 
 imagePullSecrets: []
 nameOverride: ""
