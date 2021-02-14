@@ -1,41 +1,86 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "ratify.fullname" . -}}
-{{- $svcPort := .Values.service.port -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-apiVersion: networking.k8s.io/v1beta1
-{{- else -}}
-apiVersion: extensions/v1beta1
-{{- end }}
-kind: Ingress
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
 metadata:
-  name: {{ $fullName }}
+  name: {{ include "folio.fullname" . }}
   labels:
-    {{- include "ratify.labels" . | nindent 4 }}
+    {{- include "folio.labels" . | nindent 4 }}
   {{- with .Values.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: "Host(`{{ .Values.ingress.host }}`)"
+      services:
+        - name: {{ include "folio.fullname" . }}-fe
+          passHostHeader: true
+          port: {{ .Values.service.port }}
+      middlewares:
+        - name: gzip
+    - kind: Rule
+      match: "Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/api`)"
+      services:
+        - name: {{ include "folio.fullname" . }}-be
+          passHostHeader: true
+          port: {{ .Values.service.port }}
+    - kind: Rule
+      match: "Host(`{{ .Values.ingress.host }}`) && PathPrefix(`/oauth`)"
+      services:
+        - name: {{ include "folio.fullname" . }}-be
+          passHostHeader: true
+          port: {{ .Values.service.port }}
+      middlewares:
+        - name: cors
   {{- if .Values.ingress.tls }}
   tls:
-    {{- range .Values.ingress.tls }}
-    - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
+    secretName: cert-{{ include "folio.fullname" . }}
   {{- end }}
-  rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
-      http:
-        paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            backend:
-              serviceName: {{ $fullName }}
-              servicePort: {{ $svcPort }}
-          {{- end }}
-    {{- end }}
-  {{- end }}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: gzip
+spec:
+  compress: {}
+
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: cors
+spec:
+  headers:
+    accessControlAllowOriginList:
+      - "*"
+    accessControlAllowMethods:
+      - "GET"
+      - "POST"
+    accessControlAllowHeaders:
+      - "Content-Type"
+      - "Content-Length"
+      - "Authorization"
+      - "Origin"
+    accessControlExposeHeaders:
+      - "Content-Type"
+      - "Content-Length"
+    accessControlAllowCredentials: false
+    accessControlMaxAge: 120
+
+---
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: cert-{{ include "folio.fullname" . }}
+spec:
+  secretName: cert-{{ include "folio.fullname" . }}
+  dnsNames:
+    - {{ .Values.ingress.host }}
+  issuerRef:
+    kind: {{ .Values.ingress.certificate.issuerRef.kind }}
+    name: {{ .Values.ingress.certificate.issuerRef.name }}
+{{- end }}

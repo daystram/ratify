@@ -1,9 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "ratify.fullname" . }}
+  name: {{ include "folio.fullname" . }}-fe
   labels:
-    {{- include "ratify.labels" . | nindent 4 }}
+    {{- include "folio.labels" . | nindent 4 }}
+    tier: fe
 spec:
   type: {{ .Values.service.type }}
   ports:
@@ -12,4 +13,24 @@ spec:
       protocol: TCP
       name: http
   selector:
-    {{- include "ratify.selectorLabels" . | nindent 4 }}
+    {{- include "folio.selectorLabels" . | nindent 4 }}
+    tier: fe
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "folio.fullname" . }}-be
+  labels:
+    {{- include "folio.labels" . | nindent 4 }}
+    tier: be
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "folio.selectorLabels" . | nindent 4 }}
+    tier: be
