@@ -154,7 +154,7 @@ chart dev ratify:
   only:
     - branches
   except:
-    - main
+    - master
 
 chart prod ratify:
   stage: chart
