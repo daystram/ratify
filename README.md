@@ -1,6 +1,6 @@
 # :lock: Ratify
 
-[![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline/daystram/ratify/master)](https://gitlab.com/daystram/ratify/-/pipelines)
+[![GitHub Actions Status](https://github.com/daystram/ratify/actions/workflows/build.yml/badge.svg)](https://github.com/daystram/ratify/actions/workflows/build.yml)
 [![Docker Pulls](https://img.shields.io/docker/pulls/daystram/ratify)](https://hub.docker.com/r/daystram/ratify)
 [![MIT License](https://img.shields.io/github/license/daystram/ratify)](https://github.com/daystram/ratify/blob/master/LICENSE)
 
