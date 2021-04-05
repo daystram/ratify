@@ -19,6 +19,8 @@ const (
 
 	GrantTypeAuthorizationCode = "authorization_code"
 
+	AuthenticationTimeout = time.Hour * 24 * 2
+
 	AuthorizationCodeLength = 20
 	AuthorizationCodeExpiry = time.Second * 300
 
