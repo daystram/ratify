@@ -27,7 +27,7 @@ jobs:
         with:
           name: build
           path: |
-            ratify-fe/.next/
+            ratify-fe/dist/
   build-be:
     name: Build ratify-be
     runs-on: Ubuntu-20.04
@@ -50,3 +50,4 @@ jobs:
           name: build
           path: |
             ratify-be/app
+            ratify-be/docs/swagger.json
