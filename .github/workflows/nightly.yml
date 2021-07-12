@@ -27,7 +27,7 @@ jobs:
       - name: Set Development Version
         run: echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
       - name: Provide Env File
-        run: echo $FE_ENV_FILE > ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
+        run: echo ${{ env.FE_ENV_FILE }} > ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
       - name: Build and Push Image
         uses: docker/build-push-action@v2
         with:
