@@ -1,4 +1,4 @@
-export function validateURL(
+function validate(
   urlString: string,
   allowInsecure?: boolean,
   allowLocalhost?: boolean
@@ -11,3 +11,8 @@ export function validateURL(
     url.origin !== null
   );
 }
+
+export const validateURL = (
+  allowInsecure?: boolean,
+  allowLocalhost?: boolean
+) => (urlString: string) => validate(urlString, allowInsecure, allowLocalhost);
