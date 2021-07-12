@@ -9,6 +9,7 @@ jobs:
     runs-on: Ubuntu-20.04
     env:
       APPLICATION: ratify
+      FE_ENV_FILE: ${{ secrets.FE_ENV_FILE }}
     strategy:
       matrix:
         service: [be, fe]
@@ -27,7 +28,9 @@ jobs:
       - name: Set Development Version
         run: echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
       - name: Provide Env File
-        run: echo "${{ secrets.FE_ENV_FILE }}" > ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
+        run: |
+          echo "${{ env.FE_ENV_FILE }}" > ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
+          ls -al ${{ env.APPLICATION }}-${{ matrix.service }}
       - name: Build and Push Image
         uses: docker/build-push-action@v2
         with:
