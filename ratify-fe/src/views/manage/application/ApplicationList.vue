@@ -277,7 +277,8 @@
 import Vue from "vue";
 import api from "@/apis/api";
 import { STATUS } from "@/constants/status";
-import { maxLength, required, url } from "vuelidate/lib/validators";
+import { validateURL } from "@/utils/url";
+import { maxLength, required } from "vuelidate/lib/validators";
 
 export default Vue.extend({
   data: () => ({
@@ -341,9 +342,9 @@ export default Vue.extend({
     create: {
       name: { required, maxLength: maxLength(20) },
       description: { required, maxLength: maxLength(50) },
-      loginURL: { required, url },
-      callbackURL: { required, url },
-      logoutURL: { required, url }
+      loginURL: { required, url: validateURL },
+      callbackURL: { required, url: validateURL },
+      logoutURL: { required, url: validateURL }
     }
   },
 
