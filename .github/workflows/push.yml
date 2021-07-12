@@ -3,6 +3,23 @@ name: Build
 on: push
 
 jobs:
+  lint-fe:
+    name: Lint ratify-fe
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ratify-fe
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2.1.5
+        with:
+          node-version: 12.x
+      - name: Install Dependencies
+        run: yarn install
+      - name: eslint
+        run: yarn lint
   build-fe:
     name: Build ratify-fe
     runs-on: Ubuntu-20.04
@@ -25,9 +42,20 @@ jobs:
       - name: Archive Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: build
+          name: build-fe
           path: |
             ratify-fe/dist/
+  lint-be:
+    name: Lint ratify-be
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: latest
+          working-directory: ratify-be
   build-be:
     name: Build ratify-be
     runs-on: Ubuntu-20.04
@@ -47,7 +75,7 @@ jobs:
       - name: Archive Artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: build
+          name: build-be
           path: |
             ratify-be/app
             ratify-be/docs/swagger.json
