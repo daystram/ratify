@@ -3,13 +3,18 @@ function validate(
   allowInsecure?: boolean,
   allowLocalhost?: boolean
 ): boolean {
-  const url = new URL(urlString);
-  return (
-    ((url.protocol === "http:" && allowInsecure) ||
-      url.protocol === "https:") &&
-    (url.hostname !== "localhost" || !!allowLocalhost) &&
-    url.origin !== null
-  );
+  try {
+    const url = new URL(urlString);
+    console.log(url);
+    return (
+      ((url.protocol === "http:" && allowInsecure) ||
+        url.protocol === "https:") &&
+      (url.hostname !== "localhost" || !!allowLocalhost) &&
+      url.origin !== null
+    );
+  } catch (e) {
+    return false;
+  }
 }
 
 export const validateURL = (
