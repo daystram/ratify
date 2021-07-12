@@ -1,6 +1,6 @@
 # :lock: Ratify
 
-[![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline/daystram/ratify/master)](https://gitlab.com/daystram/ratify/-/pipelines)
+[![GitHub Actions Status](https://github.com/daystram/ratify/actions/workflows/build.yml/badge.svg)](https://github.com/daystram/ratify/actions/workflows/build.yml)
 [![Docker Pulls](https://img.shields.io/docker/pulls/daystram/ratify)](https://hub.docker.com/r/daystram/ratify)
 [![MIT License](https://img.shields.io/github/license/daystram/ratify)](https://github.com/daystram/ratify/blob/master/LICENSE)
 
@@ -44,12 +44,13 @@ The application comes in two parts:
 
 ### ratify-be
 
-`ratify-be` uses [Go Modules](https://blog.golang.org/using-go-modules) module/dependency manager, hence at least Go 1.11 is required. To ease development, [comstrek/air](https://github.com/cosmtrek/air) is used to live-reload the application. Install the tool as documented.
+`ratify-be` uses [Go Modules](https://blog.golang.org/using-go-modules) module/dependency manager, hence at least Go 1.11 is required. To ease development, [comstrek/air](https://github.com/cosmtrek/air) is used to live-reload the application. Swagger is used for API documentation, [swaggo/swag](https://github.com/swaggo/swag) is used to generate the docs. Install the tools as documented.
 
 To begin developing, simply enter the sub-directory and run the development server:
 
 ```shell
 $ cd ratify-be
+$ swag init
 $ go mod tidy
 $ air
 ```
