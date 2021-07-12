@@ -8,6 +8,7 @@ on:
 jobs:
   image:
     name: Publish Image
+    environment: Production
     runs-on: Ubuntu-20.04
     env:
       APPLICATION: ratify
@@ -41,6 +42,7 @@ jobs:
           push: true
   chart:
     name: Publish Helm Chart
+    environment: Production
     runs-on: Ubuntu-20.04
     container: daystram/k8s-tools:latest
     needs: [image]
