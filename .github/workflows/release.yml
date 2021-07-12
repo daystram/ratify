@@ -9,6 +9,8 @@ jobs:
   image:
     name: Publish Image
     runs-on: Ubuntu-20.04
+    env:
+      APPLICATION: ratify
     strategy:
       matrix:
         app: [be, fe]
@@ -29,17 +31,19 @@ jobs:
       - name: Build and Push Image
         uses: docker/build-push-action@v2
         with:
-          context: folio-${{ matrix.app }}
+          context: ${{ env.APPLICATION }}-${{ matrix.app }}
           platforms: linux/amd64
           tags: |
-            daystram/folio:${{ matrix.app }}
-            daystram/folio:${{ matrix.app }}-${{ env.RELEASE_VERSION }}
+            daystram/${{ env.APPLICATION }}:${{ matrix.app }}
+            daystram/${{ env.APPLICATION }}:${{ matrix.app }}-${{ env.RELEASE_VERSION }}
           push: true
   chart:
     name: Publish Helm Chart
     runs-on: Ubuntu-20.04
     container: daystram/k8s-tools:latest
     needs: [image]
+    env:
+      APPLICATION: ratify
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -64,8 +68,8 @@ jobs:
           git clone ssh://git@github.com/daystram/helm-charts.git
           cp -r .daystram helm-charts/docs/
           cd helm-charts/docs/
-          curl -sfL https://charts.daystram.com/build.sh | sh -s - folio ${{ env.RELEASE_VERSION }}
+          curl -sfL https://charts.daystram.com/build.sh | sh -s - ${{ env.APPLICATION }} ${{ env.RELEASE_VERSION }}
           rm -rf .daystram/
           git add .
-          git commit -m "feat: added chart for folio@${{ env.RELEASE_VERSION }}"
+          git commit -m "feat: added chart for ${{ env.APPLICATION }}@${{ env.RELEASE_VERSION }}"
           git push
