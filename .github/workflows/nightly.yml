@@ -28,8 +28,8 @@ jobs:
         run: echo "RELEASE_VERSION=dev" >> $GITHUB_ENV
       - name: Provide Env File
         run: |
-          echo ${{ env.FE_ENV_FILE }} > ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
-          ls ${{ env.APPLICATION }}-${{ matrix.service }}
+          echo "${{ secrets.FE_ENV_FILE }}" > ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
+          ls -al ${{ env.APPLICATION }}-${{ matrix.service }}
           cat ${{ env.APPLICATION }}-${{ matrix.service }}/.env.production
       - name: Build and Push Image
         uses: docker/build-push-action@v2
