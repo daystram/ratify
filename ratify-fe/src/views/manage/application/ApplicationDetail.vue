@@ -590,9 +590,10 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { STATUS } from "@/constants/status";
 import api from "@/apis/api";
-import { maxLength, required, url } from "vuelidate/lib/validators";
+import { STATUS } from "@/constants/status";
+import { validateURL } from "@/utils/url";
+import { maxLength, required } from "vuelidate/lib/validators";
 
 export default Vue.extend({
   data: () => ({
@@ -638,9 +639,9 @@ export default Vue.extend({
     detail: {
       name: { required, maxLength: maxLength(20) },
       description: { required, maxLength: maxLength(50) },
-      loginURL: { required, url },
-      callbackURL: { required, url },
-      logoutURL: { required, url }
+      loginURL: { required, url: validateURL(true) },
+      callbackURL: { required, url: validateURL(true) },
+      logoutURL: { required, url: validateURL(true) }
     }
   },
 

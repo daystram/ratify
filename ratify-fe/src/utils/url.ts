@@ -1,15 +1,13 @@
-function validate(
-  urlString: string,
-  allowInsecure?: boolean,
-  allowLocalhost?: boolean
-): boolean {
+function validate(urlString: string, allowInsecure?: boolean): boolean {
   try {
     const url = new URL(urlString);
-    console.log(url);
+    const regex = new RegExp(
+      "^((www.)?[-a-zA-Z0-9@:%._+~#=]{2,256}.[a-z]{2,})|(localhost)$"
+    );
     return (
       ((url.protocol === "http:" && allowInsecure) ||
         url.protocol === "https:") &&
-      (url.hostname !== "localhost" || !!allowLocalhost) &&
+      regex.test(url.hostname) &&
       url.origin !== null
     );
   } catch (e) {
@@ -17,7 +15,5 @@ function validate(
   }
 }
 
-export const validateURL = (
-  allowInsecure?: boolean,
-  allowLocalhost?: boolean
-) => (urlString: string) => validate(urlString, allowInsecure, allowLocalhost);
+export const validateURL = (allowInsecure?: boolean) => (urlString: string) =>
+  validate(urlString, allowInsecure);

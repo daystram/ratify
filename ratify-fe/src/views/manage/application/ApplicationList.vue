@@ -342,9 +342,9 @@ export default Vue.extend({
     create: {
       name: { required, maxLength: maxLength(20) },
       description: { required, maxLength: maxLength(50) },
-      loginURL: { required, url: validateURL(true, true) },
-      callbackURL: { required, url: validateURL(true, true) },
-      logoutURL: { required, url: validateURL(true, true) }
+      loginURL: { required, url: validateURL(true) },
+      callbackURL: { required, url: validateURL(true) },
+      logoutURL: { required, url: validateURL(true) }
     }
   },
 
