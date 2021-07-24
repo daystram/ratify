@@ -9,8 +9,8 @@
           <p
             class="mt-12 mb-12 text-subtitle-1 ma-auto text-center app-subtitle"
           >
-            Ratify is a Central Authentication Service (CAS) implementing OAuth
-            2.0 and OpenID Connect (OID) protocols.
+            Central Authentication Service (CAS) implementing OAuth 2.0 and
+            OpenID Connect (OID) protocols.
           </p>
         </v-col>
       </v-row>
@@ -59,6 +59,9 @@
         </v-btn>
       </v-row>
     </v-col>
+    <div class="app-version text-overline text--disabled">
+      {{ appVersion || "" }}
+    </div>
   </v-container>
 </template>
 
@@ -69,7 +72,11 @@ import { authManager } from "@/auth";
 
 export default Vue.extend({
   components: { Logo },
-
+  data() {
+    return {
+      appVersion: process.env.VUE_APP_VERSION
+    };
+  },
   computed: {
     isAuthenticated() {
       return authManager.isAuthenticated();
