@@ -4,7 +4,7 @@
       <v-icon
         style="font-size: inherit; vertical-align: baseline"
         v-text="'mdi-lock'"
-        color="secondary lighten-1"
+        color="secondary"
       />Ratify
     </span>
   </div>

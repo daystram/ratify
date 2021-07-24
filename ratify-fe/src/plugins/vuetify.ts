@@ -10,7 +10,7 @@ export default new Vuetify({
       dark: {
         primary: "#00c3c3",
         primaryDim: "#008686",
-        secondary: "#c1842f"
+        secondary: "#f29c24"
       }
     },
     options: { customProperties: true }
