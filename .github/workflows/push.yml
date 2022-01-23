@@ -57,7 +57,7 @@ jobs:
   build-be:
     name: Build ratify-be
     runs-on: Ubuntu-20.04
-    container: daystram/go-builder:1.15
+    container: daystram/go-builder:1.17
     defaults:
       run:
         working-directory: ratify-be

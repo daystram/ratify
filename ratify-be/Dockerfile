@@ -1,4 +1,4 @@
-FROM daystram/go-builder:1.15 as builder
+FROM daystram/go-builder:1.17 as builder
 WORKDIR /build
 COPY . ./
 RUN swag init
